@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+
 import "hardhat/console.sol";
 
 contract NFTMarket is ReentrancyGuard {
@@ -14,7 +15,7 @@ contract NFTMarket is ReentrancyGuard {
     Counters.Counter private _itemsSold;
 
     address payable owner;
-    uint256 listingPrice = 0.025 ether;
+    uint256 public listingPrice = 1;
 
     constructor() {
         owner = payable(msg.sender);
@@ -30,7 +31,7 @@ contract NFTMarket is ReentrancyGuard {
         bool sold;
     }
 
-    mapping(uint => MarketItem) private idToMarketItem;
+    mapping(uint => MarketItem) public idToMarketItem;
 
     event MarketItemCreated (
         uint itemId,
@@ -42,13 +43,10 @@ contract NFTMarket is ReentrancyGuard {
         bool sold
     );
 
-    function getListingPrice() public view returns(uint) {
-        return listingPrice;
-    }
 
-    function createMarketItem(address nftContract, uint tokenId, uint price) public payable nonReentrant {
+    function createMarketItem(address nftContract, uint tokenId, uint price) public nonReentrant {
         require(price > 0, "Price must be at least 1 wei");
-        require(msg.value == listingPrice, "Price must be equal to listing price");
+        // require(msg.value == listingPrice, "Price must be equal to listing price");
 
         _itemIds.increment();
         uint itemId = _itemIds.current();
@@ -68,26 +66,60 @@ contract NFTMarket is ReentrancyGuard {
         emit MarketItemCreated(itemId, nftContract, tokenId, payable(msg.sender), payable(address(0)), price, false);
     }
 
-    function createMarketSale(address nftContract, uint itemId) public payable nonReentrant {
+    function createMarketSale(address nftContract, uint itemId, uint price) public payable nonReentrant {
+        address item_owner = idToMarketItem[itemId].owner;
+        uint token_id = idToMarketItem[itemId].tokenId;
+        require(msg.sender == item_owner, "You must be the owner to create the sale");
+        idToMarketItem[itemId] = MarketItem(
+            itemId,
+            nftContract,
+            token_id,
+            payable(msg.sender),
+            payable(address(0)),
+            price,
+            false
+        );
+
+        IERC721(nftContract).transferFrom(msg.sender, address(this), token_id);
+
+        emit MarketItemCreated(itemId, nftContract, token_id, payable(msg.sender), payable(address(0)), price, false);
+    }
+
+    function executeMarketSale(address nftContract, uint itemId) public payable nonReentrant {
         uint price = idToMarketItem[itemId].price;
         uint tokenId = idToMarketItem[itemId].tokenId;
 
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
 
-        idToMarketItem[itemId].seller.transfer(msg.value);
+        payable(idToMarketItem[itemId].seller).transfer((msg.value*99)/100);
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].sold = true;
         _itemsSold.increment();
-        payable(owner).transfer(listingPrice);
+        payable(owner).transfer(msg.value/100);
+    }
+
+    function cancelSale(address nftContract, uint itemId) public nonReentrant {
+        address item_seller = idToMarketItem[itemId].seller;
+        uint tokenId = idToMarketItem[itemId].tokenId;
+        require(msg.sender == item_seller, "You must be the owner to cancel the sale");
+        idToMarketItem[itemId].owner = payable(msg.sender);
+        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
     }
 
     function fetchMarketItems() public view returns(MarketItem[] memory) {
         uint itemCount = _itemIds.current();
-        uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
         uint currentIndex = 0;
+        uint unsoldItemCount = 0;
+        
+        for(uint i = 0; i < itemCount; i++) {
+            if (idToMarketItem[i+1].owner == address(0)) {
+                unsoldItemCount += 1;
+            }
+        }
 
         MarketItem[] memory items = new MarketItem[](unsoldItemCount);
+        
 
         for(uint i = 0; i < itemCount; i++) {
             if (idToMarketItem[i+1].owner == address(0)) {
