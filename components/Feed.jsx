@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { feedPinsGet, searchPinsGet } from '../redux/actions/pinActions';
+import { feedPinsGet, searchPinsGetByCategory } from '../redux/actions/pinActions';
 import MasonryLayout from './MasonryLayout';
 import Spinner from './Spinner';
 
@@ -9,12 +9,12 @@ const Feed = ({categoryId}) => {
   const [pins, setPins] = useState();
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch()
-  const {feedPins, searchedPins} = useSelector(state => state.pinReducer)
+  const {feedPins, categorySearchedPins} = useSelector(state => state.pinReducer)
 
   useEffect(() => {
     if (categoryId) {
       setLoading(true);
-      dispatch(searchPinsGet(categoryId, (data) => {
+      dispatch(searchPinsGetByCategory(categoryId,  (data) => {
         setPins(data)
         setLoading(false);
       }, (e) => {

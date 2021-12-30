@@ -46,7 +46,7 @@ contract NFTMarket is ReentrancyGuard {
 
     function createMarketItem(address nftContract, uint tokenId, uint price) public nonReentrant {
         require(price > 0, "Price must be at least 1 wei");
-        // require(msg.value == listingPrice, "Price must be equal to listing price");
+        require(IERC721(nftContract).getApproved(tokenId) == address(this), "Market didn't get approval");
 
         _itemIds.increment();
         uint itemId = _itemIds.current();
@@ -70,6 +70,8 @@ contract NFTMarket is ReentrancyGuard {
         address item_owner = idToMarketItem[itemId].owner;
         uint token_id = idToMarketItem[itemId].tokenId;
         require(msg.sender == item_owner, "You must be the owner to create the sale");
+        require(IERC721(nftContract).getApproved(token_id) == address(this), "Market didn't get approval");
+
         idToMarketItem[itemId] = MarketItem(
             itemId,
             nftContract,

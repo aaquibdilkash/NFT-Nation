@@ -1,10 +1,12 @@
-import { CLEAR_ERRORS, FEED_PINS_GET_FAIL, FEED_PINS_GET_SUCCESS, MORE_PINS_GET_FAIL, MORE_PINS_GET_SUCCESS, PIN_DETAIL_GET_FAIL, PIN_DETAIL_GET_SUCCESS, SEARCH_PINS_GET_FAIL, SEARCH_PINS_GET_SUCCESS } from "../constants/PinTypes";
+import { CLEAR_ERRORS, FEED_PINS_GET_FAIL, FEED_PINS_GET_SUCCESS, MORE_PINS_GET_FAIL, MORE_PINS_GET_SUCCESS, PIN_DETAIL_GET_FAIL, PIN_DETAIL_GET_SUCCESS, SEARCH_PINS_GET_BY_CATEGORY_FAIL, SEARCH_PINS_GET_BY_CATEGORY_SUCCESS, SEARCH_PINS_GET_BY_KEYWORD_FAIL, SEARCH_PINS_GET_BY_KEYWORD_SUCCESS, SEARCH_TERM_SET } from "../constants/PinTypes";
 
 const initialState = {
     pinDetail: {},
     feedPins: [],
     morePins: [],
-    searchedPins: []
+    keywordSearchedPins: [],
+    categorySearchedPins: [],
+    searchTerm: ""
 }
 
 export const pinReducer = (state = initialState, action) => {
@@ -42,13 +44,30 @@ export const pinReducer = (state = initialState, action) => {
         ...state,
         error: action.payload
       };
-    case SEARCH_PINS_GET_SUCCESS:
+    case SEARCH_TERM_SET:
       return {
           ...state,
-          searchedPins: action.payload
+          searchTerm: action.payload
+      }
+    case SEARCH_PINS_GET_BY_CATEGORY_SUCCESS:
+      return {
+          ...state,
+          categorySearchedPins: action.payload
       }
 
-    case SEARCH_PINS_GET_FAIL:
+    case SEARCH_PINS_GET_BY_CATEGORY_FAIL:
+      return {
+        ...state,
+        error: action.payload
+      };
+
+    case SEARCH_PINS_GET_BY_KEYWORD_SUCCESS:
+      return {
+          ...state,
+          keywordSearchedPins: action.payload
+      }
+
+    case SEARCH_PINS_GET_BY_KEYWORD_FAIL:
       return {
         ...state,
         error: action.payload

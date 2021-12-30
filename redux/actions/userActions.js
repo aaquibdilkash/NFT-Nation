@@ -1,11 +1,10 @@
-import { client } from "../../client";
-import { userCreatedPinsQuery, userQuery, userSalePinsQuery, userSavedPinsQuery } from "../../utils/data";
+import axios from "axios";
 import {
   CLEAR_ERRORS,
+  PROFILE_GET_FAIL,
+  PROFILE_GET_SUCCESS,
   USER_GET_FAIL,
   USER_GET_SUCCESS,
-  OTHER_USER_GET_FAIL,
-  OTHER_USER_GET_SUCCESS,
   USER_OWN_GET_FAIL,
   USER_OWN_GET_SUCCESS,
   USER_SALE_GET_FAIL,
@@ -14,16 +13,15 @@ import {
   USER_SAVE_GET_SUCCESS,
 } from "../constants/UserTypes";
 
-export const userGet = (account, success = () => {}, failure = () => {}) => async (dispatch) => {
+export const userGet = (userId, success = () => {}, failure = () => {}) => async (dispatch) => {
   try {
-    const query = userQuery(account);
-    client.fetch(query).then((data) => {
+    axios.get(`/api/users/${userId}`).then((res) => {
       dispatch({
         type: USER_GET_SUCCESS,
-        payload: data[0],
+        payload: res.data.user,
       });
 
-      success(data[0])
+      success(res.data.user)
     });
 
     
@@ -36,35 +34,36 @@ export const userGet = (account, success = () => {}, failure = () => {}) => asyn
   }
 };
 
-export const otherUserGet = (account, success = () => {}, failure = () => {}) => async (dispatch) => {
+export const profileGet = (userId, success = () => {}, failure = () => {}) => async (dispatch) => {
   try {
-    const query = userQuery(account);
-    client.fetch(query).then((data) => {
+    axios.get(`/api/users/${userId}`).then((res) => {
       dispatch({
-        type: OTHER_USER_GET_SUCCESS,
-        payload: data[0],
+        type: PROFILE_GET_SUCCESS,
+        payload: res.data.user,
       });
-      success(data[0])
+
+      success(res.data.user)
     });
 
     
   } catch (e) {
     dispatch({
-      type: OTHER_USER_GET_FAIL,
+      type: PROFILE_GET_FAIL,
       payload: e,
     });
     failure(e)
   }
 };
 
-export const userSaveGet = (account) => async (dispatch) => {
+
+export const userSaveGet = (userId, success = () => {}, failure = () => {}) => async (dispatch) => {
   try {
-    const query = userSavedPinsQuery(account);
-    client.fetch(query).then((data) => {
+    axios.get(`/api/pins?saved=${userId}`).then((res) => {
       dispatch({
         type: USER_SAVE_GET_SUCCESS,
-        payload: data,
+        payload: res.data.pins,
       });
+      success(res.data.pins)
     });
 
     
@@ -73,16 +72,17 @@ export const userSaveGet = (account) => async (dispatch) => {
       type: USER_SAVE_GET_FAIL,
       payload: e,
     });
+    failure(e)
   }
 };
-export const userOwnGet = (account) => async (dispatch) => {
+export const userOwnGet = (address, success = () => {}, failure = () => {}) => async (dispatch) => {
   try {
-    const query = userCreatedPinsQuery(account);
-    client.fetch(query).then((data) => {
+    axios.get(`/api/pins?owner=${address}`).then((res) => {
       dispatch({
         type: USER_OWN_GET_SUCCESS,
-        payload: data,
+        payload: res.data.pins,
       });
+      success(res.data.pins)
     });
 
     
@@ -91,16 +91,17 @@ export const userOwnGet = (account) => async (dispatch) => {
       type: USER_OWN_GET_FAIL,
       payload: e,
     });
+    failure(e)
   }
 };
-export const userSaleGet = (account) => async (dispatch) => {
+export const userSaleGet = (address, success = () => {}, failure = () => {}) => async (dispatch) => {
   try {
-    const query = userSalePinsQuery(account);
-    client.fetch(query).then((data) => {
+    axios.get(`/api/pins?seller=${address}`).then((res) => {
       dispatch({
         type: USER_SALE_GET_SUCCESS,
-        payload: data,
+        payload: res.data.pins,
       });
+      success(res.data.pins)
     });
 
     
@@ -109,6 +110,7 @@ export const userSaleGet = (account) => async (dispatch) => {
       type: USER_SALE_GET_FAIL,
       payload: e,
     });
+    failure(e)
   }
 };
 

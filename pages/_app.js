@@ -1,12 +1,19 @@
-import '../styles/globals.css'
-import {wrapper} from "../redux/store"
+import "../styles/globals.css";
+import { wrapper } from "../redux/store";
+import HomeLayout from "../Layout/HomeLayout";
 
 function MyApp({ Component, pageProps }) {
+
+  const ISSERVER = typeof window === "undefined";
+
+  !ISSERVER && window.addEventListener("contextmenu", (e) => e.preventDefault());
+
+
   return (
-    <div className=''>
-    <Component {...pageProps} />
-    </div>
-  )
+    <HomeLayout>
+      <Component {...pageProps} />
+    </HomeLayout>
+  );
 }
 
-export default wrapper.withRedux(MyApp)
+export default wrapper.withRedux(MyApp);

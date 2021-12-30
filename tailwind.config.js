@@ -4,7 +4,7 @@ module.exports = {
     './components/**/*.{js,ts,jsx,tsx}',
     './Layout/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: "class", // or 'media' or 'class'
+  darkMode: "media", // or 'media' or 'class'
   
   theme: {
     colors: {
@@ -12,29 +12,7 @@ module.exports = {
       current: 'currentColor',
       'white': '#ffffff',
       'black': '#000000',
-      'grey': '#808080',
-      'orange': '#ffa500',
-      'purple': '#3f3cbb',
       'red': 'rgb(239 68 68)',
-      'sky': 'rgb(14 165 233)',
-      'indigo': '#6366f1',
-      'midnight': '#121063',
-      'metal': '#565584',
-      'tahiti': '#3ab7bf',
-      'silver': '#evebff',
-      'bubble-gum': '#ff77e9',
-      'bermuda': '#78dcca',
-      'tahiti': {
-        100: '#cffafe',
-        200: '#a5f3fc',
-        300: '#67e8f9',
-        400: '#22d3ee',
-        500: '#06b6d4',
-        600: '#0891b2',
-        700: '#0e7490',
-        800: '#155e75',
-        900: '#164e63',
-      },
 
     },
     extend: {
