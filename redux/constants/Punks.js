@@ -1,4 +1,0 @@
-export const ALL_PUNKS_SUCCESS = "ALL_PUNKS_SUCCESS"
-export const ALL_PUNKS_FAIL = "ALL_PUNKS_FAIL"
-export const CLEAR_ERRORS = "CLEAR_ERRORS"
-

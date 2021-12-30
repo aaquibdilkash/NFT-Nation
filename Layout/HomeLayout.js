@@ -48,14 +48,14 @@ const HomeLayout = ({ children, ...pageProps }) => {
             params: [params, accounts[0]],
           })
           .then((result) => {
-            
+            const obj = {
+              address: accounts[0],
+              userName: accounts[0],
+              image:
+                "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
+            }
             axios
-              .post("/api/users", {
-                address: accounts[0],
-                userName: accounts[0],
-                image:
-                  "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
-              })
+              .post("/api/users", obj)
               .then((res) => {
                 console.log(res, "dfjdkfjdkfjkdjfdf")
                 localStorage.setItem("user", JSON.stringify(res.data.user));
