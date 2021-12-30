@@ -1,4 +1,5 @@
 import Pin from "../models/pin";
+import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 

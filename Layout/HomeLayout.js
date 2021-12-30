@@ -130,13 +130,15 @@ const HomeLayout = ({ children, ...pageProps }) => {
           <Link href="/">
             <img src="../assets/logo.png" alt="logo" className="w-28" />
           </Link>
-          <Link href={`user-profile/${user?._id}`}>
+          {
+            user?._id && <Link href={`user-profile/${user?._id}`}>
             <img
               src={user?.image}
               alt="user-pic"
               className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
             />
           </Link>
+          }
         </div>
         {toggleSidebar && (
           <div className="fixed w-3/5 bg-white h-screen overflow-y-auto shadow-md z-10 animate-slide-in">

@@ -1,4 +1,5 @@
 import User from "../models/user";
+import Pin from "../models/pin";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 
 const allUsers = catchAsyncErrors(async (req, res) => {
