@@ -3,12 +3,12 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { userGet } from "../redux/actions/userActions";
-import Web3 from "web3";
+import {ethers} from "ethers"
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import { chainData, toHex } from "../utils/data";
 import axios from "axios";
-// import PinsLayout from "./PinsLayout";
+import Web3 from "web3";
+import Web3Modal from "web3modal";
 
 const HomeLayout = ({ children, ...pageProps }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
@@ -16,7 +16,73 @@ const HomeLayout = ({ children, ...pageProps }) => {
   const scrollRef = useRef(null);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userReducer);
-  const ISSERVER = typeof window === "undefined";
+
+  const connectToMetamask = async () => {
+    const providerOptions = {
+      /* See Provider Options Section */
+    };
+  
+    const web3Modal = new Web3Modal({
+      network: "mainnet", // optional
+      cacheProvider: true, // optional
+      providerOptions, // required
+    });
+
+    const provider = await web3Modal.connect();
+
+    const web3 = new Web3(provider);
+
+    const accounts = await web3.eth.getAccounts();
+
+    console.log(accounts[0], "connect metamask function")
+    login(accounts[0])
+
+
+    // Subscribe to accounts change
+    provider.on("accountsChanged", async (accounts) => {
+      let address = await web3.eth.getAccounts();
+      console.log(address, "on accountChaged");
+      login(address)
+    });
+
+    // Subscribe to chainId change
+    provider.on("chainChanged", (chainId) => {
+      console.log(chainId, "chain Changed");
+    });
+
+    // Subscribe to provider connection
+    provider.on("connect", (info) => {
+      console.log(info, "on Connect");
+    });
+
+    // Subscribe to provider disconnection
+    provider.on("disconnect", (error) => {
+      // console.log(error, "on disconnect");
+    });
+  };
+
+  const login = (address) => {
+    const obj = {
+      address: address,
+      userName: address,
+      image:
+        "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
+    };
+    console.log(obj, "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+    axios
+      .post("/api/users", obj)
+      .then((res) => {
+        console.log(res, "dfjdkfjdkfjkdjfdf");
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        dispatch({
+          type: USER_GET_SUCCESS,
+          payload: res.data.user,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
 
   const addToNetwork = async () => {
     const chain = chainData.test;
@@ -41,13 +107,13 @@ const HomeLayout = ({ children, ...pageProps }) => {
         ],
       };
 
-      window.ethereum
-        .request({
-          method: "wallet_addEthereumChain",
-          params: [params, accounts[0]],
-        })
-        .then((result) => {
-          window.web3.eth.getAccounts((error, accounts) => {
+      window.web3.eth.getAccounts((error, accounts) => {
+        window.ethereum
+          .request({
+            method: "wallet_addEthereumChain",
+            params: [params, accounts[0]],
+          })
+          .then((result) => {
             console.log(accounts[0]);
             const obj = {
               address: accounts[0],
@@ -69,50 +135,16 @@ const HomeLayout = ({ children, ...pageProps }) => {
               .catch((e) => {
                 console.log(e);
               });
+          })
+          .catch((error) => {
+            console.log(error);
           });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      });
     } else {
       alert("Please install MetaMask browser extension to interact");
     }
   };
 
-  // useEffect(() => {
-  //   addToNetwork()
-  // }, [])
-
-  // !ISSERVER && window.ethereum.on("accountsChanged", (account) => {
-  //   console.log(account);
-  //   // router.push("/login");
-  //   addToNetwork()
-  //   console.log("account changed");
-  // });
-
-  // !ISSERVER && window.ethereum.on("chainChanged", (chain) => {
-  //   console.log(chain);
-  //   // router.push("/login");
-  //   addToNetwork()
-  //   console.log("account changed");
-  // });
-
-  // let userInfo;
-
-  // useEffect(() => {
-
-  //   if (!ISSERVER) {
-  //     userInfo = localStorage.getItem("user") !== "undefined"
-  //         ? JSON.parse(localStorage.getItem("user"))
-  //         : localStorage.clear();
-  //   }
-
-  //   !ISSERVER && userInfo?._id && dispatch(userGet(userInfo?._id, (res) => {
-
-  //   }, (e) => {
-
-  //   }));
-  // }, [userInfo]);
 
   useEffect(() => {
     scrollRef.current.scrollTo(0, 0);
@@ -148,7 +180,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
             <Sidebar
               closeToggle={setToggleSidebar}
               user={user && user}
-              addToNetwork={addToNetwork}
+              addToNetwork={connectToMetamask}
             />
           </div>
         )}
@@ -159,7 +191,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
             <Navbar
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              addToNetwork={addToNetwork}
+              addToNetwork={connectToMetamask}
             />
           </div>
           <div className="h-full">{children}</div>
