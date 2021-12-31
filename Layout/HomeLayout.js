@@ -3,7 +3,6 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import {ethers} from "ethers"
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import { chainData, toHex } from "../utils/data";
 import axios from "axios";
@@ -18,6 +17,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
   const { user } = useSelector((state) => state.userReducer);
 
   const connectToMetamask = async () => {
+
     const providerOptions = {
       /* See Provider Options Section */
     };
@@ -30,65 +30,21 @@ const HomeLayout = ({ children, ...pageProps }) => {
 
     const provider = await web3Modal.connect();
 
+    if(!provider) {
+      alert("Web3 is not enabled in this browser, Checkout Metamask!")
+    }
+
     const web3 = new Web3(provider);
 
+    const chainId = await web3.eth.getChainId()
+
     const accounts = await web3.eth.getAccounts();
+    
+    if(chainId != 80001) {
+      alert("Wrong network! Switch to Polygon (Matic)");
 
-    console.log(accounts[0], "connect metamask function")
-    login(accounts[0])
+      const chain = chainData.test
 
-
-    // Subscribe to accounts change
-    provider.on("accountsChanged", async (accounts) => {
-      let address = await web3.eth.getAccounts();
-      console.log(address, "on accountChaged");
-      login(address)
-    });
-
-    // Subscribe to chainId change
-    provider.on("chainChanged", (chainId) => {
-      console.log(chainId, "chain Changed");
-    });
-
-    // Subscribe to provider connection
-    provider.on("connect", (info) => {
-      console.log(info, "on Connect");
-    });
-
-    // Subscribe to provider disconnection
-    provider.on("disconnect", (error) => {
-      // console.log(error, "on disconnect");
-    });
-  };
-
-  const login = (address) => {
-    const obj = {
-      address: address,
-      userName: address,
-      image:
-        "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
-    };
-    console.log(obj, "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-    axios
-      .post("/api/users", obj)
-      .then((res) => {
-        console.log(res, "dfjdkfjdkfjkdjfdf");
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        dispatch({
-          type: USER_GET_SUCCESS,
-          payload: res.data.user,
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  }
-
-  const addToNetwork = async () => {
-    const chain = chainData.test;
-    if (window.ethereum && window.web3 && window.ethereum.isMetaMask) {
-      window.web3 = new Web3(ethereum);
-      console.log("MetaMask Here!");
       const params = {
         chainId: toHex(chain.chainId), // A 0x-prefixed hexadecimal string
         chainName: chain.name,
@@ -107,53 +63,75 @@ const HomeLayout = ({ children, ...pageProps }) => {
         ],
       };
 
-      window.web3.eth.getAccounts((error, accounts) => {
-        window.ethereum
+      window.ethereum
           .request({
             method: "wallet_addEthereumChain",
             params: [params, accounts[0]],
+          }).then(() => {
+            login(accounts[0])
+          }).catch((e) => {
+            console.log(e)
           })
-          .then((result) => {
-            console.log(accounts[0]);
-            const obj = {
-              address: accounts[0],
-              userName: accounts[0],
-              image:
-                "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
-            };
-            console.log(obj, "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-            axios
-              .post("/api/users", obj)
-              .then((res) => {
-                console.log(res, "dfjdkfjdkfjkdjfdf");
-                localStorage.setItem("user", JSON.stringify(res.data.user));
-                dispatch({
-                  type: USER_GET_SUCCESS,
-                  payload: res.data.user,
-                });
-              })
-              .catch((e) => {
-                console.log(e);
-              });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      });
-    } else {
-      alert("Please install MetaMask browser extension to interact");
+
+      return;
     }
+
+    login(accounts[0])
+
+
+    // Subscribe to accounts change
+    provider.on("accountsChanged", async (accounts) => {
+      let address = await web3.eth.getAccounts();
+      // console.log(address, "on accountChaged");
+      login(address)
+    });
+
+    // Subscribe to chainId change
+    provider.on("chainChanged", (chainId) => {
+      // console.log(chainId, "chain Changed");
+    });
+
+    // Subscribe to provider connection
+    provider.on("connect", (info) => {
+      // console.log(info, "on Connect");
+    });
+
+    // Subscribe to provider disconnection
+    provider.on("disconnect", (error) => {
+      // console.log(error, "on disconnect");
+    });
   };
 
+  const login = (address) => {
+    const obj = {
+      address: address,
+      userName: address,
+      image:
+        "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
+    };
+    axios
+      .post("/api/users", obj)
+      .then((res) => {
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        dispatch({
+          type: USER_GET_SUCCESS,
+          payload: res.data.user,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
 
   useEffect(() => {
     scrollRef.current.scrollTo(0, 0);
+    connectToMetamask()
   }, []);
 
   return (
     <div className="flex bg-gradient-to-r from-[#ffffff] to-[#009387] md:flex-row flex-col h-screen transition-height duration-75 ease-out">
       <div className="hidden md:flex h-screen flex-initial">
-        <Sidebar user={user && user} addToNetwork={addToNetwork} />
+        <Sidebar user={user && user} connectToMetamask={connectToMetamask} />
       </div>
       <div className="flex md:hidden flex-row">
         <div className="p-2 w-full flex flex-row justify-between items-center shadow-md">
@@ -180,7 +158,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
             <Sidebar
               closeToggle={setToggleSidebar}
               user={user && user}
-              addToNetwork={connectToMetamask}
+              connectToMetamask={connectToMetamask}
             />
           </div>
         )}
@@ -191,7 +169,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
             <Navbar
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              addToNetwork={connectToMetamask}
+              connectToMetamask={connectToMetamask}
             />
           </div>
           <div className="h-full">{children}</div>

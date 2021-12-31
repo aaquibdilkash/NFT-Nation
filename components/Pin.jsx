@@ -6,17 +6,16 @@ import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 // import { Link, useNavigate } from "react-router-dom";
 import Link from "next/link";
-import { v4 as uuidv4 } from "uuid";
 // import { MdDownloadForOffline } from "react-icons/md";
 // import { AiTwotoneDelete } from "react-icons/ai";
 // import { BsFillArrowUpRightCircleFill } from "react-icons/bs";
 
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { feedPinsGet } from "../redux/actions/pinActions";
 import { useDispatch } from "react-redux";
 import { etherAddress, getUserName } from "../utils/data";
 import axios from "axios";
+import { REFRESH_SET } from "../redux/constants/UserTypes";
 
 const Pin = ({ pin }) => {
   const [postHovered, setPostHovered] = useState(false);
@@ -37,12 +36,15 @@ const Pin = ({ pin }) => {
     owner,
   } = pin;
 
-  let {user} = useSelector(state => state.userReducer)
+  let {user, refresh} = useSelector(state => state.userReducer)
 
   const updatePin = (body) => {
     axios.put(`/api/pins/${pin?._id}`, body).then((res) => {
       router.push("/")
-      dispatch(feedPinsGet())
+      dispatch({
+        type: REFRESH_SET,
+        payload: !refresh
+      })
     }).catch((e) => {
 
     })

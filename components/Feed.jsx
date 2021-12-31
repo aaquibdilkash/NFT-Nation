@@ -1,40 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-import { feedPinsGet, searchPinsGetByCategory } from '../redux/actions/pinActions';
 import MasonryLayout from './MasonryLayout';
 import Spinner from './Spinner';
+import axios from "axios"
+import { useSelector } from 'react-redux';
+import Head from 'next/head';
 
 const Feed = ({categoryId}) => {
   const [pins, setPins] = useState();
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch()
-  const {feedPins, categorySearchedPins} = useSelector(state => state.pinReducer)
+  const {refresh} = useSelector(state => state.userReducer)
 
   useEffect(() => {
     if (categoryId) {
       setLoading(true);
-      dispatch(searchPinsGetByCategory(categoryId,  (data) => {
-        setPins(data)
-        setLoading(false);
-      }, (e) => {
-        setLoading(false);
-      }))
+      axios.get(`/api/pins?category=${categoryId}`).then((res) => {
+        setLoading(false)
+        setPins(res.data.pins)
+      }).catch((e) => {
+        setLoading(false)
+      })
     } else {
       setLoading(true);
-
-      dispatch(feedPinsGet((data) => {
-        setPins(data)
-        setLoading(false);
-      }, (e) => {
-        setLoading(false);
-      }))
+      axios.get(`/api/pins`).then((res) => {
+        setLoading(false)
+        setPins(res.data.pins)
+      }).catch((e) => {
+        setLoading(false)
+      })
     }
-  }, [categoryId]);
-
-  useEffect(() => {
-    setPins(feedPins)
-  }, [feedPins])
+  }, [categoryId, refresh]);
 
   const ideaName = categoryId || 'new';
   if (loading) {
@@ -51,11 +45,35 @@ const Feed = ({categoryId}) => {
 
   
   return (
-    <div>
+    <>
+    {
+      categoryId && (
+        <Head>
+        <title>{`${categoryId} NFTs  | NFT Nation`}</title>
+        <meta
+          name="description"
+          content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
+        />
+        <meta property="og:title" content={`${categoryId} NFTs | NFT Nation`} />
+        <meta
+          property="og:description"
+          content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
+        />
+        <meta
+          property="og:url"
+          content={`https://nft-nation.vercel.app/${categoryId}`}
+        />
+        <meta property="og:type" content="website" />
+        <link rel="icon" href="../favicon.ico" />
+      </Head>
+      )
+    }
+      <div>
       {pins && (
         <MasonryLayout pins={pins} />
       )}
     </div>
+    </>
   );
 };
 

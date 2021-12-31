@@ -1,73 +1,63 @@
 import React, { useEffect, useState } from "react";
 import { MdDownloadForOffline } from "react-icons/md";
-import Link from "next/link"
-import { v4 as uuidv4 } from "uuid";
+import Link from "next/link";
 import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
 import { useSelector } from "react-redux";
-import { morePinsGet, pinDetailGet } from "../../redux/actions/pinActions";
 import { useDispatch } from "react-redux";
 import { getUserName } from "../../utils/data";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { REFRESH_SET } from "../../redux/constants/UserTypes";
+import Head from "next/head";
 
 const PinDetail = () => {
-  const router = useRouter()
-  const {pinId} = router.query
-  const dispatch = useDispatch()
-  const {user} = useSelector(state => state.userReducer)
-  // const {pinDetail, morePins} = useSelector(state => state.pinReducer)
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { pinId } = router.query;
+  const { user, refresh } = useSelector((state) => state.userReducer);
   const [pins, setPins] = useState();
   const [pinDetail, setPinDetail] = useState();
   const [comment, setComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
 
   useEffect(() => {
-    pinId && dispatch(pinDetailGet(pinId, (data) => {
-      setPinDetail(data)
-      dispatch(morePinsGet(data, (data) => {
-        setPins(data)
-      }, (e) => {
-      }))
-    }, (e) => {
-    }))
-  }, [pinId]);
+    pinId &&
+      axios
+        .get(`/api/pins/${pinId}`)
+        .then((res) => {
+          setPinDetail(res.data.pin);
+          axios
+            .get(`/api/pins?category=${res.data.pin.category}`)
+            .then((res) => {
+              setPins(res.data.pins);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+  }, [pinId, refresh]);
 
   const addComment = () => {
     if (comment) {
       setAddingComment(true);
 
-      axios.put(`/api/pins/comments/${pinId}`, {
-        user: user?._id,
-        comment
-      }).then(() => {
-        setAddingComment(false)
-        setComment("")
-        dispatch(pinDetailGet(pinId, (data) => {
-          setPinDetail(data)
-        }, (e) => {
-        }))
-      })
-
-      // client
-      //   .patch(pinId)
-      //   .setIfMissing({ comments: [] })
-      //   .insert("after", "comments[-1]", [
-      //     {
-      //       comment,
-      //       _key: uuidv4(),
-      //       postedBy: { _type: "postedBy", _ref: user?._id },
-      //     },
-      //   ])
-      //   .commit()
-      //   .then(() => {
-      //     dispatch(pinDetailGet(pinId, (data) => {
-      //       setPinDetail(data)
-      //     }, (e) => {
-      //     }))
-      //     setComment("");
-      //     setAddingComment(false);
-      //   });
+      axios
+        .put(`/api/pins/comments/${pinId}`, {
+          user: user?._id,
+          comment,
+        })
+        .then(() => {
+          setAddingComment(false);
+          setComment("");
+          dispatch({
+            type: REFRESH_SET,
+            payload: !refresh,
+          });
+        });
     }
   };
 
@@ -77,6 +67,27 @@ const PinDetail = () => {
 
   return (
     <>
+      <Head>
+        <title>{`${pinDetail?.title} | NFT Nation`}</title>
+        <meta
+          name="description"
+          content={`${pinDetail?.about}`}
+        />
+        <meta
+          property="og:title"
+          content={`${pinDetail?.title} | NFT Nation`}
+        />
+        <meta
+          property="og:description"
+          content={`${pinDetail?.about}`}
+        />
+        <meta
+          property="og:url"
+          content={`https://nft-nation.vercel.app/pin-detail/${pinDetail?._id}`}
+        />
+        <meta property="og:type" content="website" />
+        <link rel="icon" href="./../favicon.ico" />
+      </Head>
       {pinDetail && (
         <div
           className="flex xl:flex-row flex-col m-auto bg-white"
@@ -114,12 +125,16 @@ const PinDetail = () => {
               href={`/user-profile/${pinDetail?.postedBy?._id}`}
               className="flex gap-2 mt-5 items-center bg-white rounded-lg "
             >
-              <a><img
-                src={pinDetail?.postedBy?.image}
-                className="w-10 h-10 rounded-full"
-                alt="user-profile"
-              />
-              <p className="font-bold">{getUserName(pinDetail?.postedBy?.userName)}</p></a>
+              <a>
+                <img
+                  src={pinDetail?.postedBy?.image}
+                  className="w-10 h-10 rounded-full"
+                  alt="user-profile"
+                />
+                <p className="font-bold">
+                  {getUserName(pinDetail?.postedBy?.userName)}
+                </p>
+              </a>
             </Link>
             <h2 className="mt-5 text-2xl">Comments</h2>
             <div className="max-h-370 overflow-y-scroll">
@@ -134,7 +149,9 @@ const PinDetail = () => {
                     alt="user-profile"
                   />
                   <div className="flex flex-col">
-                    <p className="font-bold">{getUserName(item?.user?.userName)}</p>
+                    <p className="font-bold">
+                      {getUserName(item?.user?.userName)}
+                    </p>
                     <p>{item.comment}</p>
                   </div>
                 </div>

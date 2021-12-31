@@ -4,13 +4,13 @@ import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { SEARCH_TERM_SET } from "../redux/constants/PinTypes";
+import { SEARCH_TERM_SET } from "../redux/constants/UserTypes";
 import { AiOutlineLogin } from "react-icons/ai";
 
-const Navbar = ({addToNetwork}) => {
+const Navbar = ({connectToMetamask}) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userReducer);
-  const { searchTerm } = useSelector((state) => state.pinReducer);
+  const { searchTerm } = useSelector((state) => state.userReducer);
   const router = useRouter();
 
   return (
@@ -47,7 +47,7 @@ const Navbar = ({addToNetwork}) => {
           // // href="/create-pin"
           // onClick={addToNetwork}
           // >
-            <div onClick={addToNetwork} className="bg-black text-white rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
+            <div onClick={connectToMetamask} className="bg-black text-white rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
             <AiOutlineLogin color="#00ff00" fontSize={21}/>
             </div>
           // </Link>

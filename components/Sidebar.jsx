@@ -13,7 +13,7 @@ const isNotActiveStyle =
 const isActiveStyle =
   "flex items-center px-5 gap-3 font-extrabold border-r-2 border-black transition-all duration-200 ease-in-out capitalize hover:cursor-pointer bg-[#009387]";
 
-const Sidebar = ({ closeToggle, user, addToNetwork }) => {
+const Sidebar = ({ closeToggle, user, connectToMetamask }) => {
   const router = useRouter()
   const handleCloseSidebar = () => {
     if (closeToggle) closeToggle(false);
@@ -100,7 +100,7 @@ const Sidebar = ({ closeToggle, user, addToNetwork }) => {
         // >
           <div onClick={(e) => {
             handleCloseSidebar(e)
-            addToNetwork(e)
+            connectToMetamask(e)
           }} className="flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between">
 
             {/* {" "}
