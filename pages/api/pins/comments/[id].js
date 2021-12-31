@@ -1,10 +1,10 @@
+import dbConnect from "../../../../config/dbConnect"
 import nc from "next-connect"
 import { commentPin } from "../../../../controllers/pinsController"
-import dbConnect from "../../../../config/dbConnect"
-
-const handler = nc()
 
 dbConnect()
+
+const handler = nc()
 
 handler.put(commentPin)
 

@@ -1,10 +1,10 @@
-import { allPins, createPin } from "../../../controllers/pinsController"
-import nc from "next-connect"
 import dbConnect from "../../../config/dbConnect"
-
-const handler = nc()
+import nc from "next-connect"
+import { allPins, createPin } from "../../../controllers/pinsController"
 
 dbConnect()
+
+const handler = nc()
 
 handler.get(allPins)
 

@@ -1,12 +1,10 @@
-import nc from "next-connect"
 import dbConnect from "../../../config/dbConnect"
-
+import nc from "next-connect"
 import { deletePin, getPin, updatePin } from "../../../controllers/pinsController"
 
+dbConnect()
 
 const handler = nc()
-
-dbConnect()
 
 handler.get(getPin)
 
