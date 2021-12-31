@@ -48,12 +48,13 @@ const HomeLayout = ({ children, ...pageProps }) => {
             params: [params, accounts[0]],
           })
           .then((result) => {
+            console.log(accounts[0])
             const obj = {
               address: accounts[0],
               userName: accounts[0],
-              image:
-                "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
+              image: "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
             }
+            console.log(obj, '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
             axios
               .post("/api/users", obj)
               .then((res) => {
