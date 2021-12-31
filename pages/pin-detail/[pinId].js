@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import { REFRESH_SET } from "../../redux/constants/UserTypes";
 import Head from "next/head";
+import Image from "next/image";
 
 const PinDetail = () => {
   const dispatch = useDispatch();
@@ -27,10 +28,12 @@ const PinDetail = () => {
         .get(`/api/pins/${pinId}`)
         .then((res) => {
           setPinDetail(res.data.pin);
+          // console.log(res.data.pin, 'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP')
           axios
             .get(`/api/pins?category=${res.data.pin.category}`)
             .then((res) => {
               setPins(res.data.pins);
+              // console.log(res.data.pins, "dddddddddddddddddddddddddddddddddddddddddd")
             })
             .catch((e) => {
               console.log(e);
@@ -69,24 +72,18 @@ const PinDetail = () => {
     <>
       <Head>
         <title>{`${pinDetail?.title} | NFT Nation`}</title>
-        <meta
-          name="description"
-          content={`${pinDetail?.about}`}
-        />
+        <meta name="description" content={`${pinDetail?.about}`} />
         <meta
           property="og:title"
           content={`${pinDetail?.title} | NFT Nation`}
         />
-        <meta
-          property="og:description"
-          content={`${pinDetail?.about}`}
-        />
+        <meta property="og:description" content={`${pinDetail?.about}`} />
         <meta
           property="og:url"
           content={`https://nft-nation.vercel.app/pin-detail/${pinDetail?._id}`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="./../favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
       {pinDetail && (
         <div
@@ -125,8 +122,10 @@ const PinDetail = () => {
               href={`/user-profile/${pinDetail?.postedBy?._id}`}
               className="flex gap-2 mt-5 items-center bg-white rounded-lg "
             >
-              <a>
-                <img
+              <div className="flex gap-2 mt-5 items-center bg-white rounded-lg">
+                <Image
+                  height={40}
+                  width={40}
                   src={pinDetail?.postedBy?.image}
                   className="w-10 h-10 rounded-full"
                   alt="user-profile"
@@ -134,7 +133,7 @@ const PinDetail = () => {
                 <p className="font-bold">
                   {getUserName(pinDetail?.postedBy?.userName)}
                 </p>
-              </a>
+              </div>
             </Link>
             <h2 className="mt-5 text-2xl">Comments</h2>
             <div className="max-h-370 overflow-y-scroll">
@@ -143,8 +142,10 @@ const PinDetail = () => {
                   key={`${item?._id}`}
                   className="flex gap-2 mt-5 items-center bg-white rounded-lg"
                 >
-                  <img
-                    src={item.user?.image}
+                  <Image
+                    height={40}
+                    width={40}
+                    src={item?.user?.image}
                     className="w-10 h-10 rounded-full cursor-pointer"
                     alt="user-profile"
                   />
@@ -159,7 +160,9 @@ const PinDetail = () => {
             </div>
             <div className="flex flex-wrap mt-6 gap-3">
               <Link href={`/user-profile/${user?._id}`}>
-                <img
+                <Image
+                  height={40}
+                  width={40}
                   src={user?.image}
                   className="w-10 h-10 rounded-full cursor-pointer"
                   alt="user-profile"

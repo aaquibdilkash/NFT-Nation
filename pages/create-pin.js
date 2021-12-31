@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import Head from "next/head";
+import Image from "next/image";
 
 const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
@@ -170,7 +171,7 @@ const CreatePin = () => {
           content={`https://nft-nation.vercel.app/create-pin`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="./favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
       <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
         {fields && (
@@ -208,7 +209,9 @@ const CreatePin = () => {
                 </label>
               ) : (
                 <div className="relative h-full">
-                  <img
+                  <Image
+                    height={100}
+                    width={100}
                     src={fileUrl}
                     alt="uploaded-pic"
                     className="h-full w-full"
@@ -235,7 +238,9 @@ const CreatePin = () => {
             />
             {user && (
               <div className="flex gap-2 mt-2 mb-2 items-center bg-white rounded-lg ">
-                <img
+                <Image
+                  height={40}
+                  width={40}
                   src={user.image}
                   className="w-10 h-10 rounded-full"
                   alt="user-profile"

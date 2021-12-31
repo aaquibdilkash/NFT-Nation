@@ -16,6 +16,8 @@ import { useDispatch } from "react-redux";
 import { etherAddress, getUserName } from "../utils/data";
 import axios from "axios";
 import { REFRESH_SET } from "../redux/constants/UserTypes";
+import Image from "next/image";
+import blurImage from "../public/favicon.png"
 
 const Pin = ({ pin }) => {
   const [postHovered, setPostHovered] = useState(false);
@@ -167,9 +169,9 @@ const Pin = ({ pin }) => {
         onMouseEnter={() => setPostHovered(true)}
         onMouseLeave={() => setPostHovered(false)}
         onClick={() => router.push(`/pin-detail/${_id}`)}
-        className=" relative cursor-pointer w-auto shadow-lg hover:drop-shadow-lg rounded-lg overflow-hidden transition-all duration-500 ease-in-out"
+        className=" relative cursor-pointer w-25 shadow-lg hover:drop-shadow-lg rounded-lg overflow-hidden transition-all duration-500 ease-in-out"
       >
-        <img className="rounded-lg w-full " src={image} alt="user-post" />
+        {image && <Image placeholder="blur" blurDataURL="/favicon.png" height={100} width={100} layout="responsive" className="rounded-lg w-full" src={image} alt="user-post" />}
         {true && (
           // {postHovered && (
           <div
@@ -263,7 +265,9 @@ const Pin = ({ pin }) => {
         className="flex gap-2 mt-2 items-center"
       >
         <div className="flex gap-2 mt-2 items-center">
-          <img
+          <Image
+            height={35}
+            width={35}
             className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
             src={postedBy?.image}
             alt="user-profile"

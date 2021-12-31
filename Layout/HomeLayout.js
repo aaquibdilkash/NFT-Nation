@@ -8,6 +8,7 @@ import { chainData, toHex } from "../utils/data";
 import axios from "axios";
 import Web3 from "web3";
 import Web3Modal from "web3modal";
+import Image from "next/image";
 
 const HomeLayout = ({ children, ...pageProps }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
@@ -141,11 +142,13 @@ const HomeLayout = ({ children, ...pageProps }) => {
             onClick={() => setToggleSidebar(true)}
           />
           <Link href="/">
-            <img src="../assets/logo.png" alt="logo" className="w-28" />
+            <Image height={30} width={150} src="/assets/logo.png" alt="logo" className="w-28" />
           </Link>
           {user?._id && (
             <Link href={`user-profile/${user?._id}`}>
-              <img
+              <Image
+                height={40}
+                width={40}
                 src={user?.image}
                 alt="user-pic"
                 className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"

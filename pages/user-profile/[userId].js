@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AiOutlineLogout } from "react-icons/ai";
-// import { GoogleLogout } from 'react-google-login';
-
+import { AiOutlineEdit } from "react-icons/ai";
 import {
   getUserName
 } from "../../utils/data";
@@ -12,11 +10,12 @@ import { useDispatch, useSelector } from "react-redux";
 import ProfileEdit from "../../components/ProfileEdit";
 import axios from "axios";
 import Head from "next/head";
+import Image from "next/image";
 
 const activeBtnStyles =
-  "bg-red mr-4 text-white font-semibold text-sm p-2 rounded-full w-20 outline-none";
+  "bg-red mr-4 text-white font-semibold p-2 rounded-full w-auto outline-none";
 const notActiveBtnStyles =
-  "bg-primary mr-4 text-black font-semibold text-sm p-2 rounded-full w-20 outline-none";
+  "bg-primary mr-4 text-black font-semibold p-2 rounded-full w-auto outline-none";
 
 const UserProfilePage = () => {
   const router = useRouter()
@@ -78,19 +77,19 @@ const UserProfilePage = () => {
     <title>{`${userProfile?.userName}'s Profile  | NFT Nation`}</title>
         <meta
           name="description"
-          content={`${userProfile?.userName}'s Profile on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
+          content={`${userProfile?.about}`}
         />
         <meta property="og:title" content={`${userProfile?.userName}'s Profile  | NFT Nation`} />
         <meta
           property="og:description"
-          content={`${userProfile?.userName}'s Profile on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
+          content={`${userProfile?.about}`}
         />
         <meta
           property="og:url"
           content={`https://nft-nation.vercel.app/user-profile/${userProfile?._id}`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="./../favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
     </Head>
     <div className="relative pb-2 h-full justify-center items-center">
       <div className="flex flex-col pb-5">
@@ -127,7 +126,7 @@ const UserProfilePage = () => {
                 setEditing((editing) => !editing)
               }}
             >
-              <AiOutlineLogout color="red" fontSize={21} />
+              <AiOutlineEdit color="red" fontSize={21} />
             </button>
           </div>
             )

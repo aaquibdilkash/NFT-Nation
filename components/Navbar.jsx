@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { SEARCH_TERM_SET } from "../redux/constants/UserTypes";
 import { AiOutlineLogin } from "react-icons/ai";
+import Image from "next/image";
 
 const Navbar = ({connectToMetamask}) => {
   const dispatch = useDispatch();
@@ -35,7 +36,9 @@ const Navbar = ({connectToMetamask}) => {
       <div className="flex gap-3 ">
         {user?._id && (
           <Link href={`/user-profile/${user?._id}`} className="hidden md:block">
-            <img
+            <Image
+              height={25}
+              width={50}
               src={user?.image}
               alt="user-pic"
               className="w-14 h-12 rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"

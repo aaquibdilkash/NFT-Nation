@@ -49,7 +49,7 @@ const SearchPage = () => {
           content={`https://nft-nation.vercel.app/search`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="../favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
     <div>
 

@@ -7,6 +7,7 @@ import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
 import logo from "../public/assets/logo.png";
 import { categories, getUserName } from "../utils/data";
 import { useRouter } from "next/router";
+import Image from "next/image";
 
 const isNotActiveStyle =
   "flex items-center px-5 gap-3 text-gray-500  hover:font-extrabold hover:text-black transition-all duration-200 ease-in-out capitalize hover:cursor-pointer";
@@ -28,7 +29,7 @@ const Sidebar = ({ closeToggle, user, connectToMetamask }) => {
           onClick={handleCloseSidebar}
         >
           <div className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer">
-          <img src= "../assets/logo.png" alt="logo" className="w-full" />
+          <Image height={30} width={150} src= "/assets/logo.png" alt="logo" className="w-full" />
           <div className="flex md:hidden absolute w-full flex justify-end items-center p-2">
             <AiFillCloseCircle fontSize={30} className="cursor-pointer mr-4" onClick={handleCloseSidebar} />
           </div>
@@ -58,8 +59,10 @@ const Sidebar = ({ closeToggle, user, connectToMetamask }) => {
               >
   
                 <div className={router.query.categoryId === category.name ? isActiveStyle : isNotActiveStyle }>
-                  <img
-                    alt={`${category.name}`}
+                  <Image
+                    height={30}
+                    width={30}
+                    alt={`${category.name.substring(0,1)}`}
                     src={category.image}
                     className="w-8 h-8 rounded-full shadow-sm"
                   />
@@ -79,7 +82,9 @@ const Sidebar = ({ closeToggle, user, connectToMetamask }) => {
           <div className="flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between">
 
             {" "}
-            <img
+            <Image
+              height={40}
+              width={40}
               src={user?.image}
               className="w-10 h-10 rounded-full"
               alt="user-profile"

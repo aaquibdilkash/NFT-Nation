@@ -9,12 +9,15 @@
   import { useSelector } from 'react-redux';
   import axios from 'axios';
 import { userGet } from '../redux/actions/userActions';
-  
+import { useDispatch } from 'react-redux';
+import { USER_GET_SUCCESS } from '../redux/constants/UserTypes';
+  import Image from "next/image"
   
   const ipfsClient = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
   
   
   const ProfileEdit = ({userId}) => {
+    const dispatch = useDispatch()
     const {user} = useSelector(state => state.userReducer)
     const [userName, setUserName] = useState('');
     const [about, setAbout] = useState('');
@@ -66,7 +69,10 @@ import { userGet } from '../redux/actions/userActions';
       }
 
       axios.put(`/api/users/${userId}`, obj).then((res) => {
-          userGet(userId)
+          dispatch({
+            type: USER_GET_SUCCESS,
+            payload: res.data.user
+          })
       }).catch((e) => {
         console.log('Error in updating profile: ', e)
       })
@@ -115,7 +121,9 @@ import { userGet } from '../redux/actions/userActions';
                 </label>
               ) : (
                 <div className="relative h-full w-full">
-                  <img
+                  <Image
+                    height={100}
+                    width={100}
                     src={fileUrl}
                     alt="uploaded-pic"
                     className="h-full w-full"
@@ -137,12 +145,22 @@ import { userGet } from '../redux/actions/userActions';
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              placeholder="Add your title"
+              placeholder="Type your username"
               className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2"
             />
-            {user && (
-              <div className="flex gap-2 mt-2 mb-2 items-center bg-white rounded-lg ">
-                <img
+            
+            <input
+              type="text"
+              value={about}
+              onChange={(e) => setAbout(e.target.value)}
+              placeholder="Tell everyone about you"
+              className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
+            />
+            {user?._id && (
+              <div className="flex gap-2 mt-2 mb-2 items-center bg-white rounded-lg">
+                <Image
+                  height={40}
+                  width={40}
                   src={user.image}
                   className="w-10 h-10 rounded-full"
                   alt="user-profile"
@@ -150,20 +168,13 @@ import { userGet } from '../redux/actions/userActions';
                 <p className="font-bold">{getUserName(user?.userName)}</p>
               </div>
             )}
-            <input
-              type="text"
-              value={about}
-              onChange={(e) => setAbout(e.target.value)}
-              placeholder="Tell everyone what your NFT is about"
-              className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
-            />
   
             <div className="flex flex-col">
               <div className="flex justify-end items-end mt-5">
                 <button
                   type="button"
                   onClick={updateProfile}
-                  className="bg-red text-white font-bold p-2 rounded-full w-28 outline-none"
+                  className="bg-red text-white font-bold p-2 rounded-full w-auto outline-none"
                 >
                   Save Profile
                 </button>

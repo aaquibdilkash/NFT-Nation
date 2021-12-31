@@ -105,7 +105,7 @@ export const toHex = (num) => {
 export const getUserName = (string) => {
   return string?.length !== 42
     ? `@${string}`
-    : `@${string?.slice(0, 7)}...${string?.slice(-8, -1)}`;
+    : `@${string?.slice(0, 5)}...${string?.slice(-6, -1)}`;
 };
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";

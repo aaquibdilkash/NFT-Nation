@@ -64,7 +64,7 @@ const Feed = ({categoryId}) => {
           content={`https://nft-nation.vercel.app/${categoryId}`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="../favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
       )
     }

@@ -17,7 +17,7 @@ const Home = () => {
         />
         <meta property="og:url" content={`https://nft-nation.vercel.app`} />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="./favicon.png" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
       <Feed />
     </>
