@@ -41,13 +41,14 @@ const HomeLayout = ({ children, ...pageProps }) => {
         ],
       };
 
-      window.web3.eth.getAccounts((error, accounts) => {
+      
         window.ethereum
           .request({
             method: "wallet_addEthereumChain",
             params: [params, accounts[0]],
           })
           .then((result) => {
+            window.web3.eth.getAccounts((error, accounts) => {
             console.log(accounts[0])
             const obj = {
               address: accounts[0],
@@ -67,11 +68,11 @@ const HomeLayout = ({ children, ...pageProps }) => {
               }).catch((e) => {
                 console.log(e)
               })
+            })
           })
           .catch((error) => {
             console.log(error);
           });
-      });
     } else {
       alert("Please install MetaMask browser extension to interact");
     }
