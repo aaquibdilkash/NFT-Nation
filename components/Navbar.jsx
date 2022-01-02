@@ -46,14 +46,9 @@ const Navbar = ({connectToMetamask}) => {
           </Link>
         )}
         {!user?._id && (
-          // <Link 
-          // // href="/create-pin"
-          // onClick={addToNetwork}
-          // >
             <div onClick={connectToMetamask} className="bg-black text-white rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
             <AiOutlineLogin color="#00ff00" fontSize={21}/>
             </div>
-          // </Link>
         )}
         <Link href="/create-pin">
           <div className="bg-black text-white rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">

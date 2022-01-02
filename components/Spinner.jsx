@@ -1,6 +1,5 @@
-import React from "react";
 
-function Spinner({ message }) {
+const Spinner = ({ message }) => {
   return (
     <div className="flex flex-col justify-center items-center w-full h-full">
       <div className="flex items-center justify-center ">

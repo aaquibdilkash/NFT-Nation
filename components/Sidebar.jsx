@@ -1,10 +1,8 @@
 import React from "react";
-// import { NavLink, Link } from 'react-router-dom';
 import Link from "next/link";
 import { FaHome } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
-import logo from "../public/assets/logo.png";
 import { categories, getUserName } from "../utils/data";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -74,9 +72,8 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
         <Link
           href={`/user-profile/${user?._id}`}
           className="flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg mx-3"
-          onClick={handleCloseSidebar}
         >
-          <div className="bg-gradient-to-r from-[#009387] to-[#f9f9f9] flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between">
+          <div onClick={handleCloseSidebar} className="bg-gradient-to-r from-[#009387] to-[#f9f9f9] flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between">
 
             {" "}
             <Image

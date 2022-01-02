@@ -82,12 +82,10 @@ const PinDetail = () => {
         .get(`/api/pins/${pinId}`)
         .then((res) => {
           setPinDetail(res.data.pin);
-          // console.log(res.data.pin, 'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP')
           axios
             .get(`/api/pins?category=${res.data.pin.category}`)
             .then((res) => {
               setPins(res.data.pins);
-              // console.log(res.data.pins, "dddddddddddddddddddddddddddddddddddddddddd")
             })
             .catch((e) => {
               console.log(e);
@@ -411,9 +409,6 @@ const PinDetail = () => {
       });
   };
 
-  const modalToggle = () => {
-    setDisplay((display) => (display == "hidden" ? "block" : "hidden"));
-  };
 
   if (!pinDetail) {
     return <Spinner message="Showing pin" />;
