@@ -84,11 +84,12 @@ const HomeLayout = ({ children, ...pageProps }) => {
     provider.on("accountsChanged", async (accounts) => {
       let address = await web3.eth.getAccounts();
       // console.log(address, "on accountChaged");
-      login(address)
+      login(address[0])
     });
 
     // Subscribe to chainId change
     provider.on("chainChanged", (chainId) => {
+      // logout()
       // console.log(chainId, "chain Changed");
     });
 
@@ -124,6 +125,16 @@ const HomeLayout = ({ children, ...pageProps }) => {
       });
   }
 
+  const logout = () => {
+    localStorage.clear();
+    dispatch({
+      type: USER_GET_SUCCESS,
+      payload: {}
+    })
+
+    router.push("/");
+  };
+
   useEffect(() => {
     scrollRef.current.scrollTo(0, 0);
     connectToMetamask()
@@ -145,7 +156,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
             <Image height={30} width={150} src="/assets/logo.png" alt="logo" className="w-28" />
           </Link>
           {user?._id && (
-            <Link href={`user-profile/${user?._id}`}>
+            <Link href={`/user-profile/${user?._id}`}>
               <Image
                 height={40}
                 width={40}
@@ -159,7 +170,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
         {toggleSidebar && (
           <div className="fixed w-3/5 bg-white h-screen overflow-y-auto shadow-md z-10 animate-slide-in">
             <Sidebar
-              closeToggle={setToggleSidebar}
+              setToggleSidebar={setToggleSidebar}
               user={user && user}
               connectToMetamask={connectToMetamask}
             />

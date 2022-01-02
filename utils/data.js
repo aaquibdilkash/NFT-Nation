@@ -102,10 +102,24 @@ export const toHex = (num) => {
   return "0x" + num.toString(16);
 };
 
+export const isValidAmount = (number) => {
+  return !isNaN(parseFloat(number)) && parseFloat(number) > 0
+}
+
+export const getMaxBid = (bids) => {
+  return bids.reduce( (prev, current) => {
+    if (+current.bid > +prev.bid) {
+        return current;
+    } else {
+        return prev;
+    }
+});
+}
+
 export const getUserName = (string) => {
   return string?.length !== 42
     ? `@${string}`
-    : `@${string?.slice(0, 5)}...${string?.slice(-6, -1)}`;
+    : `@${string?.slice(0, 5)}...${string?.slice(-5)}`;
 };
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";

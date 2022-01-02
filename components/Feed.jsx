@@ -39,7 +39,7 @@ const Feed = ({categoryId}) => {
 
   if (!loading && pins?.length < 1) {
     return (
-      <div className="mt-10 text-center text-xl ">No Pins Found!</div>
+      <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
       );
   }
 

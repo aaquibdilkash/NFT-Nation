@@ -86,8 +86,8 @@ import { USER_GET_SUCCESS } from '../redux/constants/UserTypes';
         {fields && (
           <p className="text-red mb-5 text-xl transition-all duration-150 ease-in ">Please add all fields.</p>
         )}
-        <div className=" flex lg:flex-row flex-col justify-center items-center bg-white lg:p-5 p-3 lg:w-4/5  w-full">
-          <div className="bg-secondaryColor p-3 flex flex-0.7 w-full">
+        <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-white lg:p-5 p-3 lg:w-4/5  w-full">
+          <div className="rounded-lg bg-gradient-to-r from-[#009387] to-[#ffffff] bg-secondaryColor p-3 flex flex-0.7 w-full">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
               {loading && (
                 <Spinner />
@@ -174,7 +174,7 @@ import { USER_GET_SUCCESS } from '../redux/constants/UserTypes';
                 <button
                   type="button"
                   onClick={updateProfile}
-                  className="bg-red text-white font-bold p-2 rounded-full w-auto outline-none"
+                  className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-red text-white font-bold p-2 rounded-full w-auto outline-none"
                 >
                   Save Profile
                 </button>

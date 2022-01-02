@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { categories, getUserName } from "../utils/data";
+import { categories, getUserName, isValidAmount } from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
@@ -60,7 +60,7 @@ const CreatePin = () => {
   };
 
   const createMarket = async () => {
-    if (!title || !about || price <= 0 || !fileUrl || !category) {
+    if (!title || !about || !price.length || !fileUrl || !category) {
       setFields(true);
 
       setTimeout(() => {
@@ -68,6 +68,11 @@ const CreatePin = () => {
       }, 2000);
 
       return;
+    }
+
+    if(!isValidAmount(price)) {
+      alert("Please enter a valid amount")
+      return
     }
     const data = JSON.stringify({
       name: title,
@@ -79,13 +84,13 @@ const CreatePin = () => {
       const added = await ipfsClient.add(data);
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
       /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
-      createSale(url);
+      createMarketItemForSale(url);
     } catch (error) {
       console.log("Error in Creating NFT: ", error);
     }
   };
 
-  const createSale = async (url) => {
+  const createMarketItemForSale = async (url) => {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -112,7 +117,7 @@ const CreatePin = () => {
 
     /* then list the item for sale on the marketplace */
     contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-    transaction = await contract.createMarketItem(
+    transaction = await contract.createMarketItemForSale(
       nftaddress,
       tokenId,
       auctionPrice
@@ -138,7 +143,7 @@ const CreatePin = () => {
       title,
       about,
       postedBy: user?._id,
-      destination: "kdfjdkfjd",
+      destination: "https://nft-nation.vercel.app",
       image: fileUrl,
       category,
     });
@@ -179,8 +184,8 @@ const CreatePin = () => {
             Please add all fields.
           </p>
         )}
-        <div className=" flex lg:flex-row flex-col justify-center items-center bg-white lg:p-5 p-3 lg:w-4/5  w-full">
-          <div className="bg-secondaryColor p-3 flex flex-0.7 w-full">
+        <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-white lg:p-5 p-3 lg:w-4/5  w-full">
+          <div className="rounded-lg bg-gradient-to-r from-[#009387] to-[#ffffff] bg-secondaryColor p-3 flex flex-0.7 w-full">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
               {loading && <Spinner />}
               {wrongImageType && <p>It&apos;s wrong file type.</p>}
@@ -209,9 +214,7 @@ const CreatePin = () => {
                 </label>
               ) : (
                 <div className="relative h-full">
-                  <Image
-                    height={100}
-                    width={100}
+                  <img
                     src={fileUrl}
                     alt="uploaded-pic"
                     className="h-full w-full"
@@ -233,7 +236,7 @@ const CreatePin = () => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Add your title"
+              placeholder="Add Your NFT's Title"
               className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2"
             />
             {user && (
@@ -292,9 +295,9 @@ const CreatePin = () => {
                 <button
                   type="button"
                   onClick={createMarket}
-                  className="bg-red text-white font-bold p-2 rounded-full w-28 outline-none"
+                  className="w-auto transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-red text-white font-bold p-2 rounded-full w-28 outline-none"
                 >
-                  Save Pin
+                  Mint Token
                 </button>
               </div>
             </div>

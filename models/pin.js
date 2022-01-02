@@ -62,6 +62,27 @@ const pinSchema = new mongoose.Schema({
       required: true,
     },
   ],
+  auctionEnded: {
+    type: Boolean,
+    default: true
+  },
+  bids: [
+    {
+      user: {
+        type: mongoose.Schema.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      bid: {
+        type: String,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    },
+  ],
   comments: [
     {
       user: {

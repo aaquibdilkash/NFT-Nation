@@ -13,9 +13,9 @@ import Head from "next/head";
 import Image from "next/image";
 
 const activeBtnStyles =
-  "bg-red mr-4 text-white font-semibold p-2 rounded-full w-auto outline-none";
+  "bg-red mr-4 text-white font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 const notActiveBtnStyles =
-  "bg-primary mr-4 text-black font-semibold p-2 rounded-full w-auto outline-none";
+  "bg-primary mr-4 text-black font-semibold p-2 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const UserProfilePage = () => {
   const router = useRouter()
@@ -38,36 +38,35 @@ const UserProfilePage = () => {
   }, [userId, refresh]);
 
   useEffect(() => {
-    if (text === "Owned") {
-      axios.get(`/api/pins?owner=${userId}`).then((res) => {
-        setPins(res.data.pins)
-      }).catch((e) => {
-        console.log(e)
-      })
-    } else if (text === "On Sale") {
-      axios.get(`/api/pins?seller=${userId}`).then((res) => {
-        setPins(res.data.pins)
-      }).catch((e) => {
-        console.log(e)
-      })
-    } else {
-      axios.get(`/api/pins?saved=${userId}`).then((res) => {
-        setPins(res.data.pins)
-      }).catch((e) => {
-        console.log(e)
-      })
+    if(userProfile?.address) {
+      if (text === "Owned") {
+        axios.get(`/api/pins?owner=${userProfile?.address}`).then((res) => {
+          setPins(res.data.pins)
+        }).catch((e) => {
+          console.log(e)
+        })
+      } else if (text === "On Sale") {
+        axios.get(`/api/pins?seller=${userProfile?.address}&auctionEnded=${true}`).then((res) => {
+          setPins(res.data.pins)
+        }).catch((e) => {
+          console.log(e)
+        })
+      } else if (text === "On Auction") {
+        axios.get(`/api/pins?seller=${userProfile?.address}&auctionEnded=${false}`).then((res) => {
+          setPins(res.data.pins)
+        }).catch((e) => {
+          console.log(e)
+        })
+      } else {
+        axios.get(`/api/pins?saved=${userId}`).then((res) => {
+          setPins(res.data.pins)
+        }).catch((e) => {
+          console.log(e)
+        })
+      }
     }
-  }, [text, userId, refresh]);
+  }, [text, userId, refresh, userProfile]);
 
-  // const logout = () => {
-  //   localStorage.clear();
-  //   dispatch({
-  //     type: USER_GET_SUCCESS,
-  //     payload: {}
-  //   })
-
-  //   router.push("/");
-  // };
 
   if (!userProfile) return <Spinner message="Loading profile" />;
 
@@ -93,12 +92,12 @@ const UserProfilePage = () => {
     </Head>
     <div className="relative pb-2 h-full justify-center items-center">
       <div className="flex flex-col pb-5">
-        <div className="relative flex flex-col mb-7">
+        <div className="relative flex flex-col mb-7 ">
           <div className="flex flex-col justify-center items-center">
             {
               !editing && (
                 <img
-              className=" w-full h-370 2xl:h-510 shadow-lg object-cover"
+              className=" w-full h-370 2xl:h-510 shadow-lg object-cover rounded-lg"
               src="https://source.unsplash.com/1600x900/?nature,photography,technology"
               alt="userProfile-pic"
             />
@@ -121,7 +120,7 @@ const UserProfilePage = () => {
               <div className="absolute top-0 z-1 right-0 p-2">
             <button
               type="button"
-              className=" bg-white p-2 rounded-full cursor-pointer outline-none shadow-md"
+              className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-white p-2 rounded-full cursor-pointer outline-none shadow-md"
               onClick={() => {
                 setEditing((editing) => !editing)
               }}
@@ -161,6 +160,18 @@ const UserProfilePage = () => {
             type="button"
             onClick={(e) => {
               setText(e.target.textContent);
+              setActiveBtn("On Auction");
+            }}
+            className={`${
+              activeBtn === "On Auction" ? activeBtnStyles : notActiveBtnStyles
+            }`}
+          >
+            On Auction
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              setText(e.target.textContent);
               setActiveBtn("saved");
             }}
             className={`${
@@ -176,7 +187,7 @@ const UserProfilePage = () => {
         </div>
 
         {pins?.length === 0 && (
-          <div className="flex justify-center font-bold items-center w-full text-1xl mt-2">
+          <div className="flex justify-center font-bold items-center w-full text-1xl font-bold mt-2">
             No Pins Found!
           </div>
         )}
