@@ -143,6 +143,8 @@ const Pin = ({ pin }) => {
           <Image
             height={35}
             width={35}
+            placeholder="blur"
+            blurDataURL="/favicon.png"
             className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
             src={postedBy?.image}
             alt="user-profile"

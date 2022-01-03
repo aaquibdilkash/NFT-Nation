@@ -40,6 +40,8 @@ const Navbar = ({connectToMetamask}) => {
             <Image
               src={user?.image}
               alt="user-pic"
+              placeholder="blur"
+              blurDataURL="/favicon.png"
               // height={100}
               // width={100}
               layout="fill"

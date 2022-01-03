@@ -120,6 +120,8 @@ const ProfileEdit = ({ userId }) => {
                   height={100}
                   width={100}
                   src={fileUrl}
+                  placeholder="blur"
+                  blurDataURL="/favicon.png"
                   alt="uploaded-pic"
                   className="h-full w-full"
                 />
@@ -159,6 +161,8 @@ const ProfileEdit = ({ userId }) => {
                 height={40}
                 width={40}
                 src={user.image}
+                placeholder="blur"
+                blurDataURL="/favicon.png"
                 className="w-10 h-10 rounded-full"
                 alt="user-profile"
               />

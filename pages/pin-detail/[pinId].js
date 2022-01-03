@@ -489,6 +489,8 @@ const PinDetail = () => {
                           <Image
                             height={40}
                             width={40}
+                            placeholder="blur"
+                            blurDataURL="/favicon.png"
                             src={item?.user?.image}
                             className="w-10 h-10 rounded-full cursor-pointer"
                             alt="user-profile"
@@ -513,6 +515,8 @@ const PinDetail = () => {
                         height={40}
                         width={40}
                         src={user?.image}
+                        placeholder="blur"
+                        blurDataURL="/favicon.png"
                         className="w-10 h-10 rounded-full cursor-pointer"
                         alt="user-profile"
                       />
@@ -548,6 +552,8 @@ const PinDetail = () => {
                     alt={pinDetail.postedBy.userName}
                     height={40}
                     width={40}
+                    placeholder="blur"
+                    blurDataURL="/favicon.png"
                     className="align-middle rounded-full"
                     src={pinDetail?.postedBy?.image}
                   />
@@ -575,7 +581,7 @@ const PinDetail = () => {
                 />
               </svg>
               <span className="align-middle">
-                {moment(pinDetail.createdAt).format("MMM DD, YYYY")}
+                {moment(pinDetail?.createdAt).format("MMM DD, YYYY")}
               </span>
             </div>
           </div>
@@ -690,6 +696,8 @@ const PinDetail = () => {
                         height={40}
                         width={40}
                         src={user?.image}
+                        placeholder="blur"
+                        blurDataURL="/favicon.png"
                         className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
                         alt="user-profile"
                       />

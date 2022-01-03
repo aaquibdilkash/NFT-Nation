@@ -179,6 +179,8 @@ const HomeLayout = ({ children, ...pageProps }) => {
                 height={40}
                 width={40}
                 src={user?.image}
+                placeholder="blur"
+                blurDataURL="/favicon.png"
                 alt="user-pic"
                 className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
               />

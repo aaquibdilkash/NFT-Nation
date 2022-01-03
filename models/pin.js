@@ -100,6 +100,10 @@ const pinSchema = new mongoose.Schema({
       }
     },
   ],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 export default mongoose.models.Pin || mongoose.model("Pin", pinSchema);
