@@ -13,7 +13,8 @@ const allPins = catchAsyncErrors(async (req, res) => {
   )
     .search()
     .filter()
-    .saved();
+    .saved()
+    .bids();
 
   let pins = await searchPagination.query;
 
@@ -43,7 +44,7 @@ const getPin = catchAsyncErrors(async (req, res) => {
   }
   res.status(200).json({
     success: true,
-    pin,
+    pin
   });
 });
 
@@ -52,7 +53,6 @@ const createPin = catchAsyncErrors(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    pin,
   });
 });
 
@@ -74,7 +74,6 @@ const updatePin = catchAsyncErrors(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    pin,
   });
 });
 
@@ -117,7 +116,6 @@ const savePin = catchAsyncErrors(async (req, res) => {
 
   res.status(200).json({
       success: true,
-      pin
   })
 });
 
@@ -149,7 +147,6 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
   
     res.status(200).json({
       success: true,
-      pin
     });
   });
 
@@ -167,7 +164,6 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
       res.status(404).json({
         success: false,
         message: "You don't have any existing comment for this item",
-        pin
       });
   
     } else {
@@ -177,7 +173,6 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
   
       res.status(200).json({
         success: true,
-        pin
       });
     }
 
@@ -202,7 +197,6 @@ const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
       res.status(403).json({
         success: false,
         message: "You already have an existing bid for this item",
-        pin
       });
 
     } else {
@@ -212,7 +206,6 @@ const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
 
       res.status(200).json({
         success: true,
-        pin
       });
     }
 
@@ -233,7 +226,6 @@ const withdrawAuctionBid = catchAsyncErrors(async (req, res, next) => {
     res.status(403).json({
       success: false,
       message: "You don't have any existing bid for this item",
-      pin
     });
 
   } else {
@@ -243,7 +235,6 @@ const withdrawAuctionBid = catchAsyncErrors(async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      pin
     });
   }
 

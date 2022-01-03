@@ -8,11 +8,9 @@ import { ethers } from "ethers";
 import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { etherAddress, getMaxBid, getUserName, isValidAmount } from "../../utils/data";
+import { etherAddress, getMaxBid, getUserName, isValidAmount, loginMessage } from "../../utils/data";
 import { useRouter } from "next/router";
 import axios from "axios";
-import { REFRESH_SET } from "../../redux/constants/UserTypes";
 import Head from "next/head";
 import Image from "next/image";
 import moment from "moment";
@@ -21,10 +19,10 @@ const buttonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-[#009387] text-lg font-medium rounded-full text-white px-8 py-3 cursor-pointer";
 
 const PinDetail = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
   const { pinId } = router.query;
-  const { user, refresh } = useSelector((state) => state.userReducer);
+  const { user } = useSelector((state) => state.userReducer);
+  const [refresh, setRefresh] = useState(false);
   const [pins, setPins] = useState();
   const [pinDetail, setPinDetail] = useState();
   const [comment, setComment] = useState("");
@@ -100,18 +98,19 @@ const PinDetail = () => {
     axios
       .put(`/api/pins/${pinDetail?._id}`, body)
       .then((res) => {
-        // router.push("/")
         setAddingSellPrice(false)
         setInputPrice("")
-        dispatch({
-          type: REFRESH_SET,
-          payload: !refresh,
-        });
+        setRefresh(prev => !prev)
       })
       .catch((e) => {});
   };
 
   const executeMarketSale = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     const { price, itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -145,6 +144,11 @@ const PinDetail = () => {
   };
 
   const createMarketSale = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     if(!isValidAmount(inputPrice)) {
       alert("Please enter a valid amount")
       return
@@ -190,6 +194,11 @@ const PinDetail = () => {
   };
 
   const makeAuctionBid = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     if(!isValidAmount(inputPrice)) {
       alert("Please enter a valid amount")
       return
@@ -225,6 +234,11 @@ const PinDetail = () => {
   };
 
   const withdrawAuctionBid = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -247,6 +261,11 @@ const PinDetail = () => {
   };
 
   const createMarketAuction = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     const { itemId, tokenId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -287,6 +306,11 @@ const PinDetail = () => {
   };
 
   const executeMarketAuctionEnd = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -320,6 +344,11 @@ const PinDetail = () => {
   };
 
   const cancelMarketSale = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -349,6 +378,11 @@ const PinDetail = () => {
   };
 
   const addComment = () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+
     if (comment) {
       setAddingComment(true);
 
@@ -360,10 +394,7 @@ const PinDetail = () => {
         .then(() => {
           setAddingComment(false);
           setComment("");
-          dispatch({
-            type: REFRESH_SET,
-            payload: !refresh,
-          });
+          setRefresh(prev => !prev)
         });
     }
   };
@@ -373,24 +404,22 @@ const PinDetail = () => {
         .then(() => {
           setAddingBidPrice(false);
           setInputPrice("");
-          dispatch({
-            type: REFRESH_SET,
-            payload: !refresh,
-          });
+          setRefresh(prev => !prev)
         });
   };
   const withdrawAuctionBidRequest = (body) => {
       axios
         .put(`/api/pins/bids/${pinId}`, body)
         .then(() => {
-          dispatch({
-            type: REFRESH_SET,
-            payload: !refresh,
-          });
+          setRefresh(prev => !prev)
         });
   };
 
   const savePin = () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
     setSavingPost(true);
     axios
       .put(`/api/pins/save/${pinId}`, {
@@ -398,10 +427,7 @@ const PinDetail = () => {
       })
       .then((res) => {
         setSavingPost(false);
-        dispatch({
-          type: REFRESH_SET,
-          payload: !refresh,
-        });
+        setRefresh(prev => !prev)
       })
       .catch((e) => {
         console.log(e);

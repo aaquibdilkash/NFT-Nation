@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   userName: {
     type: String,
-    maxlength: [64, "userName field cannot exceeds 64 characters"],
+    maxlength: [64, "userName field cannot exceeds 42 characters"],
     required: [true, "Please enter userName"],
     unique: true
   },
@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
   },
   image: {
     type: String,
+  },
+  about: {
+    type: String,
+    maxlength: [128, "userName field cannot exceeds 80 characters"],
+    unique: false
   },
   createdAt: {
     type: Date,

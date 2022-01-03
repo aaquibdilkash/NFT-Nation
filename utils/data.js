@@ -1,4 +1,4 @@
-import { FaArtstation, FaCat, FaGamepad, FaHome, FaIdCard, FaLaugh, FaMailBulk, FaMailchimp, FaMusic, FaPaintBrush, FaPaperclip, FaPen, FaPencilAlt, FaQuestion, FaReadme, FaSign, FaSmile, FaVideo } from "react-icons/fa";
+import {  FaCat, FaGamepad, FaLaugh, FaPaintBrush, FaPaperclip, FaPencilAlt, FaQuestion, FaReadme, FaSmile } from "react-icons/fa";
 
 
 export const sidebarCategories = {
@@ -8,16 +8,16 @@ export const sidebarCategories = {
       icon: <FaPaintBrush className="" size={25} />
     },
     {
-      name: "Memes",
-      icon: <FaLaugh className="" size={25} />
-    },
-    {
       name: "Gaming",
       icon: <FaGamepad className="" size={25} />
     },
     {
       name: "Collectibles",
       icon: <FaCat className="" size={25} />
+    },
+    {
+      name: "Memes",
+      icon: <FaLaugh className="" size={25} />
     },
     {
       name: "Gifs",
@@ -72,6 +72,7 @@ export const chainData = {
     infoURL: "https://polygon.technology/",
     shortName: "MATIC",
     chainId: 137,
+    hexChainId: "0x89",
     networkId: 137,
     slip44: 966,
     explorers: [
@@ -101,6 +102,7 @@ export const chainData = {
     infoURL: "https://polygon.technology/",
     shortName: "maticmum",
     chainId: 80001,
+    hexChainId: "0x13881",
     networkId: 80001,
     explorers: [
       {
@@ -121,7 +123,7 @@ export const isValidAmount = (number) => {
 }
 
 export const getMaxBid = (bids) => {
-  return bids.reduce( (prev, current) => {
+  return bids?.reduce( (prev, current) => {
     if (+current.bid > +prev.bid) {
         return current;
     } else {
@@ -137,6 +139,8 @@ export const getUserName = (string) => {
 };
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
+
+export const loginMessage = "This Action requires you to Log in..."
 
 
 const addToNetwork = async () => {

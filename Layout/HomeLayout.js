@@ -10,42 +10,48 @@ import Web3 from "web3";
 import Web3Modal from "web3modal";
 import Image from "next/image";
 import { FaArtstation } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 const HomeLayout = ({ children, ...pageProps }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const { searchTerm, setSearchTerm } = pageProps;
   const scrollRef = useRef(null);
   const dispatch = useDispatch();
+  const router = useRouter()
   const { user } = useSelector((state) => state.userReducer);
 
-  const connectToMetamask = async () => {
+  let web3Modal;
+  let provider;
+  let web3;
+  let accounts;
+  let chainId;
+  const chain = chainData.test;
 
+  const connectToMetamask = async () => {
     const providerOptions = {
       /* See Provider Options Section */
     };
-  
-    const web3Modal = new Web3Modal({
+
+    web3Modal = new Web3Modal({
       network: "mainnet", // optional
       cacheProvider: true, // optional
       providerOptions, // required
     });
 
-    const provider = await web3Modal.connect();
+    provider = await web3Modal.connect();
 
-    if(!provider) {
-      alert("Web3 is not enabled in this browser, Checkout Metamask!")
+    if (!provider) {
+      alert("Web3 is not enabled in this browser, Checkout Metamask!");
     }
 
-    const web3 = new Web3(provider);
+    web3 = new Web3(provider);
 
-    const chainId = await web3.eth.getChainId()
+    accounts = await web3.eth.getAccounts();
 
-    const accounts = await web3.eth.getAccounts();
-    
-    if(chainId != 80001) {
+    chainId = await web3.eth.getChainId();
+
+    if (chainId != chain.chainId) {
       alert("Wrong network! Switch to Polygon (Matic)");
-
-      const chain = chainData.test
 
       const params = {
         chainId: toHex(chain.chainId), // A 0x-prefixed hexadecimal string
@@ -66,51 +72,59 @@ const HomeLayout = ({ children, ...pageProps }) => {
       };
 
       window.ethereum
-          .request({
-            method: "wallet_addEthereumChain",
-            params: [params, accounts[0]],
-          }).then(() => {
-            login(accounts[0])
-          }).catch((e) => {
-            console.log(e)
-          })
+        .request({
+          method: "wallet_addEthereumChain",
+          params: [params, accounts[0]],
+        })
+        .then((res) => {
 
-      return;
+        })
+        .catch((e) => {
+          alert("Something went wrong while selecting Polygon Matic Network");
+        });
+
+    } else {
+      login(accounts[0]);
     }
 
-    login(accounts[0])
-
-
     // Subscribe to accounts change
-    provider.on("accountsChanged", async (accounts) => {
-      let address = await web3.eth.getAccounts();
-      // console.log(address, "on accountChaged");
-      login(address[0])
-    });
+    provider &&
+      provider.on("accountsChanged", async (accounts) => {
+        // let address = await web3.eth.getAccounts();
+        logout()
+        console.log(accounts, "on accountChanged");
+        // login(address[0])
+      });
 
     // Subscribe to chainId change
-    provider.on("chainChanged", (chainId) => {
-      // logout()
-      // console.log(chainId, "chain Changed");
-    });
+    provider &&
+      provider.on("chainChanged", (chainId) => {
+        if(chainId !== chain.hexChainId) {
+          logout()
+        } else {
+          login(accounts[0])
+        }
+        console.log(chainId, "chain Changed");
+      });
 
     // Subscribe to provider connection
-    provider.on("connect", (info) => {
-      // console.log(info, "on Connect");
-    });
+    provider &&
+      provider.on("connect", (info) => {
+        // console.log(info, "on Connect");
+      });
 
     // Subscribe to provider disconnection
-    provider.on("disconnect", (error) => {
-      // console.log(error, "on disconnect");
-    });
+    provider &&
+      provider.on("disconnect", (error) => {
+        // console.log(error, "on disconnect");
+      });
   };
 
   const login = (address) => {
     const obj = {
       address: address,
       userName: address,
-      image:
-        "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
+      image: `https://ipfs.infura.io/ipfs/QmYS1WpWLduEU1i6stmAaCymDS7XsSCoTd4SFfTyK88J6A`,
     };
     axios
       .post("/api/users", obj)
@@ -124,14 +138,14 @@ const HomeLayout = ({ children, ...pageProps }) => {
       .catch((e) => {
         console.log(e);
       });
-  }
+  };
 
   const logout = () => {
     localStorage.clear();
     dispatch({
       type: USER_GET_SUCCESS,
-      payload: {}
-    })
+      payload: {},
+    });
 
     router.push("/");
   };
@@ -154,8 +168,10 @@ const HomeLayout = ({ children, ...pageProps }) => {
             onClick={() => setToggleSidebar(true)}
           />
           <Link href="/">
-            {/* <Image height={30} width={150} src="/assets/logo.png" alt="logo" className="w-28" /> */}
-            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center"><FaArtstation className="" size={25} /> <p className="font-bold text-lg">NFT Nation</p></div>
+            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center">
+              <FaArtstation className="" size={25} />{" "}
+              <p className="font-bold text-lg">NFT Nation</p>
+            </div>
           </Link>
           {user?._id && (
             <Link href={`/user-profile/${user?._id}`}>

@@ -22,7 +22,7 @@ class SearchPagination {
     const queryCopy = { ...this.queryStr };
 
     // removing some fields for category
-    const removedFields = ["keyword", "page", "saved"];
+    const removedFields = ["keyword", "page", "saved", "bids"];
 
     removedFields.forEach((key) => {
       delete queryCopy[key];
@@ -38,6 +38,13 @@ class SearchPagination {
 
   saved() {
     const keyword = this.queryStr.saved ? { saved: this.queryStr.saved } : {};
+
+    this.query = this.query.find({ ...keyword });
+    return this;
+  }
+
+  bids() {
+    const keyword = this.queryStr.bids ? { saved: this.queryStr.bids } : {};
 
     this.query = this.query.find({ ...keyword });
     return this;

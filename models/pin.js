@@ -22,12 +22,12 @@ const pinSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter the title."],
     trim: true,
-    maxlength: [64, "title field cannot exceeds 64 characters"],
+    maxlength: [42, "title field cannot exceeds 64 characters"],
   },
   about: {
     type: String,
     required: true,
-    maxlength: [128, "about field cannot exceeds 128 characters"],
+    maxlength: [80, "about field cannot exceeds 128 characters"],
   },
   destination: {
     type: String,

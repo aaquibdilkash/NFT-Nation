@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getUserName, isValidAmount, sidebarCategories } from "../utils/data";
+import { getUserName, isValidAmount, loginMessage, sidebarCategories } from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
@@ -21,12 +21,13 @@ const CreatePin = () => {
   const { user } = useSelector((state) => state.userReducer);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState("0");
   const [loading, setLoading] = useState(false);
   const [destination, setDestination] = useState();
   const [fields, setFields] = useState();
   const [category, setCategory] = useState();
   const [fileUrl, setFileUrl] = useState("");
+  const [sellOrAuct, setSellOrAuct] = useState("")
   const [wrongImageType, setWrongImageType] = useState(false);
 
   const router = useRouter();
@@ -59,8 +60,12 @@ const CreatePin = () => {
     }
   };
 
-  const createMarket = async () => {
-    if (!title || !about || !price.length || !fileUrl || !category) {
+  const submitHandler = async () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
+    if (!title || !about || (sellOrAuct === "Mint NFT and Put on Sale" && !price.length) || !fileUrl || !category || !sellOrAuct) {
       setFields(true);
 
       setTimeout(() => {
@@ -70,7 +75,7 @@ const CreatePin = () => {
       return;
     }
 
-    if(!isValidAmount(price)) {
+    if(sellOrAuct === "Mint NFT and Put on Sale" && !isValidAmount(price)) {
       alert("Please enter a valid amount")
       return
     }
@@ -84,7 +89,15 @@ const CreatePin = () => {
       const added = await ipfsClient.add(data);
       const url = `https://ipfs.infura.io/ipfs/${added.path}`;
       /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
-      createMarketItemForSale(url);
+      if(sellOrAuct === "Only Mint NFT") {
+        createMarketItem(url);
+      } else if (sellOrAuct === "Mint NFT and Put on Sale") {
+        createMarketItemForSale(url);
+      } else if (sellOrAuct === "Mint NFT and Put on Auction") {
+        createMarketItemForAuction(url);
+      } else {
+        alert("Please Select Your Choice...")
+      }
     } catch (error) {
       console.log("Error in Creating NFT: ", error);
     }
@@ -146,6 +159,121 @@ const CreatePin = () => {
       destination: "https://nft-nation.vercel.app",
       image: fileUrl,
       category,
+      auctionEnded: true
+    });
+  };
+
+  const createMarketItemForAuction = async (url) => {
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    /* next, create the item */
+    let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+    let transaction = await contract.createToken(url);
+
+    let tx = await transaction.wait();
+    // console.log(tx.evens, "ddddddddddddddddddddddddddddddd")
+    let event = tx.events[0];
+    let value = event.args[2];
+    let tokenId = value.toNumber();
+
+    // console.log(contract, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    // approving NFT to marketplace
+    transaction = await contract.approve(nftmarketaddress, tokenId);
+
+    await transaction.wait();
+    // console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDD")
+
+    /* then list the item for sale on the marketplace */
+    contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+    transaction = await contract.createMarketItemForAuction(
+      nftaddress,
+      tokenId,
+    );
+    tx = await transaction.wait();
+
+    console.log(tx.events, "kdjddddddddddddddddddddddddddddddddddddd");
+    event = tx.events[2];
+    const { args } = event;
+    let itemId = args[0].toString();
+    let nftContract = args[1].toString();
+    tokenId = args[2].toString();
+    let newSeller = args[3].toString();
+    let newOwner = args[4].toString();
+    // return
+    savePin({
+      itemId,
+      nftContract,
+      tokenId,
+      seller: newSeller,
+      owner: newOwner,
+      price: "0",
+      title,
+      about,
+      postedBy: user?._id,
+      destination: "https://nft-nation.vercel.app",
+      image: fileUrl,
+      category,
+      auctionEnded: false
+    });
+  };
+
+  const createMarketItem = async (url) => {
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    /* next, create the item */
+    let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+    let transaction = await contract.createToken(url);
+
+    let tx = await transaction.wait();
+    // console.log(tx.evens, "ddddddddddddddddddddddddddddddd")
+    let event = tx.events[0];
+    let value = event.args[2];
+    let tokenId = value.toNumber();
+
+    // console.log(contract, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    // approving NFT to marketplace
+    transaction = await contract.approve(nftmarketaddress, tokenId);
+
+    await transaction.wait();
+    // console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDD")
+
+    /* then list the item for sale on the marketplace */
+    contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+    transaction = await contract.createMarketItemForAuction(
+      nftaddress,
+      tokenId,
+    );
+    tx = await transaction.wait();
+
+    console.log(tx.events, "kdjddddddddddddddddddddddddddddddddddddd");
+    event = tx.events[2];
+    const { args } = event;
+    let itemId = args[0].toString();
+    let nftContract = args[1].toString();
+    tokenId = args[2].toString();
+    let newOwner = args[3].toString();
+    let newSeller = args[4].toString();
+    // return
+    savePin({
+      itemId,
+      nftContract,
+      tokenId,
+      seller: newSeller,
+      owner: newOwner,
+      price: "0",
+      title,
+      about,
+      postedBy: user?._id,
+      destination: "https://nft-nation.vercel.app",
+      image: fileUrl,
+      category,
+      auctionEnded: true
     });
   };
 
@@ -236,10 +364,11 @@ const CreatePin = () => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={42}
               placeholder="Add Your NFT's Title"
               className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2"
             />
-            {user && (
+            {user?._id && (
               <div className="flex gap-2 mt-2 mb-2 items-center bg-white rounded-lg ">
                 <Image
                   height={40}
@@ -251,18 +380,13 @@ const CreatePin = () => {
                 <p className="font-bold">{getUserName(user?.userName)}</p>
               </div>
             )}
-            <input
+            <textarea
               type="text"
+              multiple
               value={about}
               onChange={(e) => setAbout(e.target.value)}
+              maxLength={80}
               placeholder="Tell everyone what your NFT is about"
-              className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
-            />
-            <input
-              type="text"
-              vlaue={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Add a price for sale (in MATIC)"
               className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
             />
 
@@ -291,10 +415,46 @@ const CreatePin = () => {
                   ))}
                 </select>
               </div>
+              <div className="mt-2">
+                <p className="mb-2 font-semibold text:lg sm:text-xl">
+                  What do you wanna do...?
+                </p>
+                <select
+                  onChange={(e) => {
+                    setSellOrAuct(e.target.value);
+                  }}
+                  className="outline-none w-4/5 text-base border-b-2 border-gray-200 p-2 rounded-md cursor-pointer"
+                >
+                  <option value="others" className="sm:text-bg bg-white">
+                    Select Your Choice
+                  </option>
+                  {["Only Mint NFT", "Mint NFT and Put on Sale", "Mint NFT and Put on Auction"].map((item) => (
+                    <option
+                      key={`${item}`}
+                      className="text-base border-0 outline-none capitalize bg-white text-black "
+                      value={item}
+                    >
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {
+                sellOrAuct === "Mint NFT and Put on Sale" && (
+                  <input
+              type="text"
+              vlaue={price}
+              maxLength={10}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="Add a price for sale (in MATIC)"
+              className="mt-2 outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
+            />
+                )
+              }
               <div className="flex justify-end items-end mt-5">
                 <button
                   type="button"
-                  onClick={createMarket}
+                  onClick={submitHandler}
                   className="w-auto transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-red text-white font-bold p-2 rounded-full w-28 outline-none"
                 >
                   Mint Token

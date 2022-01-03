@@ -4,13 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { getMaxBid, getUserName } from "../utils/data";
+import { etherAddress, getMaxBid, getUserName, loginMessage } from "../utils/data";
 import axios from "axios";
 import { REFRESH_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
 
 const Pin = ({ pin }) => {
-  const [postHovered, setPostHovered] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
   const dispatch = useDispatch();
 
@@ -31,12 +30,12 @@ const Pin = ({ pin }) => {
 
   const priceShowCondition =
     price !== "0" &&
-    owner === "0x0000000000000000000000000000000000000000" &&
+    owner === etherAddress &&
     auctionEnded;
 
   const highestBidShowCondition =
     price === "0" &&
-    owner === "0x0000000000000000000000000000000000000000" &&
+    owner === etherAddress &&
     !auctionEnded;
 
   const router = useRouter();
@@ -45,10 +44,14 @@ const Pin = ({ pin }) => {
 
   let alreadySaved = pin?.saved?.find((item) => item === user?._id);
 
-  const savePin = (id) => {
+  const savePin = () => {
+    if(!user?._id) {
+      alert(loginMessage)
+      return
+    }
     setSavingPost(true);
     axios
-      .put(`/api/pins/save/${pin?._id}`, {
+      .put(`/api/pins/save/${_id}`, {
         user: user?._id,
       })
       .then((res) => {
@@ -87,7 +90,18 @@ const Pin = ({ pin }) => {
           style={{ height: "100%" }}
         >
           <div className="flex items-center justify-between">
-            <div className="flex gap-2"></div>
+            {(priceShowCondition || highestBidShowCondition) && (
+              <button
+                type="button"
+                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  savePin(_id);
+                }}
+              >
+                {priceShowCondition ? `On Sale` : `On Auction`}{" "}
+              </button>
+            )}
             <button
               type="button"
               className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
@@ -104,24 +118,18 @@ const Pin = ({ pin }) => {
             </button>
           </div>
           <div className=" flex justify-between items-center gap-2 w-full">
-            {highestBidShowCondition && (
+            {(priceShowCondition || highestBidShowCondition) && (
               <button
                 type="button"
                 className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
               >
-                {`Highest Bid: ${
-                  getMaxBid(bids)?.bid
-                    ? `${getMaxBid(bids)?.bid} Matic`
-                    : `No Bids Yet`
-                }`}
-              </button>
-            )}
-            {priceShowCondition && (
-              <button
-                type="button"
-                className="bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-              >
-                {price} MATIC
+                {priceShowCondition
+                  ? `${price} MATIC`
+                  : `Highest Bid: ${
+                      bids?.length
+                        ? `${getMaxBid(bids)?.bid} Matic`
+                        : `No Bids Yet`
+                    }`}{" "}
               </button>
             )}
           </div>

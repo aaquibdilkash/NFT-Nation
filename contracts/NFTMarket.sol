@@ -46,6 +46,11 @@ contract NFTMarket is ReentrancyGuard {
         bool auctionEnded
     );
 
+    function setListingPrice(uint _listingPrice) public {
+        require(msg.sender == owner, "You are not the owner of this smart contract");
+        listingPrice = _listingPrice;
+    }
+
 
     function createMarketItem(address nftContract, uint256 tokenId)
         public
@@ -519,4 +524,5 @@ contract NFTMarket is ReentrancyGuard {
 
         return items;
     }
+
 }
