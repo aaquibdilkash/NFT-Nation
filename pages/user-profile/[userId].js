@@ -118,7 +118,7 @@ const UserProfilePage = () => {
                   alt="userProfile-pic"
                 />
               )}
-              {editing && <ProfileEdit userId={userId} />}
+              {editing && <ProfileEdit userId={userId} setEditing={setEditing}/>}
               <img
                 className="rounded-full w-20 h-20 -mt-10 shadow-xl object-cover"
                 src={userProfile.image}

@@ -12,7 +12,7 @@ import Image from "next/image";
 
 const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
-const ProfileEdit = ({ userId }) => {
+const ProfileEdit = ({ userId, setEditing }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userReducer);
   const [userName, setUserName] = useState("");
@@ -69,6 +69,7 @@ const ProfileEdit = ({ userId }) => {
     axios
       .put(`/api/users/${userId}`, obj)
       .then((res) => {
+        setEditing(false)
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
@@ -115,16 +116,12 @@ const ProfileEdit = ({ userId }) => {
                 />
               </label>
             ) : (
-              <div className="relative h-full w-full">
-                <Image
-                  height={100}
-                  width={100}
-                  src={fileUrl}
-                  placeholder="blur"
-                  blurDataURL="/favicon.png"
-                  alt="uploaded-pic"
-                  className="h-full w-full"
-                />
+              <div className="relative h-full">
+                <img
+                    src={fileUrl}
+                    alt="uploaded-pic"
+                    className="h-full w-full"
+                  />
                 <button
                   type="button"
                   className="absolute bottom-3 right-3 p-3 rounded-full bg-white text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
