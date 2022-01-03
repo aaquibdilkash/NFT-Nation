@@ -1,0 +1,33 @@
+{
+    "theme_color" : "#009387",
+    "background_color" : "#ffffff",
+    "display" : "standalone",
+    "scope" : "/",
+    "start_url" : "/",
+    "name" : "NFT Nation",
+    "short_name" : "NFT Nation",
+    "description" : "Browse, Mint, Buy or Sell ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens",
+    "icons": [
+        {
+            "src": "/favicon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "384x384",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+
+    }

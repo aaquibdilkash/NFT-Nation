@@ -90,19 +90,7 @@ const Pin = ({ pin }) => {
           style={{ height: "100%" }}
         >
           <div className="flex items-center justify-between">
-            {(priceShowCondition || highestBidShowCondition) && (
-              <button
-                type="button"
-                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  savePin(_id);
-                }}
-              >
-                {priceShowCondition ? `On Sale` : `On Auction`}{" "}
-              </button>
-            )}
-            <button
+          <button
               type="button"
               className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
               onClick={(e) => {
@@ -116,6 +104,19 @@ const Pin = ({ pin }) => {
                 ? `Saving...`
                 : `Save`}{" "}
             </button>
+            {(priceShowCondition || highestBidShowCondition) && (
+              <button
+                type="button"
+                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  savePin(_id);
+                }}
+              >
+                {priceShowCondition ? `On Sale` : `On Auction`}{" "}
+              </button>
+            )}
+            
           </div>
           <div className=" flex justify-between items-center gap-2 w-full">
             {(priceShowCondition || highestBidShowCondition) && (
