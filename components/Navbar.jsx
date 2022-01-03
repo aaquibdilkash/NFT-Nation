@@ -36,11 +36,14 @@ const Navbar = ({connectToMetamask}) => {
       <div className="flex gap-3 ">
         {user?._id && (
           <Link href={`/user-profile/${user?._id}`} className="hidden md:block">
-            <div className="transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
-            <img
+            <div className="w-12 h-12 relative transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
+            <Image
               src={user?.image}
               alt="user-pic"
-              className="w-14 h-12 rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+              // height={100}
+              // width={100}
+              layout="fill"
+              className="rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
             />
             </div>
           </Link>

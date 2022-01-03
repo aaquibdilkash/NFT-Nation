@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { categories, getUserName, isValidAmount } from "../utils/data";
+import { getUserName, isValidAmount, sidebarCategories } from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
@@ -176,7 +176,7 @@ const CreatePin = () => {
           content={`https://nft-nation.vercel.app/create-pin`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
         {fields && (
@@ -280,7 +280,7 @@ const CreatePin = () => {
                   <option value="others" className="sm:text-bg bg-white">
                     Select Category
                   </option>
-                  {categories.map((item) => (
+                  {sidebarCategories["Discover Categories"].map((item) => (
                     <option
                       key={`${item.name}`}
                       className="text-base border-0 outline-none capitalize bg-white text-black "

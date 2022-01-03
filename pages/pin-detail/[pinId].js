@@ -429,7 +429,7 @@ const PinDetail = () => {
           content={`https://nft-nation.vercel.app/pin-detail/${pinDetail?._id}`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
       {pinDetail && (
         <div className="bg-gradient-to-r from-[#ffffff] to-[#009387] bg-white shadow-lg rounded-lg p-0 lg:p-8 pb-12 mb-8">

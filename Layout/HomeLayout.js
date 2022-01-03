@@ -9,6 +9,7 @@ import axios from "axios";
 import Web3 from "web3";
 import Web3Modal from "web3modal";
 import Image from "next/image";
+import { FaArtstation } from "react-icons/fa";
 
 const HomeLayout = ({ children, ...pageProps }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
@@ -153,7 +154,8 @@ const HomeLayout = ({ children, ...pageProps }) => {
             onClick={() => setToggleSidebar(true)}
           />
           <Link href="/">
-            <Image height={30} width={150} src="/assets/logo.png" alt="logo" className="w-28" />
+            {/* <Image height={30} width={150} src="/assets/logo.png" alt="logo" className="w-28" /> */}
+            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center"><FaArtstation className="" size={25} /> <p className="font-bold text-lg">NFT Nation</p></div>
           </Link>
           {user?._id && (
             <Link href={`/user-profile/${user?._id}`}>

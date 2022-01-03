@@ -1,40 +1,54 @@
-export const categories = [
-  {
-    name: "Art",
-    image:
-      "https://i.pinimg.com/750x/eb/47/44/eb4744eaa3b3ccd89749fa3470e2b0de.jpg",
-  },
-  {
-    name: "Music and media",
-    image:
-      "https://i.pinimg.com/236x/03/48/b6/0348b65919fcbe1e4f559dc4feb0ee13.jpg",
-  },
-  {
-    name: "Gaming",
-    image:
-      "https://i.pinimg.com/750x/66/b1/29/66b1296d36598122e6a4c5452b5a7149.jpg",
-  },
-  {
-    name: "Collectible",
-    image:
-      "https://i.pinimg.com/236x/72/8c/b4/728cb43f48ca762a75da645c121e5c57.jpg",
-  },
-  {
-    name: "Utility Based",
-    image:
-      "https://i.pinimg.com/236x/7d/ef/15/7def15ac734837346dac01fad598fc87.jpg",
-  },
-  {
-    name: "Virtual Worlds",
-    image:
-      "https://i.pinimg.com/236x/b9/82/d4/b982d49a1edd984c4faef745fd1f8479.jpg",
-  },
-  {
-    name: "Web3 Domain Names",
-    image:
-      "https://i.pinimg.com/736x/f4/e5/ba/f4e5ba22311039662dd253be33bf5f0e.jpg",
-  },
-];
+import { FaArtstation, FaCat, FaGamepad, FaHome, FaIdCard, FaLaugh, FaMailBulk, FaMailchimp, FaMusic, FaPaintBrush, FaPaperclip, FaPen, FaPencilAlt, FaQuestion, FaReadme, FaSign, FaSmile, FaVideo } from "react-icons/fa";
+
+
+export const sidebarCategories = {
+  "Discover Categories": [
+    {
+      name: "Art",
+      icon: <FaPaintBrush className="" size={25} />
+    },
+    {
+      name: "Memes",
+      icon: <FaLaugh className="" size={25} />
+    },
+    {
+      name: "Gaming",
+      icon: <FaGamepad className="" size={25} />
+    },
+    {
+      name: "Collectibles",
+      icon: <FaCat className="" size={25} />
+    },
+    {
+      name: "Gifs",
+      icon: <FaSmile className="" size={25} />
+    }
+  ],
+  // "Help Section": [
+  //   {
+  //     name: "FAQs",
+  //     icon: <FaQuestion className="" size={25} />
+  //   },
+  //   {
+  //     name: "Contact Us",
+  //     icon: <FaPencilAlt className="" size={25} />
+  //   },
+  //   {
+  //     name: "About Us",
+  //     icon: <FaSign className="" size={25} />
+  //   },
+  //   {
+  //     name: "Privacy Policy",
+  //     icon: <FaPaperclip className="" size={25} />
+  //   },
+  //   {
+  //     name: "Terms and Conditions",
+  //     icon: <FaReadme className="" size={25} />
+  //   }
+  // ]
+}
+
+
 
 export const chainData = {
   main: {

@@ -88,7 +88,7 @@ const UserProfilePage = () => {
           content={`https://nft-nation.vercel.app/user-profile/${userProfile?._id}`}
         />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.ico" />
     </Head>
     <div className="relative pb-2 h-full justify-center items-center">
       <div className="flex flex-col pb-5">
