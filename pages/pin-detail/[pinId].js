@@ -25,7 +25,7 @@ import { HAS_MORE, MORE_LOADING } from "../../redux/constants/UserTypes";
 import { FaCopy, FaDice, FaDiceD20, FaHashtag } from "react-icons/fa";
 
 const buttonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-[#009387] text-lg font-medium rounded-full text-white px-8 py-3 cursor-pointer";
+  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-medium rounded-full text-secondTheme px-8 py-3 cursor-pointer";
 
 const PinDetail = () => {
   const dispatch = useDispatch();
@@ -533,8 +533,8 @@ const PinDetail = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {pinDetail && (
-        <div className="bg-gradient-to-r from-[#ffffff] to-[#009387] bg-white shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
-          <div className="bg-gradient-to-r from-[#009387] to-[#ffffff] flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
+        <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
+          <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
             <Image
               unoptimized
               placeholder="blur"
@@ -556,7 +556,7 @@ const PinDetail = () => {
                 {comments?.map((item) => (
                   <div
                     key={`${item?._id}`}
-                    className="bg-gradient-to-r from-[#ffffff] to-[#009387] flex gap-2 mt-5 items-center bg-white rounded-lg"
+                    className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
                   >
                     {item?.user?._id && (
                       <Link href={`/user-profile/${item?.user?._id}`}>
@@ -607,7 +607,7 @@ const PinDetail = () => {
                 />
                 <button
                   type="button"
-                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-red text-white rounded-full px-6 py-2 font-semibold text-base outline-none"
+                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
                   onClick={addComment}
                 >
                   {addingComment ? "Doing..." : "Done"}
@@ -691,7 +691,7 @@ const PinDetail = () => {
           <p className="text-center text-lg text-gray-700 font-normal px-4 lg:px-20 mb-5">
             {about}
           </p>
-          <div className="p-2 bg-gradient-to-r from-[#009387] to-[#ffffff] rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
+          <div className="p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
             {executeMarketSaleCondition && (
               <button
                 onClick={() => {
@@ -804,7 +804,7 @@ const PinDetail = () => {
             </button>
           </div>
           {(addingBidPrice || addingSellPrice) && (
-            <div className="mt-4 p-2 bg-gradient-to-r from-[#009387] to-[#ffffff] rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
+            <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
               <div className="flex flex-wrap m-2 gap-3">
                 {user?._id && (
                   <Link href={`/user-profile/${user?._id}`}>
@@ -831,7 +831,7 @@ const PinDetail = () => {
                 />
                 <button
                   type="button"
-                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-red text-white rounded-full px-6 py-2 font-semibold text-base outline-none"
+                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
                   onClick={() => {
                     addingSellPrice && createMarketSale();
                     addingBidPrice && makeAuctionBid();

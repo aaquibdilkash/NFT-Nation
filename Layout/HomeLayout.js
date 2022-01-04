@@ -189,7 +189,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
   }
 
   return (
-    <div className="flex bg-gradient-to-r from-[#ffffff] to-[#009387] md:flex-row flex-col h-screen transition-height duration-75 ease-out">
+    <div className="flex bg-gradient-to-r from-secondTheme to-themeColor md:flex-row flex-col h-screen transition-height duration-75 ease-out">
       <div className="hidden md:flex h-screen flex-initial">
         <Sidebar user={user && user} connectToMetamask={connectToMetamask} />
       </div>
@@ -221,7 +221,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
           )}
         </div>
         {toggleSidebar && (
-          <div className="fixed w-3/5 bg-white h-screen overflow-y-auto shadow-md z-10 animate-slide-in">
+          <div className="fixed w-3/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-10 animate-slide-in">
             <Sidebar
               setToggleSidebar={setToggleSidebar}
               user={user && user}
@@ -234,7 +234,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
       // ref={scrollRef}
       >
         <div className="px-2 md:px-5">
-          <div className="bg-gray-50">
+          <div className="transparent">
             <Navbar
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}

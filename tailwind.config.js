@@ -10,9 +10,9 @@ module.exports = {
     colors: {
       transparent: 'transparent',
       current: 'currentColor',
-      'white': '#ffffff',
-      'black': '#000000',
-      'red': 'rgb(239 68 68)',
+      themeColor: "#191970",
+      secondTheme: "#ffffff",
+      textColor: "#000000"
 
     },
     extend: {

@@ -92,13 +92,13 @@ const Pin = ({ pin }) => {
           <div className="flex items-center justify-between">
           <button
               type="button"
-              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
             >
               {`${saved?.length} Saved`}{" "}
             </button>
           {/* <button
               type="button"
-              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
               onClick={(e) => {
                 e.stopPropagation();
                 savePin(_id);
@@ -113,7 +113,7 @@ const Pin = ({ pin }) => {
             {(priceShowCondition || highestBidShowCondition) && (
               <button
                 type="button"
-                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
                 onClick={(e) => {
                   e.stopPropagation();
                   savePin(_id);
@@ -128,7 +128,7 @@ const Pin = ({ pin }) => {
             {(priceShowCondition || highestBidShowCondition) && (
               <button
                 type="button"
-                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
               >
                 {priceShowCondition
                   ? `${price} MATIC`

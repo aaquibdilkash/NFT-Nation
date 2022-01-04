@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
 
 const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
@@ -309,12 +308,12 @@ const CreatePin = () => {
       </Head>
       <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
         {fields && (
-          <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
+          <p className="text-[#EF4444] mb-5 text-xl transition-all duration-150 ease-in ">
             Please add all fields.
           </p>
         )}
         <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
-          <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-full">
+          <div className="rounded-lg bg-gradient-to-r from-[themeColor] to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-full">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
               {loading && <Spinner />}
               {wrongImageType && <p>It&apos;s wrong file type.</p>}
@@ -360,28 +359,62 @@ const CreatePin = () => {
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col gap-6 lg:pl-5 mt-5 w-full">
+          <div className="bg-secondTheme shadow-lg rounded-lg p-8 pb-12 mb-8">
+      <h3 className="text-xl mb-8 font-semibold border-b pb-4">Mint Your Token</h3>
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <textarea 
+        // value={formData.comment}
+        //  onChange={onInputChange}
+          className="p-4 outline-none w-full rounded-lg h-40 focus:ring-2 focus:ring-gray-200 bg-gray-100 text-gray-700" name="comment" placeholder="Comment" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <input type="text" 
+        // value={formData.name} 
+        // onChange={onInputChange} 
+        className="py-2 px-4 outline-none w-full rounded-lg focus:ring-2 focus:ring-gray-200 bg-gray-100 text-gray-700" placeholder="Name" name="name" />
+        <input type="email" 
+        // value={formData.email} 
+        // onChange={onInputChange} 
+        className="py-2 px-4 outline-none w-full rounded-lg focus:ring-2 focus:ring-gray-200 bg-gray-100 text-gray-700" placeholder="Email" name="email" />
+      </div>
+      <div className="grid grid-cols-1 gap-4 mb-4">
+        <div>
+          <input 
+        //   checked={formData.storeData} 
+        //   onChange={onInputChange} 
+          type="checkbox" id="storeData" name="storeData" value="true" />
+          <label className="text-gray-500 cursor-pointer" htmlFor="storeData"> Save my name, email in this browser for the next time I comment.</label>
+        </div>
+      </div>
+      {/* {error && <p className="text-xs text-[#EF4444]-500">All fields are mandatory</p>} */}
+      <div className="mt-8">
+        <button type="button" 
+        // onClick={handlePostSubmission} 
+        className="transition duration-500 ease hover:bg-indigo-900 inline-block bg-pink-600 text-lg font-medium rounded-full text-secondTheme px-8 py-3 cursor-pointer">Post Comment</button>
+        {/* {showSuccessMessage && <span className="text-xl float-right font-semibold mt-3 text-green-500">Comment submitted for review</span>} */}
+      </div>
+    </div>
+
+          {/* <div className="flex flex-1 flex-col gap-6 lg:pl-5 mt-5 w-full">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={42}
               placeholder="Add Your NFT's Title"
-              className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
+              className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2"
             />
             {user?._id && (
-              <Link href={`/user-profile/${user?._id}`} >
-                <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1">
+              <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg ">
                 <Image
                   height={40}
                   width={40}
                   src={user.image}
-                  className="w-10 h-10 rounded-full drop-shadow-lg"
+                  className="w-10 h-10 rounded-full"
                   alt="user-profile"
                 />
                 <p className="font-bold">{getUserName(user?.userName)}</p>
               </div>
-              </Link>
             )}
             <textarea
               type="text"
@@ -390,10 +423,10 @@ const CreatePin = () => {
               onChange={(e) => setAbout(e.target.value)}
               maxLength={80}
               placeholder="Tell everyone what your NFT is about"
-              className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
+              className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
             />
 
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col">
               <div>
                 <p className="mb-2 font-semibold text:lg sm:text-xl">
                   Choose Pin Category
@@ -402,7 +435,7 @@ const CreatePin = () => {
                   onChange={(e) => {
                     setCategory(e.target.value);
                   }}
-                  className="outline-none w-full text-base border-b-2 border-gray-200 p-2 rounded-md cursor-pointer focus:drop-shadow-lg"
+                  className="outline-none w-4/5 text-base border-b-2 border-gray-200 p-2 rounded-md cursor-pointer"
                 >
                   <option value="others" className="sm:text-bg bg-secondTheme">
                     Select Category
@@ -426,7 +459,7 @@ const CreatePin = () => {
                   onChange={(e) => {
                     setSellOrAuct(e.target.value);
                   }}
-                  className="outline-none w-full text-base border-b-2 border-gray-200 p-2 rounded-md cursor-pointer"
+                  className="outline-none w-4/5 text-base border-b-2 border-gray-200 p-2 rounded-md cursor-pointer"
                 >
                   <option value="others" className="sm:text-bg bg-secondTheme">
                     Select Your Choice
@@ -458,13 +491,13 @@ const CreatePin = () => {
                 <button
                   type="button"
                   onClick={submitHandler}
-                  className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
+                  className="w-auto transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-[#EF4444] text-secondTheme font-bold p-2 rounded-full w-28 outline-none"
                 >
                   Mint Token
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

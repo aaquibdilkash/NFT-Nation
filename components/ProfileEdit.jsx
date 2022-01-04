@@ -9,6 +9,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
+import Link from "next/link";
 
 const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
@@ -83,12 +84,12 @@ const ProfileEdit = ({ userId, setEditing }) => {
   return (
     <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
       {fields && (
-        <p className="text-red mb-5 text-xl transition-all duration-150 ease-in ">
+        <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
           Please add all fields.
         </p>
       )}
-      <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-white lg:p-5 p-3 lg:w-4/5  w-full">
-        <div className="rounded-lg bg-gradient-to-r from-[#009387] to-[#ffffff] bg-secondaryColor p-3 flex flex-0.7 w-full">
+      <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
+        <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-full">
           <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
             {loading && <Spinner />}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
@@ -124,7 +125,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
                   />
                 <button
                   type="button"
-                  className="absolute bottom-3 right-3 p-3 rounded-full bg-white text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                  className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                   onClick={() => setFileUrl(null)}
                 >
                   <MdDelete />
@@ -141,19 +142,20 @@ const ProfileEdit = ({ userId, setEditing }) => {
             onChange={(e) => setUserName(e.target.value)}
             maxLength={42}
             placeholder="Type your username"
-            className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2"
+            className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
           />
 
-          <input
+          <textarea
             type="text"
             value={about}
             maxLength={80}
             onChange={(e) => setAbout(e.target.value)}
             placeholder="Tell everyone about you"
-            className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2"
+            className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
           />
           {user?._id && (
-            <div className="flex gap-2 mt-2 mb-2 items-center bg-white rounded-lg">
+            <Link href={`/user-profile/${user?._id}`} >
+              <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1">
               <Image
                 height={40}
                 width={40}
@@ -163,6 +165,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
               />
               <p className="font-bold">{getUserName(user?.userName)}</p>
             </div>
+            </Link>
           )}
 
           <div className="flex flex-col">
@@ -170,7 +173,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
               <button
                 type="button"
                 onClick={updateProfile}
-                className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-red text-white font-bold p-2 rounded-full w-auto outline-none"
+                className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
               >
                 Save Profile
               </button>

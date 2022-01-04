@@ -8,9 +8,9 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 
 const isNotActiveStyle =
-  "font-semibold transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center px-5 gap-3 text-gray-500  hover:font-extrabold hover:text-black transition-all duration-200 ease-in-out capitalize hover:cursor-pointer";
+  "font-semibold transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center px-5 gap-3 text-gray-500  hover:font-extrabold hover:text-textColor transition-all duration-200 ease-in-out capitalize hover:cursor-pointer";
 const isActiveStyle =
-  "transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center px-5 py-2 gap-3 font-extrabold border-r-2 border-black transition-all duration-200 ease-in-out capitalize hover:cursor-pointer bg-[#009387]";
+  "text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center px-5 py-2 gap-3 font-extrabold border-r-2 border-textColor transition-all duration-200 ease-in-out capitalize hover:cursor-pointer bg-themeColor";
 
 const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   const router = useRouter();
@@ -19,7 +19,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   };
 
   return (
-    <div className="flex flex-col justify-between bg-white bg-gradient-to-r from-[#f9f9f9] to-[#009387] h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
+    <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
       <div className="flex flex-col">
         <Link href="/" >
           <div
@@ -87,7 +87,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
         >
           <div
             onClick={handleCloseSidebar}
-            className="bg-gradient-to-r from-[#009387] to-[#f9f9f9] flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
+            className="bg-gradient-to-r from-themeColor to-secondTheme flex my-5 mb-3 gap-2 p-2 items-center bg-secondTheme rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
           >
             {" "}
             <Image
@@ -108,7 +108,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
             handleCloseSidebar(e);
             connectToMetamask(e);
           }}
-          className="bg-gradient-to-r from-[#009387] to-[#f9f9f9] flex my-5 mb-3 gap-2 p-3 items-center bg-white rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
+          className="bg-gradient-to-r from-themeColor to-secondTheme flex my-5 mb-3 gap-2 p-3 items-center bg-secondTheme rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
         >
           <p className="font-bold">{`Connect and Get In`}</p>
           <AiOutlineLogin className="font-bold" fontSize={21} />

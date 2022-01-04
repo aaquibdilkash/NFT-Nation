@@ -12,9 +12,9 @@ import Image from "next/image";
 import { HAS_MORE, MORE_LOADING, PAGE_SET } from "../../redux/constants/UserTypes";
 
 const activeBtnStyles =
-  "bg-red mr-4 mt-2 text-white font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 const notActiveBtnStyles =
-  "bg-primary mr-4 mt-2 text-black font-semibold p-2 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const UserProfilePage = () => {
   const router = useRouter();
@@ -150,12 +150,12 @@ const UserProfilePage = () => {
               <div className="absolute top-0 z-1 right-0 p-2">
                 <button
                   type="button"
-                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-white p-2 rounded-full cursor-pointer outline-none shadow-md"
+                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
                   onClick={() => {
                     setEditing((editing) => !editing);
                   }}
                 >
-                  <AiOutlineEdit color="red" fontSize={21} />
+                  <AiOutlineEdit color="themeColor" fontSize={21} />
                 </button>
               </div>
             )}
