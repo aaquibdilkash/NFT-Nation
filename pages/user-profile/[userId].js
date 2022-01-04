@@ -9,6 +9,7 @@ import ProfileEdit from "../../components/ProfileEdit";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
+import { HAS_MORE, MORE_LOADING, PAGE_SET } from "../../redux/constants/UserTypes";
 
 const activeBtnStyles =
   "bg-red mr-4 mt-2 text-white font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
@@ -18,8 +19,9 @@ const notActiveBtnStyles =
 const UserProfilePage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { user, refresh } = useSelector((state) => state.userReducer);
+  const { user, page } = useSelector((state) => state.userReducer);
   const { userId } = router.query;
+  const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState();
   const [editing, setEditing] = useState(false);
 
@@ -27,66 +29,80 @@ const UserProfilePage = () => {
   const [text, setText] = useState("Owned");
   const [activeBtn, setActiveBtn] = useState("Owned");
 
-  useEffect(() => {
-    userId &&
-      axios
-        .get(`/api/users/${userId}`)
-        .then((res) => {
-          setUserProfile(res.data.user);
-        })
-        .catch((e) => {});
-  }, [userId, refresh]);
+  const fetchUserDetails = () => {
+    axios
+      .get(`/api/users/${userId}`)
+      .then((res) => {
+        setUserProfile(res.data.user);
+      })
+      .catch((e) => {});
+  };
+
+  const userPinQuery = (query) => {
+    page === 1 && setLoading(true)
+    dispatch({
+      type: MORE_LOADING,
+      payload: page !== 1
+    });
+    axios
+      .get(query)
+      .then((res) => {
+        const { pins, resultPerPage, filteredPinsCount } = res.data;
+          setLoading(false);
+          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+          dispatch({
+            type: MORE_LOADING,
+            payload: false
+          });
+          dispatch({
+            type: HAS_MORE,
+            payload: page * resultPerPage < filteredPinsCount,
+          });
+      })
+      .catch((e) => {
+        setLoading(false);
+        dispatch({
+          type: MORE_LOADING,
+          payload: false
+        });
+        console.log(e);
+      });
+  };
+
+  const fetchUserPins = () => {
+    if (text === "Owned") {
+      userPinQuery(`/api/pins?page=${page}&owner=${userProfile?.address}`)
+    } else if (text === "On Sale") {
+      userPinQuery(`/api/pins?page=${page}&seller=${userProfile?.address}&auctionEnded=${true}`)
+    } else if (text === "On Auction") {
+      userPinQuery(`/api/pins?page=${page}&seller=${userProfile?.address}&auctionEnded=${false}`)
+    } else if (text === "Bids") {
+      userPinQuery(`/api/pins?page=${page}&bids=${userProfile?._id}&auctionEnded=${false}`)
+    } else {
+      userPinQuery(`/api/pins?page=${page}&saved=${userId}`)
+    }
+  };
 
   useEffect(() => {
-    if (userProfile?.address) {
-      if (text === "Owned") {
-        axios
-          .get(`/api/pins?owner=${userProfile?.address}`)
-          .then((res) => {
-            setPins(res.data.pins);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } else if (text === "On Sale") {
-        axios
-          .get(`/api/pins?seller=${userProfile?.address}&auctionEnded=${true}`)
-          .then((res) => {
-            setPins(res.data.pins);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } else if (text === "On Auction") {
-        axios
-          .get(`/api/pins?seller=${userProfile?.address}&auctionEnded=${false}`)
-          .then((res) => {
-            setPins(res.data.pins);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } else if (text === "Bids") {
-        axios
-          .get(`/api/pins?bids=${userProfile?._id}&auctionEnded=${false}`)
-          .then((res) => {
-            setPins(res.data.pins);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      } else {
-        axios
-          .get(`/api/pins?saved=${userId}`)
-          .then((res) => {
-            setPins(res.data.pins);
-          })
-          .catch((e) => {
-            console.log(e);
-          });
-      }
+    userId && fetchUserDetails();
+  }, [userId]);
+
+  useEffect(() => {
+    if (userProfile?._id) {
+      fetchUserPins()
     }
-  }, [text, userId, refresh, userProfile]);
+  }, [userProfile, page]);
+
+  useEffect(() => {
+    setPins([])
+    dispatch({
+      type: PAGE_SET,
+      payload: 1
+    })
+    if (userProfile?._id) {
+      fetchUserPins()
+    }
+  }, [text])
 
   if (!userProfile) return <Spinner message="Loading profile" />;
 
@@ -113,12 +129,14 @@ const UserProfilePage = () => {
             <div className="flex flex-col justify-center items-center">
               {!editing && (
                 <img
-                  className=" w-full h-370 2xl:h-510 shadow-lg object-cover rounded-lg"
+                  className=" w-full h-370 2xl:h-300 shadow-lg object-cover rounded-lg"
                   src="https://source.unsplash.com/1600x900/?nature,photography,technology"
                   alt="userProfile-pic"
                 />
               )}
-              {editing && <ProfileEdit userId={userId} setEditing={setEditing}/>}
+              {editing && (
+                <ProfileEdit userId={userId} setEditing={setEditing} />
+              )}
               <img
                 className="rounded-full w-20 h-20 -mt-10 shadow-xl object-cover"
                 src={userProfile.image}
@@ -163,10 +181,11 @@ const UserProfilePage = () => {
           </div>
 
           <div className="px-2">
-            <MasonryLayout pins={pins} />
+            {pins?.length > 0 && <MasonryLayout pins={pins} />}
+            {loading && <Spinner message={`Loading ${text} Pins`} />}
           </div>
 
-          {pins?.length === 0 && (
+          {pins?.length === 0 && !loading && (
             <div className="flex justify-center font-bold items-center w-full text-1xl font-bold mt-2">
               No Pins Found!
             </div>

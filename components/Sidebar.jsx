@@ -21,7 +21,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   return (
     <div className="flex flex-col justify-between bg-white bg-gradient-to-r from-[#f9f9f9] to-[#009387] h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
       <div className="flex flex-col">
-        <Link href="/" className="flex px-5 gap-2 my-6 pt-1 w-190 items-center">
+        <Link href="/" >
           <div
             onClick={handleCloseSidebar}
             className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer"
@@ -39,9 +39,6 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
         <div className="flex flex-col gap-5">
           <Link
             href="/"
-            className={
-              router.pathname === "/" ? isActiveStyle : isNotActiveStyle
-            }
           >
             <div
               onClick={handleCloseSidebar}
@@ -64,11 +61,6 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                     <Link
                       key={`${category?.name}`}
                       href={`${item === "Discover Categories" ? `/category` : ``}/${category?.name}`}
-                      className={
-                        router.pathname === "/"
-                          ? isActiveStyle
-                          : isNotActiveStyle
-                      }
                     >
                       <div
                         onClick={handleCloseSidebar}
@@ -92,7 +84,6 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
       {user?._id && (
         <Link
           href={`/user-profile/${user?._id}`}
-          className="flex my-5 mb-3 gap-2 p-2 items-center bg-white rounded-lg shadow-lg mx-3"
         >
           <div
             onClick={handleCloseSidebar}

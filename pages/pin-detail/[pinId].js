@@ -7,23 +7,34 @@ import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
-import { useSelector } from "react-redux";
-import { etherAddress, getMaxBid, getUserName, isValidAmount, loginMessage } from "../../utils/data";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  etherAddress,
+  getMaxBid,
+  getUserBid,
+  getUserName,
+  isValidAmount,
+  loginMessage,
+} from "../../utils/data";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
 import moment from "moment";
+import { HAS_MORE, MORE_LOADING } from "../../redux/constants/UserTypes";
+import { FaCopy, FaDice, FaDiceD20, FaHashtag } from "react-icons/fa";
 
 const buttonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-[#009387] text-lg font-medium rounded-full text-white px-8 py-3 cursor-pointer";
 
 const PinDetail = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
   const { pinId } = router.query;
   const { user, page } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
-  const [pins, setPins] = useState();
+  const [pins, setPins] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [pinDetail, setPinDetail] = useState();
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
@@ -31,86 +42,159 @@ const PinDetail = () => {
   const [addingSellPrice, setAddingSellPrice] = useState(false);
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
-  let alreadySaved = pinDetail?.saved?.find((item) => item === user?._id);
+
+  const {
+    _id,
+    title,
+    about,
+    seller,
+    owner,
+    bids,
+    saved,
+    comments,
+    nftContract,
+    itemId,
+    tokenId,
+    price,
+    auctionEnded,
+    category,
+    image,
+    postedBy
+  } = pinDetail ?? {
+    _id: "",
+    title: "",
+    about: "",
+    seller: "",
+    owner: "",
+    bids: [],
+    saved: [],
+    comments: [],
+    nftContract: "",
+    itemId: "",
+    tokenId: "",
+    price: "",
+    category: "",
+    image: "",
+    auctionEnded: true,
+    postedBy: {}
+  };
+
+  let alreadySaved = saved?.find((item) => item === user?._id);
+
   const executeMarketSaleCondition =
-    pinDetail?.price !== "0" &&
-    pinDetail?.owner === etherAddress &&
-    pinDetail?.seller !== user?.address &&
-    pinDetail?.auctionEnded;
+    price !== "0" &&
+    owner === etherAddress &&
+    seller !== user?.address &&
+    auctionEnded;
 
   const createMarketSaleCondition =
-    pinDetail?.price === "0" &&
-    pinDetail?.owner === user?.address &&
-    pinDetail?.seller === etherAddress &&
-    pinDetail?.auctionEnded;
+    price === "0" &&
+    owner === user?.address &&
+    seller === etherAddress &&
+    auctionEnded;
 
   const cancelMarketSaleCondition =
-    pinDetail?.price !== "0" &&
-    pinDetail?.seller === user?.address &&
-    pinDetail?.owner === etherAddress &&
-    pinDetail?.auctionEnded;
+    price !== "0" &&
+    seller === user?.address &&
+    owner === etherAddress &&
+    auctionEnded;
 
   const createMarketAuctionCondition =
-    pinDetail?.price === "0" &&
-    pinDetail?.owner === user?.address &&
-    pinDetail?.seller === etherAddress &&
-    pinDetail?.auctionEnded;
+    price === "0" &&
+    owner === user?.address &&
+    seller === etherAddress &&
+    auctionEnded;
 
   const executeMarketAuctionEndCondition =
-    pinDetail?.price === "0" &&
-    pinDetail?.seller === user?.address &&
-    pinDetail?.owner === etherAddress &&
-    !pinDetail?.auctionEnded;
+    price === "0" &&
+    seller === user?.address &&
+    owner === etherAddress &&
+    !auctionEnded;
 
   const makeAuctionBidCondition =
-    pinDetail?.seller !== user?.address &&
-    pinDetail?.owner === etherAddress &&
-    !pinDetail?.bids?.find((bid) => bid.user?._id === user?._id) &&
-    !pinDetail?.auctionEnded;
+    seller !== user?.address &&
+    owner === etherAddress &&
+    !bids?.find((bid) => bid.user?._id === user?._id) &&
+    !auctionEnded;
 
   const withdrawAuctionBidCondition =
-    pinDetail?.seller !== user?.address &&
-    pinDetail?.owner === etherAddress &&
-    pinDetail?.bids?.find((bid) => bid.user?._id === user?._id) &&
-    !pinDetail?.auctionEnded;
+    seller !== user?.address &&
+    owner === etherAddress &&
+    bids?.find((bid) => bid.user?._id === user?._id) &&
+    !auctionEnded;
 
-  
+  const priceShowCondition =
+    price !== "0" && owner === etherAddress && auctionEnded;
+
+  const highestBidShowCondition =
+    price === "0" && owner === etherAddress && !auctionEnded;
+
+  const fetchPinDetails = () => {
+    axios
+      .get(`/api/pins/${pinId}`)
+      .then((res) => {
+        setPinDetail(res.data.pin);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const fetchRelatedPins = () => {
+    page === 1 && setLoading(true);
+    dispatch({
+      type: MORE_LOADING,
+      payload: page !== 1,
+    });
+    axios
+      .get(`/api/pins?page=${page}&category=${category}`)
+      .then((res) => {
+        const { pins, resultPerPage, filteredPinsCount } = res.data;
+        let filtered = pins.filter(pin => pin?._id !== pinId)
+        setLoading(false);
+        page === 1 ? setPins(filtered) : setPins((prev) => [...prev, ...filtered]);
+        dispatch({
+          type: MORE_LOADING,
+          payload: false,
+        });
+        dispatch({
+          type: HAS_MORE,
+          payload: page * resultPerPage < filteredPinsCount,
+        });
+      })
+      .catch((e) => {
+        setLoading(false);
+        dispatch({
+          type: MORE_LOADING,
+          payload: false,
+        });
+        console.log(e);
+      });
+  };
 
   useEffect(() => {
-    pinId &&
-      axios
-        .get(`/api/pins/${pinId}`)
-        .then((res) => {
-          setPinDetail(res.data.pin);
-          axios
-            .get(`/api/pins?category=${res.data.pin.category}`)
-            .then((res) => {
-              setPins(res.data.pins);
-            })
-            .catch((e) => {
-              console.log(e);
-            });
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+    pinId && fetchPinDetails();
   }, [pinId, refresh]);
+
+  useEffect(() => {
+    category && fetchRelatedPins();
+  }, [pinDetail, page]);
 
   const updatePin = (body) => {
     axios
-      .put(`/api/pins/${pinDetail?._id}`, body)
+      .put(`/api/pins/${_id}`, body)
       .then((res) => {
-        setAddingSellPrice(false)
-        setInputPrice("")
-        setRefresh(prev => !prev)
+        setAddingSellPrice(false);
+        setInputPrice("");
+        setRefresh((prev) => !prev);
       })
       .catch((e) => {});
   };
 
   const executeMarketSale = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
     const { price, itemId } = pinDetail;
@@ -146,14 +230,14 @@ const PinDetail = () => {
   };
 
   const createMarketSale = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
-    if(!isValidAmount(inputPrice)) {
-      alert("Please enter a valid amount")
-      return
+    if (!isValidAmount(inputPrice)) {
+      alert("Please enter a valid amount");
+      return;
     }
 
     const { itemId, tokenId } = pinDetail;
@@ -196,14 +280,14 @@ const PinDetail = () => {
   };
 
   const makeAuctionBid = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
-    if(!isValidAmount(inputPrice)) {
-      alert("Please enter a valid amount")
-      return
+    if (!isValidAmount(inputPrice)) {
+      alert("Please enter a valid amount");
+      return;
     }
 
     const { itemId } = pinDetail;
@@ -231,14 +315,14 @@ const PinDetail = () => {
 
     makeAuctionBidRequest({
       user: newBidder,
-      bid: newBid
-    })
+      bid: newBid,
+    });
   };
 
   const withdrawAuctionBid = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
     const { itemId } = pinDetail;
@@ -258,14 +342,14 @@ const PinDetail = () => {
     const event = tx.events[0];
 
     withdrawAuctionBidRequest({
-      user: user?._id
-    })
+      user: user?._id,
+    });
   };
 
   const createMarketAuction = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
     const { itemId, tokenId } = pinDetail;
@@ -285,10 +369,7 @@ const PinDetail = () => {
     contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
 
     // const auctionPrice = ethers.utils.parseUnits("0.01", 'ether')
-    transaction = await contract.createMarketAuction(
-      nftaddress,
-      itemId,
-    );
+    transaction = await contract.createMarketAuction(nftaddress, itemId);
 
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
@@ -308,9 +389,9 @@ const PinDetail = () => {
   };
 
   const executeMarketAuctionEnd = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
     const { itemId } = pinDetail;
@@ -333,7 +414,7 @@ const PinDetail = () => {
     const event = tx.events[0];
 
     let newPrice = "0";
-    let newOwner = getMaxBid(pinDetail?.bids)?.user?.address;
+    let newOwner = getMaxBid(bids)?.user?.address;
     let newSeller = etherAddress;
 
     updatePin({
@@ -346,9 +427,9 @@ const PinDetail = () => {
   };
 
   const cancelMarketSale = async () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
     const { itemId } = pinDetail;
@@ -380,9 +461,9 @@ const PinDetail = () => {
   };
 
   const addComment = () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
 
     if (comment) {
@@ -396,31 +477,27 @@ const PinDetail = () => {
         .then(() => {
           setAddingComment(false);
           setComment("");
-          setRefresh(prev => !prev)
+          setRefresh((prev) => !prev);
         });
     }
   };
   const makeAuctionBidRequest = (body) => {
-      axios
-        .post(`/api/pins/bids/${pinId}`, body)
-        .then(() => {
-          setAddingBidPrice(false);
-          setInputPrice("");
-          setRefresh(prev => !prev)
-        });
+    axios.post(`/api/pins/bids/${pinId}`, body).then(() => {
+      setAddingBidPrice(false);
+      setInputPrice("");
+      setRefresh((prev) => !prev);
+    });
   };
   const withdrawAuctionBidRequest = (body) => {
-      axios
-        .put(`/api/pins/bids/${pinId}`, body)
-        .then(() => {
-          setRefresh(prev => !prev)
-        });
+    axios.put(`/api/pins/bids/${pinId}`, body).then(() => {
+      setRefresh((prev) => !prev);
+    });
   };
 
   const savePin = () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
+    if (!user?._id) {
+      alert(loginMessage);
+      return;
     }
     setSavingPost(true);
     axios
@@ -429,14 +506,13 @@ const PinDetail = () => {
       })
       .then((res) => {
         setSavingPost(false);
-        setRefresh(prev => !prev)
+        setRefresh((prev) => !prev);
       })
       .catch((e) => {
         console.log(e);
         setSavingPost(false);
       });
   };
-
 
   if (!pinDetail) {
     return <Spinner message="Showing pin" />;
@@ -445,57 +521,56 @@ const PinDetail = () => {
   return (
     <>
       <Head>
-        <title>{`${pinDetail?.title} | NFT Nation`}</title>
-        <meta name="description" content={`${pinDetail?.about}`} />
-        <meta
-          property="og:title"
-          content={`${pinDetail?.title} | NFT Nation`}
-        />
-        <meta property="og:description" content={`${pinDetail?.about}`} />
+        <title>{`${title} | NFT Nation`}</title>
+        <meta name="description" content={`${about}`} />
+        <meta property="og:title" content={`${title} | NFT Nation`} />
+        <meta property="og:description" content={`${about}`} />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/pin-detail/${pinDetail?._id}`}
+          content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
         />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {pinDetail && (
-        <div className="bg-gradient-to-r from-[#ffffff] to-[#009387] bg-white shadow-lg rounded-lg p-0 lg:p-8 pb-12 mb-8">
-          <div className="bg-gradient-to-r from-[#009387] to-[#ffffff] flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-8 mb-6 rounded-lg">
+        <div className="bg-gradient-to-r from-[#ffffff] to-[#009387] bg-white shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
+          <div className="bg-gradient-to-r from-[#009387] to-[#ffffff] flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
             <Image
               unoptimized
               placeholder="blur"
               blurDataURL="/favicon.png"
-              alt={pinDetail?.title}
+              alt={title}
               className="shadow-lg rounded-t-lg lg:rounded-lg"
               height={500}
               width={600}
-              src={pinDetail?.image}
+              src={image}
             />
 
             <div className="w-full p-5 flex-1 xl:min-w-620">
               <h2 className="mt-0 text-2xl font-bold">
-                {pinDetail?.comments?.length
-                  ? `${pinDetail?.comments?.length} Comments`
+                {comments?.length
+                  ? `${comments?.length} Comments`
                   : `No Comments Yet`}
               </h2>
               <div className="max-h-370 overflow-y-scroll">
-                {pinDetail?.comments?.map((item) => (
+                {comments?.map((item) => (
                   <div
                     key={`${item?._id}`}
                     className="bg-gradient-to-r from-[#ffffff] to-[#009387] flex gap-2 mt-5 items-center bg-white rounded-lg"
                   >
                     {item?.user?._id && (
                       <Link href={`/user-profile/${item?.user?._id}`}>
-                        {item?.user?.image && (
-                          <Image
-                            height={40}
-                            width={40}
-                            src={item?.user?.image}
-                            className="w-10 h-10 rounded-full cursor-pointer"
-                            alt="user-profile"
-                          />
-                        )}
+                        <div>
+                          {item?.user?.image && (
+                            <Image
+                              height={40}
+                              width={40}
+                              src={item?.user?.image}
+                              className="w-10 h-10 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
+                          )}
+                        </div>
                       </Link>
                     )}
                     <div className="flex flex-col">
@@ -510,15 +585,17 @@ const PinDetail = () => {
               <div className="flex flex-wrap mt-6 gap-3">
                 {user?._id && (
                   <Link href={`/user-profile/${user?._id}`}>
-                    {user?.image && (
-                      <Image
-                        height={40}
-                        width={40}
-                        src={user?.image}
-                        className="w-10 h-10 rounded-full cursor-pointer"
-                        alt="user-profile"
-                      />
-                    )}
+                    <div>
+                      {user?.image && (
+                        <Image
+                          height={40}
+                          width={40}
+                          src={user?.image}
+                          className="w-10 h-10 rounded-full cursor-pointer"
+                          alt="user-profile"
+                        />
+                      )}
+                    </div>
                   </Link>
                 )}
                 <input
@@ -539,50 +616,80 @@ const PinDetail = () => {
             </div>
           </div>
 
-          <h1 className="transition duration-700 text-center mb-8 cursor-pointer hover:text-pink-600 text-3xl font-semibold">
-            <p>{pinDetail?.title}</p>
-          </h1>
-          <div className="block lg:flex text-center items-center justify-center mb-8 w-full">
-            {pinDetail?.postedBy?._id && (
-              <Link href={`/user-profile/${pinDetail?.postedBy?._id}`}>
-                <div className="cursor-pointer flex items-center justify-center mb-4 lg:mb-0 w-full lg:w-auto mr-8 items-center">
+          <div className="block lg:flex text-center items-center justify-center mb-5 w-full justify-evenly">
+            {postedBy?._id && (
+              <Link href={`/user-profile/${postedBy?._id}`}>
+                <div className="cursor-pointer flex items-center justify-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 items-center transition transition duration-500 ease transform hover:-translate-y-1">
                   <Image
                     alt={pinDetail.postedBy.userName}
                     height={40}
                     width={40}
                     className="align-middle rounded-full"
-                    src={pinDetail?.postedBy?.image}
+                    src={postedBy?.image}
                   />
 
                   <p className="inline align-middle text-gray-700 ml-2 text-lg font-bold">
-                    {getUserName(pinDetail?.postedBy?.userName)}
+                    {getUserName(postedBy?.userName)}
                   </p>
                 </div>
               </Link>
             )}
 
-            <div className="font-bold text-gray-700">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 inline mr-2 text-pink-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+            {(priceShowCondition || highestBidShowCondition) && (
+              <div className="font-bold text-gray-700 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 inline mr-2 text-pink-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="align-middle">
+                  {/* {moment(createdAt).format("MMM DD, YYYY")} */}
+                  {priceShowCondition
+                    ? `On Sale (Price: ${price} Matic)`
+                    : `On Auction ${
+                        bids?.length
+                          ? ` (Highest Bid: ${getMaxBid(bids).bid} Matic)`
+                          : ` (No Bids Yet)`
+                      }`}
+                </span>
+              </div>
+            )}
+
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(`${nftContract}`);
+              }}
+              className="font-bold text-gray-700 mr-2 cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1"
+            >
+              <FaCopy className="inline mr-2" size={25} />
               <span className="align-middle">
-                {moment(pinDetail?.createdAt).format("MMM DD, YYYY")}
+                {/* {moment(createdAt).format("MMM DD, YYYY")} */}
+                {`Contract Address`}
+              </span>
+            </div>
+
+            <div className="font-bold text-gray-700 mr-2">
+              <FaDiceD20 className="inline mr-2" size={25} />
+              <span className="align-middle">
+                {/* {moment(createdAt).format("MMM DD, YYYY")} */}
+                {`Token ID: #${tokenId}`}
               </span>
             </div>
           </div>
-          <p className="text-center text-lg text-gray-700 font-normal px-4 lg:px-20 mb-8">
-            {pinDetail?.about}
+          <h1 className="transition duration-700 text-center mb-5 cursor-pointer hover:text-pink-600 text-3xl font-semibold">
+            <p>{`#${tokenId} ${title}`}</p>
+          </h1>
+          <p className="text-center text-lg text-gray-700 font-normal px-4 lg:px-20 mb-5">
+            {about}
           </p>
           <div className="p-2 bg-gradient-to-r from-[#009387] to-[#ffffff] rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
             {executeMarketSaleCondition && (
@@ -591,16 +698,14 @@ const PinDetail = () => {
                   executeMarketSale();
                 }}
               >
-                <span className={buttonStyles}>
-                  {`Buy ${pinDetail?.price} Matic`}{" "}
-                </span>
+                <span className={buttonStyles}>{`Buy ${price} Matic`} </span>
               </button>
             )}
 
             {createMarketSaleCondition && (
               <button
                 onClick={() => {
-                  setAddingSellPrice((prev) => !prev)
+                  setAddingSellPrice((prev) => !prev);
                 }}
               >
                 <span className={buttonStyles}>{`Sell`} </span>
@@ -613,7 +718,9 @@ const PinDetail = () => {
                   cancelMarketSale();
                 }}
               >
-                <span className={buttonStyles}>{`Put Down From Sale (Current Price: ${pinDetail?.price} Matic)`} </span>
+                <span className={buttonStyles}>
+                  {`Put Down From Sale`}{" "}
+                </span>
               </button>
             )}
 
@@ -633,18 +740,28 @@ const PinDetail = () => {
                   executeMarketAuctionEnd();
                 }}
               >
-                <span className={buttonStyles}>{`Put Down From Auction${pinDetail?.bids?.length ? ` (Highest Bid: ${getMaxBid(pinDetail?.bids).bid} Matic)` : ` (No Bids Yet)`}`} </span>
+                <span className={buttonStyles}>
+                  {`Put Down From Auction${
+                    bids?.length
+                      ? ` (Highest Bid: ${getMaxBid(bids).bid} Matic)`
+                      : ` (No Bids Yet)`
+                  }`}{" "}
+                </span>
               </button>
             )}
 
             {makeAuctionBidCondition && (
               <button
                 onClick={() => {
-                  setAddingBidPrice(prev => !prev)
+                  setAddingBidPrice((prev) => !prev);
                 }}
               >
                 <span className={buttonStyles}>
-                  {`Make a Bid${pinDetail?.bids?.length ? ` (Highest Bid: ${getMaxBid(pinDetail?.bids).bid} Matic)` : ` (No Bids Yet)`}`}{" "}
+                  {`Make a Bid${
+                    bids?.length
+                      ? ` (Highest Bid: ${getMaxBid(bids).bid} Matic)`
+                      : ` (No Bids Yet)`
+                  }`}{" "}
                 </span>
               </button>
             )}
@@ -654,7 +771,11 @@ const PinDetail = () => {
                   withdrawAuctionBid();
                 }}
               >
-                <span className={buttonStyles}>{`Withdraw Bid (Highest Bid: ${getMaxBid(pinDetail?.bids).bid} Matic)`} </span>
+                <span className={buttonStyles}>
+                  {`Withdraw Bid (Your Bid: ${
+                    getUserBid(bids, user?._id).bid
+                  } Matic)`}{" "}
+                </span>
               </button>
             )}
 
@@ -665,7 +786,7 @@ const PinDetail = () => {
             >
               <span className={buttonStyles}>
                 {alreadySaved
-                  ? `${pinDetail?.saved?.length} Saved`
+                  ? `${saved?.length} Saved`
                   : savingPost
                   ? `Saving...`
                   : `Save`}{" "}
@@ -687,15 +808,17 @@ const PinDetail = () => {
               <div className="flex flex-wrap m-2 gap-3">
                 {user?._id && (
                   <Link href={`/user-profile/${user?._id}`}>
-                    {user?.image && (
-                      <Image
-                        height={40}
-                        width={40}
-                        src={user?.image}
-                        className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
-                        alt="user-profile"
-                      />
-                    )}
+                    <div>
+                      {user?.image && (
+                        <Image
+                          height={40}
+                          width={40}
+                          src={user?.image}
+                          className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
+                          alt="user-profile"
+                        />
+                      )}
+                    </div>
                   </Link>
                 )}
                 <input
@@ -710,8 +833,8 @@ const PinDetail = () => {
                   type="button"
                   className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-red text-white rounded-full px-6 py-2 font-semibold text-base outline-none"
                   onClick={() => {
-                    addingSellPrice && createMarketSale()
-                    addingBidPrice && makeAuctionBid()
+                    addingSellPrice && createMarketSale();
+                    addingBidPrice && makeAuctionBid();
                   }}
                 >
                   {`Confirm`}
@@ -722,15 +845,14 @@ const PinDetail = () => {
         </div>
       )}
       {pins?.length > 0 && (
-        <h2 className="text-center font-bold text-2xl mt-8 mb-4">
-          More like this
-        </h2>
+        <>
+          <h2 className="text-center font-bold text-2xl mt-8 mb-4">
+            More like this
+          </h2>
+          <MasonryLayout pins={pins} />
+        </>
       )}
-      {pins ? (
-        <MasonryLayout pins={pins} />
-      ) : (
-        <Spinner message="Loading more pins" />
-      )}
+      {loading && <Spinner message="Loading more pins" />}
     </>
   );
 };

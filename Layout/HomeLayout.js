@@ -12,10 +12,12 @@ import Image from "next/image";
 import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
 
+
+
 const HomeLayout = ({ children, ...pageProps }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const { searchTerm, setSearchTerm } = pageProps;
-  const scrollRef = useRef(null);
+  // const scrollRef = useRef(null);
   const dispatch = useDispatch();
   const router = useRouter()
   const { user, page, hasMore } = useSelector((state) => state.userReducer);
@@ -131,7 +133,6 @@ const HomeLayout = ({ children, ...pageProps }) => {
     axios
       .post("/api/users", obj)
       .then((res) => {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
@@ -153,7 +154,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
   };
 
   useEffect(() => {
-    scrollRef.current.scrollTo(0, 0);
+    // scrollRef.current.scrollTo(0, 0);
     connectToMetamask()
   }, []);
 
@@ -207,6 +208,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
           </Link>
           {user?._id && (
             <Link href={`/user-profile/${user?._id}`}>
+              <div>
               <Image
                 height={40}
                 width={40}
@@ -214,6 +216,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
                 alt="user-pic"
                 className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
               />
+              </div>
             </Link>
           )}
         </div>
@@ -227,7 +230,9 @@ const HomeLayout = ({ children, ...pageProps }) => {
           </div>
         )}
       </div>
-      <div onScroll={onScroll} className="pb-2 flex-1 h-screen overflow-y-scroll" ref={scrollRef}>
+      <div onScroll={onScroll} className="pb-2 flex-1 h-screen overflow-y-scroll" 
+      // ref={scrollRef}
+      >
         <div className="px-2 md:px-5">
           <div className="bg-gray-50">
             <Navbar

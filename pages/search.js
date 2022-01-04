@@ -4,9 +4,12 @@ import { MasonryLayout } from "../components";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Head from "next/head";
-import { HAS_MORE } from "../redux/constants/UserTypes";
+import { HAS_MORE, MORE_LOADING } from "../redux/constants/UserTypes";
 
 const SearchPage = () => {
+  const CancelToken = axios.CancelToken;
+const source = CancelToken.source();
+
   const dispatch = useDispatch()
   const [pins, setPins] = useState();
   const [loading, setLoading] = useState(false);
@@ -16,12 +19,22 @@ const SearchPage = () => {
 
   const fetchPins = () => {
     if (searchTerm !== "") {
-      setLoading(true);
+      dispatch({
+        type: MORE_LOADING,
+        payload: page !== 1
+      });
+      page === 1 && setLoading(true);
       axios
-        .get(`/api/pins?page=${page}&keyword=${searchTerm}`)
+        .get(`/api/pins?page=${page}&keyword=${searchTerm}`, {
+          cancelToken: source.token
+        })
         .then((res) => {
           const { pins, resultPerPage, filteredPinsCount } = res.data;
           setLoading(false);
+          dispatch({
+            type: MORE_LOADING,
+            payload: false
+          });
           page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
           dispatch({
             type: HAS_MORE,
@@ -30,6 +43,13 @@ const SearchPage = () => {
         })
         .catch((e) => {
           setLoading(false);
+          dispatch({
+            type: MORE_LOADING,
+            payload: false
+          });
+          if (axios.isCancel(e)) {
+            console.log('Request canceled', e.message);
+          }
         });
     } else {
       setLoading(true);
@@ -52,6 +72,8 @@ const SearchPage = () => {
 
   useEffect(() => {
     fetchPins()
+
+    return () => source.cancel('Operation canceled by the user.');
   }, [searchTerm, page]);
 
   return (

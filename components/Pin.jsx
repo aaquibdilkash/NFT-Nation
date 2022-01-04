@@ -144,7 +144,6 @@ const Pin = ({ pin }) => {
       </div>
       <Link
         href={`/user-profile/${postedBy?._id}`}
-        className="flex gap-2 mt-2 items-center"
       >
         <div className="transition transition duration-500 ease transform hover:-translate-y-1 inline-block flex gap-2 mt-2 items-center">
           <Image

@@ -132,6 +132,10 @@ export const getMaxBid = (bids) => {
 });
 }
 
+export const getUserBid = (bids, user) => {
+  return bids?.find((item) => item?.user === user)
+}
+
 export const getUserName = (string) => {
   return string?.length !== 42
     ? `@${string}`

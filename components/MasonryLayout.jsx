@@ -1,6 +1,7 @@
 import React from 'react';
 import Masonry from 'react-masonry-css';
 import { useSelector } from 'react-redux';
+import { Spinner } from '.';
 import Pin from './Pin';
 
 const breakpointColumnsObj = {
@@ -22,14 +23,10 @@ const MasonryLayout = ({ pins }) => {
   return (
     <Masonry className="flex animate-slide-fwd" breakpointCols={breakpointColumnsObj}>
       {pins?.map((pin, index) => {
-        if(index + 1 === pins.length) {
           return <Pin key={pin._id} pin={pin} className="w-max" />
-        } else {
-          return <Pin key={pin._id} pin={pin} className="w-max" />
-        }
       })}
       {moreLoading && (
-            <Spinner message={`We are adding ${ideaName} ideas to your feed!`} />
+            <Spinner message={`We are adding more to your feed!`} />
           )}
     </Masonry>
   )

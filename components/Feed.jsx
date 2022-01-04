@@ -11,15 +11,15 @@ const Feed = ({ categoryId }) => {
   const dispatch = useDispatch();
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { page, moreLoading } = useSelector((state) => state.userReducer);
+  const { page } = useSelector((state) => state.userReducer);
 
   const fetchPins = () => {
     if (categoryId) {
-      setLoading(true);
-      dispatch({
-        type: MORE_LOADING,
-        payload: page !== 1
-      });
+      page === 1 && setLoading(true)
+    dispatch({
+      type: MORE_LOADING,
+      payload: page !== 1
+    });
       axios
         .get(`/api/pins?page=${page}&category=${categoryId}`)
         .then((res) => {
@@ -37,6 +37,10 @@ const Feed = ({ categoryId }) => {
         })
         .catch((e) => {
           setLoading(false);
+          dispatch({
+            type: MORE_LOADING,
+            payload: false
+          });
           dispatch({
             type: MORE_LOADING,
             payload: false
@@ -63,16 +67,18 @@ const Feed = ({ categoryId }) => {
 
   useEffect(() => {
     fetchPins();
+
+    return () => {}
   }, [categoryId, page]);
 
   const ideaName = categoryId || "new";
   if (loading && page === 1) {
     return (
-      <Spinner message={`We are adding ${ideaName} ideas to your feed!`} />
+      <Spinner message={`We are adding ${ideaName} pins to your feed!`} />
     );
   }
 
-  if (!loading && pins?.length < 1) {
+  if (!loading && pins?.length === 0) {
     return (
       <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
     );
