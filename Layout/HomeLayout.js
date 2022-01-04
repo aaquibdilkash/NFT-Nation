@@ -28,6 +28,12 @@ const HomeLayout = ({ children, ...pageProps }) => {
   const chain = chainData.test;
 
   const connectToMetamask = async () => {
+
+    if (!window?.ethereum) {
+      alert("Web3 is not enabled in this browser, Please Checkout Metamask!");
+      return
+    }
+
     const providerOptions = {
       /* See Provider Options Section */
     };
@@ -39,10 +45,6 @@ const HomeLayout = ({ children, ...pageProps }) => {
     });
 
     provider = await web3Modal.connect();
-
-    if (!provider) {
-      alert("Web3 is not enabled in this browser, Checkout Metamask!");
-    }
 
     web3 = new Web3(provider);
 
