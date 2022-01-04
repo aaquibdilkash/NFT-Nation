@@ -21,7 +21,7 @@ const buttonStyles =
 const PinDetail = () => {
   const router = useRouter();
   const { pinId } = router.query;
-  const { user } = useSelector((state) => state.userReducer);
+  const { user, page } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [pins, setPins] = useState();
   const [pinDetail, setPinDetail] = useState();
@@ -73,6 +73,8 @@ const PinDetail = () => {
     pinDetail?.owner === etherAddress &&
     pinDetail?.bids?.find((bid) => bid.user?._id === user?._id) &&
     !pinDetail?.auctionEnded;
+
+  
 
   useEffect(() => {
     pinId &&
@@ -489,8 +491,6 @@ const PinDetail = () => {
                           <Image
                             height={40}
                             width={40}
-                            placeholder="blur"
-                            blurDataURL="/favicon.png"
                             src={item?.user?.image}
                             className="w-10 h-10 rounded-full cursor-pointer"
                             alt="user-profile"
@@ -515,8 +515,6 @@ const PinDetail = () => {
                         height={40}
                         width={40}
                         src={user?.image}
-                        placeholder="blur"
-                        blurDataURL="/favicon.png"
                         className="w-10 h-10 rounded-full cursor-pointer"
                         alt="user-profile"
                       />
@@ -552,8 +550,6 @@ const PinDetail = () => {
                     alt={pinDetail.postedBy.userName}
                     height={40}
                     width={40}
-                    placeholder="blur"
-                    blurDataURL="/favicon.png"
                     className="align-middle rounded-full"
                     src={pinDetail?.postedBy?.image}
                   />
@@ -696,8 +692,6 @@ const PinDetail = () => {
                         height={40}
                         width={40}
                         src={user?.image}
-                        placeholder="blur"
-                        blurDataURL="/favicon.png"
                         className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
                         alt="user-profile"
                       />

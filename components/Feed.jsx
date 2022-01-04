@@ -1,37 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import MasonryLayout from './MasonryLayout';
-import Spinner from './Spinner';
-import axios from "axios"
-import { useSelector } from 'react-redux';
-import Head from 'next/head';
+import React, { useState, useEffect } from "react";
+import MasonryLayout from "./MasonryLayout";
+import Spinner from "./Spinner";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import Head from "next/head";
+import { HAS_MORE, MORE_LOADING } from "../redux/constants/UserTypes";
+import { useDispatch } from "react-redux";
 
-const Feed = ({categoryId}) => {
-  const [pins, setPins] = useState();
+const Feed = ({ categoryId }) => {
+  const dispatch = useDispatch();
+  const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(false);
-  const {refresh} = useSelector(state => state.userReducer)
+  const { page, moreLoading } = useSelector((state) => state.userReducer);
 
-  useEffect(() => {
+  const fetchPins = () => {
     if (categoryId) {
       setLoading(true);
-      axios.get(`/api/pins?category=${categoryId}`).then((res) => {
-        setLoading(false)
-        setPins(res.data.pins)
-      }).catch((e) => {
-        setLoading(false)
-      })
+      dispatch({
+        type: MORE_LOADING,
+        payload: page !== 1
+      });
+      axios
+        .get(`/api/pins?page=${page}&category=${categoryId}`)
+        .then((res) => {
+          const { pins, resultPerPage, filteredPinsCount } = res.data;
+          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+          setLoading(false);
+          dispatch({
+            type: MORE_LOADING,
+            payload: false
+          });
+          dispatch({
+            type: HAS_MORE,
+            payload: page * resultPerPage < filteredPinsCount,
+          });
+        })
+        .catch((e) => {
+          setLoading(false);
+          dispatch({
+            type: MORE_LOADING,
+            payload: false
+          });
+        });
     } else {
       setLoading(true);
-      axios.get(`/api/pins`).then((res) => {
-        setLoading(false)
-        setPins(res.data.pins)
-      }).catch((e) => {
-        setLoading(false)
-      })
+      axios
+        .get(`/api/pins?page=${page}`)
+        .then((res) => {
+          const { pins, resultPerPage, pinsCount } = res.data;
+          setLoading(false);
+          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+          dispatch({
+            type: HAS_MORE,
+            payload: page * resultPerPage < pinsCount,
+          });
+        })
+        .catch((e) => {
+          setLoading(false);
+        });
     }
-  }, [categoryId, refresh]);
+  };
 
-  const ideaName = categoryId || 'new';
-  if (loading) {
+  useEffect(() => {
+    fetchPins();
+  }, [categoryId, page]);
+
+  const ideaName = categoryId || "new";
+  if (loading && page === 1) {
     return (
       <Spinner message={`We are adding ${ideaName} ideas to your feed!`} />
     );
@@ -40,39 +75,37 @@ const Feed = ({categoryId}) => {
   if (!loading && pins?.length < 1) {
     return (
       <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
-      );
+    );
   }
 
-  
   return (
     <>
-    {
-      categoryId && (
+      {categoryId && (
         <Head>
-        <title>{`${categoryId} NFTs  | NFT Nation`}</title>
-        <meta
-          name="description"
-          content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
-        />
-        <meta property="og:title" content={`${categoryId} NFTs | NFT Nation`} />
-        <meta
-          property="og:description"
-          content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
-        />
-        <meta
-          property="og:url"
-          content={`https://nft-nation.vercel.app/${categoryId}`}
-        />
-        <meta property="og:type" content="website" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      )
-    }
-      <div>
-      {pins && (
-        <MasonryLayout pins={pins} />
+          <title>{`${categoryId} NFTs | NFT Nation`}</title>
+          <meta
+            name="description"
+            content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
+          />
+          <meta
+            property="og:title"
+            content={`${categoryId} NFTs | NFT Nation`}
+          />
+          <meta
+            property="og:description"
+            content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
+          />
+          <meta
+            property="og:url"
+            content={`https://nft-nation.vercel.app/${categoryId}`}
+          />
+          <meta property="og:type" content="website" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
       )}
-    </div>
+      <div className="">
+        {pins?.length > 0 && <MasonryLayout pins={pins} />}
+      </div>
     </>
   );
 };

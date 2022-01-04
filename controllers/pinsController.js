@@ -4,7 +4,7 @@ import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 
 const allPins = catchAsyncErrors(async (req, res) => {
-  const resultPerPage = 20;
+  const resultPerPage = 12;
   const pinsCount = await Pin.countDocuments();
 
   const searchPagination = new SearchPagination(

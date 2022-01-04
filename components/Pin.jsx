@@ -40,32 +40,32 @@ const Pin = ({ pin }) => {
 
   const router = useRouter();
 
-  let { user, refresh } = useSelector((state) => state.userReducer);
+  // let { user, refresh } = useSelector((state) => state.userReducer);
 
-  let alreadySaved = pin?.saved?.find((item) => item === user?._id);
+  // let alreadySaved = pin?.saved?.find((item) => item === user?._id);
 
-  const savePin = () => {
-    if(!user?._id) {
-      alert(loginMessage)
-      return
-    }
-    setSavingPost(true);
-    axios
-      .put(`/api/pins/save/${_id}`, {
-        user: user?._id,
-      })
-      .then((res) => {
-        setSavingPost(false);
-        dispatch({
-          type: REFRESH_SET,
-          payload: !refresh,
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-        setSavingPost(false);
-      });
-  };
+  // const savePin = () => {
+  //   if(!user?._id) {
+  //     alert(loginMessage)
+  //     return
+  //   }
+  //   setSavingPost(true);
+  //   axios
+  //     .put(`/api/pins/save/${_id}`, {
+  //       user: user?._id,
+  //     })
+  //     .then((res) => {
+  //       setSavingPost(false);
+  //       dispatch({
+  //         type: REFRESH_SET,
+  //         payload: !refresh,
+  //       });
+  //     })
+  //     .catch((e) => {
+  //       console.log(e);
+  //       setSavingPost(false);
+  //     });
+  // };
 
   return (
     <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
@@ -93,6 +93,12 @@ const Pin = ({ pin }) => {
           <button
               type="button"
               className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+            >
+              {`${saved?.length} Saved`}{" "}
+            </button>
+          {/* <button
+              type="button"
+              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-red opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
               onClick={(e) => {
                 e.stopPropagation();
                 savePin(_id);
@@ -103,7 +109,7 @@ const Pin = ({ pin }) => {
                 : savingPost
                 ? `Saving...`
                 : `Save`}{" "}
-            </button>
+            </button> */}
             {(priceShowCondition || highestBidShowCondition) && (
               <button
                 type="button"
@@ -144,8 +150,6 @@ const Pin = ({ pin }) => {
           <Image
             height={35}
             width={35}
-            placeholder="blur"
-            blurDataURL="/favicon.png"
             className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
             src={postedBy?.image}
             alt="user-profile"

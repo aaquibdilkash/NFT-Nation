@@ -3,7 +3,7 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import { HAS_MORE, MORE_LOADING, PAGE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import { chainData, toHex } from "../utils/data";
 import axios from "axios";
 import Web3 from "web3";
@@ -18,7 +18,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
   const scrollRef = useRef(null);
   const dispatch = useDispatch();
   const router = useRouter()
-  const { user } = useSelector((state) => state.userReducer);
+  const { user, page, hasMore } = useSelector((state) => state.userReducer);
 
   let web3Modal;
   let provider;
@@ -155,6 +155,36 @@ const HomeLayout = ({ children, ...pageProps }) => {
     connectToMetamask()
   }, []);
 
+  useEffect(() => {
+      dispatch({
+        type: PAGE_SET,
+        payload: 1
+      })
+  
+      dispatch({
+        type: HAS_MORE,
+        payload: true
+      })
+  
+      dispatch({
+        type: MORE_LOADING,
+        payload: false
+      })
+    
+  }, [router])
+
+  const onScroll = (e) => {
+    const {scrollTop, clientHeight, scrollHeight} = e.currentTarget;
+
+    if (scrollHeight - scrollTop === clientHeight && hasMore) {
+      console.log(page)
+      dispatch({
+        type: PAGE_SET,
+        payload: page+1
+      })
+    }
+  }
+
   return (
     <div className="flex bg-gradient-to-r from-[#ffffff] to-[#009387] md:flex-row flex-col h-screen transition-height duration-75 ease-out">
       <div className="hidden md:flex h-screen flex-initial">
@@ -168,7 +198,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
             onClick={() => setToggleSidebar(true)}
           />
           <Link href="/">
-            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center">
+            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center cursor-pointer">
               <FaArtstation className="" size={25} />{" "}
               <p className="font-bold text-lg">NFT Nation</p>
             </div>
@@ -179,8 +209,6 @@ const HomeLayout = ({ children, ...pageProps }) => {
                 height={40}
                 width={40}
                 src={user?.image}
-                placeholder="blur"
-                blurDataURL="/favicon.png"
                 alt="user-pic"
                 className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
               />
@@ -197,7 +225,7 @@ const HomeLayout = ({ children, ...pageProps }) => {
           </div>
         )}
       </div>
-      <div className="pb-2 flex-1 h-screen overflow-y-scroll" ref={scrollRef}>
+      <div onScroll={onScroll} className="pb-2 flex-1 h-screen overflow-y-scroll" ref={scrollRef}>
         <div className="px-2 md:px-5">
           <div className="bg-gray-50">
             <Navbar

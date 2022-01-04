@@ -4,12 +4,18 @@ import {
   USER_GET_SUCCESS,
   SEARCH_TERM_SET,
   REFRESH_SET,
+  PAGE_SET,
+  HAS_MORE,
+  MORE_LOADING,
 } from "../constants/UserTypes";
 
 const initialState = {
   user: {},
   searchTerm: "",
   refresh: false,
+  page: 1,
+  hasMore: true,
+  moreLoading: false
 };
 
 export const userReducer = (state = initialState, action) => {
@@ -29,6 +35,24 @@ export const userReducer = (state = initialState, action) => {
       return {
         ...state,
         searchTerm: action.payload,
+      };
+
+    case PAGE_SET:
+      return {
+        ...state,
+        page: action.payload,
+      };
+
+    case HAS_MORE:
+      return {
+        ...state,
+        hasMore: action.payload,
+      };
+
+    case MORE_LOADING:
+      return {
+        ...state,
+        moreLoading: action.payload,
       };
 
     case REFRESH_SET:

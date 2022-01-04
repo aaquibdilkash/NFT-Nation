@@ -158,8 +158,6 @@ const ProfileEdit = ({ userId, setEditing }) => {
                 height={40}
                 width={40}
                 src={user.image}
-                placeholder="blur"
-                blurDataURL="/favicon.png"
                 className="w-10 h-10 rounded-full"
                 alt="user-profile"
               />

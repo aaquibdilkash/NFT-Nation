@@ -1,39 +1,62 @@
-import React, { useEffect, useState } from 'react';
-import {Spinner} from '../components';
-import {MasonryLayout} from '../components';
-import { useSelector } from 'react-redux';
-import axios from "axios"
-import Head from "next/head"
-
+import React, { useEffect, useState } from "react";
+import { Spinner } from "../components";
+import { MasonryLayout } from "../components";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import Head from "next/head";
+import { HAS_MORE } from "../redux/constants/UserTypes";
 
 const SearchPage = () => {
+  const dispatch = useDispatch()
   const [pins, setPins] = useState();
   const [loading, setLoading] = useState(false);
-  const {refresh, searchTerm} = useSelector(state => state.userReducer)
+  const { searchTerm, page } = useSelector(
+    (state) => state.userReducer
+  );
 
-  useEffect(() => {
-    if (searchTerm !== '') {
+  const fetchPins = () => {
+    if (searchTerm !== "") {
       setLoading(true);
-      axios.get(`/api/pins?keyword=${searchTerm}`).then((res) => {
-        setLoading(false)
-        setPins(res.data.pins)
-      }).catch((e) => {
-        setLoading(false)
-      })
+      axios
+        .get(`/api/pins?page=${page}&keyword=${searchTerm}`)
+        .then((res) => {
+          const { pins, resultPerPage, filteredPinsCount } = res.data;
+          setLoading(false);
+          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+          dispatch({
+            type: HAS_MORE,
+            payload: page * resultPerPage < filteredPinsCount,
+          });
+        })
+        .catch((e) => {
+          setLoading(false);
+        });
     } else {
       setLoading(true);
-      axios.get(`/api/pins`).then((res) => {
-        setLoading(false)
-        setPins(res.data.pins)
-      }).catch((e) => {
-        setLoading(false)
-      })
+      axios
+        .get(`/api/pins?page=${page}`)
+        .then((res) => {
+          const { pins, resultPerPage, pinsCount } = res.data;
+          setLoading(false);
+          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+          dispatch({
+            type: HAS_MORE,
+            payload: page * resultPerPage < pinsCount,
+          });
+        })
+        .catch((e) => {
+          setLoading(false);
+        });
     }
-  }, [searchTerm, refresh]);
+  }
+
+  useEffect(() => {
+    fetchPins()
+  }, [searchTerm, page]);
 
   return (
     <>
-    <Head>
+      <Head>
         <title>Search NFTs | NFT Nation</title>
         <meta
           name="description"
@@ -51,14 +74,15 @@ const SearchPage = () => {
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-    <div>
-
-{loading && <Spinner message="Searching pins..." />}
-{pins?.length !== 0 && <MasonryLayout pins={pins} />}
-{pins?.length === 0 && searchTerm !== '' && !loading && (
-  <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
-)}
-</div>
+      <div>
+        {loading && <Spinner message="Searching pins..." />}
+        {pins?.length !== 0 && <MasonryLayout pins={pins} />}
+        {pins?.length === 0 && searchTerm !== "" && !loading && (
+          <div className="mt-10 text-center text-xl font-bold">
+            No Pins Found!
+          </div>
+        )}
+      </div>
     </>
   );
 };
