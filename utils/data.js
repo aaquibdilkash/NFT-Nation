@@ -133,7 +133,7 @@ export const getMaxBid = (bids) => {
 }
 
 export const getUserBid = (bids, user) => {
-  return bids?.find((item) => item?.user === user)
+  return bids?.find((item) => item?.user?._id === user)
 }
 
 export const getUserName = (string) => {

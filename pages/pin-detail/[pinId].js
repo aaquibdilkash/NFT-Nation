@@ -773,7 +773,7 @@ const PinDetail = () => {
               >
                 <span className={buttonStyles}>
                   {`Withdraw Bid (Your Bid: ${
-                    getUserBid(bids, user?._id).bid
+                    getUserBid(bids, user?._id)?.bid
                   } Matic)`}{" "}
                 </span>
               </button>
