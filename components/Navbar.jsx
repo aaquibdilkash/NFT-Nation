@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { SEARCH_TERM_SET } from "../redux/constants/UserTypes";
 import { AiOutlineLogin } from "react-icons/ai";
 import Image from "next/image";
+import { SEARCH_TERM_SET } from "../redux/constants/UserTypes";
 
 const Navbar = ({connectToMetamask}) => {
   const dispatch = useDispatch();

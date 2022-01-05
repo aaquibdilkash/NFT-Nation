@@ -3,7 +3,7 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { HAS_MORE, MORE_LOADING, PAGE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import { HAS_MORE, MORE_LOADING, PAGE_SET, SEARCH_TERM_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import { chainData, toHex } from "../utils/data";
 import axios from "axios";
 import Web3 from "web3";
@@ -14,9 +14,8 @@ import { useRouter } from "next/router";
 
 
 
-const HomeLayout = ({ children, ...pageProps }) => {
+const HomeLayout = ({ children }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
-  const { searchTerm, setSearchTerm } = pageProps;
   // const scrollRef = useRef(null);
   const dispatch = useDispatch();
   const router = useRouter()
@@ -173,6 +172,11 @@ const HomeLayout = ({ children, ...pageProps }) => {
         type: MORE_LOADING,
         payload: false
       })
+
+      dispatch({
+        type: SEARCH_TERM_SET,
+        payload: ""
+      })
     
   }, [router])
 
@@ -236,8 +240,6 @@ const HomeLayout = ({ children, ...pageProps }) => {
         <div className="px-2 md:px-5">
           <div className="transparent">
             <Navbar
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
               connectToMetamask={connectToMetamask}
             />
           </div>

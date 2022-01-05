@@ -31,17 +31,28 @@ const PinDetail = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pinId } = router.query;
-  const { user, page } = useSelector((state) => state.userReducer);
+  const { user, page, moreLoading } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [pins, setPins] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [pinDetail, setPinDetail] = useState();
+  const [loading, setLoading] = useState(false);
+  const [similarLoading, setSimilarLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
   const [addingComment, setAddingComment] = useState(false);
   const [addingSellPrice, setAddingSellPrice] = useState(false);
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Loading...")
+  const approvalLoadingMessage = `Approving Your Token...`
+  const confirmLoadingMessage = `Waiting For Your Confirmation...`
+  const withrawBidLoadingMessage = `Withdrawing Your Bid...`
+  const makeBidLoadingMessage = `Making Your Bid...`
+  const createSaleLoadingMessage = `Creating Sale For Your Token...`
+  const cancelSaleLoadingMessage = `Putting Down Your Token From Sale...`
+  const createAuctionLoadingMessage = `Creating An Auction For Your Token...`
+  const cancelAuctionLoadingMessage = `Putting Down Your Token From Auction...`
+  const buyLoadingMessage = `Transfering The Ownership Of This Token To You...`
 
   const {
     _id,
@@ -141,7 +152,7 @@ const PinDetail = () => {
   };
 
   const fetchRelatedPins = () => {
-    page === 1 && setLoading(true);
+    page === 1 && setSimilarLoading(true);
     dispatch({
       type: MORE_LOADING,
       payload: page !== 1,
@@ -151,7 +162,7 @@ const PinDetail = () => {
       .then((res) => {
         const { pins, resultPerPage, filteredPinsCount } = res.data;
         let filtered = pins.filter(pin => pin?._id !== pinId)
-        setLoading(false);
+        setSimilarLoading(false);
         page === 1 ? setPins(filtered) : setPins((prev) => [...prev, ...filtered]);
         dispatch({
           type: MORE_LOADING,
@@ -163,7 +174,7 @@ const PinDetail = () => {
         });
       })
       .catch((e) => {
-        setLoading(false);
+        setSimilarLoading(false);
         dispatch({
           type: MORE_LOADING,
           payload: false,
@@ -184,11 +195,14 @@ const PinDetail = () => {
     axios
       .put(`/api/pins/${_id}`, body)
       .then((res) => {
+        setLoading(false)
         setAddingSellPrice(false);
         setInputPrice("");
         setRefresh((prev) => !prev);
       })
-      .catch((e) => {});
+      .catch((e) => {
+        setLoading(false)
+      });
   };
 
   const executeMarketSale = async () => {
@@ -196,6 +210,9 @@ const PinDetail = () => {
       alert(loginMessage);
       return;
     }
+
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
 
     const { price, itemId } = pinDetail;
 
@@ -207,6 +224,8 @@ const PinDetail = () => {
     const contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
 
     const auctionPrice = ethers.utils.parseUnits(price, "ether");
+
+    setLoadingMessage(buyLoadingMessage)
 
     const transaction = await contract.executeMarketSale(nftaddress, itemId, {
       value: auctionPrice,
@@ -240,6 +259,9 @@ const PinDetail = () => {
       return;
     }
 
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const { itemId, tokenId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -250,20 +272,28 @@ const PinDetail = () => {
 
     let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
 
+    
     let transaction = await contract.approve(nftmarketaddress, tokenId);
+    setLoadingMessage(approvalLoadingMessage)
 
     await transaction.wait();
+
+    setLoadingMessage(confirmLoadingMessage)
 
     contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
 
     const auctionPrice = ethers.utils.parseUnits(inputPrice, "ether");
+
     transaction = await contract.createMarketSale(
       nftaddress,
       itemId,
       auctionPrice
     );
 
+    setLoadingMessage(createSaleLoadingMessage)
+
     const tx = await transaction.wait();
+
     console.log(tx.events, "DDDDDDD");
     const event = tx.events[0];
 
@@ -290,6 +320,9 @@ const PinDetail = () => {
       return;
     }
 
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -300,11 +333,14 @@ const PinDetail = () => {
 
     let contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
 
+
     const auctionBid = ethers.utils.parseUnits(inputPrice, "ether");
 
     const transaction = await contract.makeAuctionBid(itemId, {
       value: auctionBid,
     });
+
+    setLoadingMessage(makeBidLoadingMessage)
 
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
@@ -325,6 +361,9 @@ const PinDetail = () => {
       return;
     }
 
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -336,6 +375,8 @@ const PinDetail = () => {
     let contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
 
     const transaction = await contract.withdrawAuctionBid(itemId);
+
+    setLoadingMessage(withrawBidLoadingMessage)
 
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
@@ -352,6 +393,9 @@ const PinDetail = () => {
       return;
     }
 
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const { itemId, tokenId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -362,14 +406,20 @@ const PinDetail = () => {
 
     let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
 
+    
     let transaction = await contract.approve(nftmarketaddress, tokenId);
+    setLoadingMessage(approvalLoadingMessage)
 
     await transaction.wait();
 
-    contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+    setLoadingMessage(confirmLoadingMessage)
 
+    contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+    
     // const auctionPrice = ethers.utils.parseUnits("0.01", 'ether')
     transaction = await contract.createMarketAuction(nftaddress, itemId);
+
+    setLoadingMessage(createAuctionLoadingMessage)
 
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
@@ -394,6 +444,9 @@ const PinDetail = () => {
       return;
     }
 
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -409,12 +462,14 @@ const PinDetail = () => {
       itemId
     );
 
+    setLoadingMessage(cancelAuctionLoadingMessage)
+
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
     const event = tx.events[0];
 
     let newPrice = "0";
-    let newOwner = getMaxBid(bids)?.user?.address;
+    let newOwner = bids?.length ? getMaxBid(bids)?.user?.address : user?.address;
     let newSeller = etherAddress;
 
     updatePin({
@@ -432,6 +487,9 @@ const PinDetail = () => {
       return;
     }
 
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const { itemId } = pinDetail;
 
     const web3Modal = new Web3Modal();
@@ -442,6 +500,8 @@ const PinDetail = () => {
     const contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
 
     const transaction = await contract.cancelMarketSale(nftaddress, itemId);
+
+    setLoadingMessage(cancelSaleLoadingMessage)
 
     const tx = await transaction.wait();
 
@@ -485,13 +545,19 @@ const PinDetail = () => {
     axios.post(`/api/pins/bids/${pinId}`, body).then(() => {
       setAddingBidPrice(false);
       setInputPrice("");
+      setLoading(false)
       setRefresh((prev) => !prev);
-    });
+    }).catch((e) => {
+      setLoading(false)
+    })
   };
   const withdrawAuctionBidRequest = (body) => {
     axios.put(`/api/pins/bids/${pinId}`, body).then(() => {
+      setLoading(false)
       setRefresh((prev) => !prev);
-    });
+    }).catch((e) => {
+      setLoading(false)
+    })
   };
 
   const savePin = () => {
@@ -516,6 +582,10 @@ const PinDetail = () => {
 
   if (!pinDetail) {
     return <Spinner message="Showing pin" />;
+  }
+
+  if (loading) {
+    return <Spinner title={loadingMessage} message={`Please Do Not Leave This Page...`} />;
   }
 
   return (
@@ -852,7 +922,7 @@ const PinDetail = () => {
           <MasonryLayout pins={pins} />
         </>
       )}
-      {loading && <Spinner message="Loading more pins" />}
+      {similarLoading && <Spinner message="Loading more pins" />}
     </>
   );
 };

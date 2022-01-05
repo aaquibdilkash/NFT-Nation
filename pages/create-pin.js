@@ -23,13 +23,21 @@ const CreatePin = () => {
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const [price, setPrice] = useState("0");
-  const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [destination, setDestination] = useState();
   const [fields, setFields] = useState();
   const [category, setCategory] = useState();
   const [fileUrl, setFileUrl] = useState("");
   const [sellOrAuct, setSellOrAuct] = useState("")
   const [wrongImageType, setWrongImageType] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(false);
+  const approvalLoadingMessage = `Approving Your Token...`
+  const confirmLoadingMessage = `Waiting For Your Confirmation...`
+  const mintLoadingMessage = `Minting Your Token...`
+  const createSaleLoadingMessage = `Creating Sale For Your Token...`
+  const createAuctionLoadingMessage = `Creating An Auction For Your Token...`
+
 
   const router = useRouter();
 
@@ -44,19 +52,19 @@ const CreatePin = () => {
       selectedFile.type === "image/tiff"
     ) {
       setWrongImageType(false);
-      setLoading(true);
+      setImageLoading(true);
       try {
         const added = await ipfsClient.add(selectedFile, {
           progress: (prog) => console.log(`received: ${prog}`),
         });
         const url = `https://ipfs.infura.io/ipfs/${added.path}`;
         setFileUrl(url);
-        setLoading(false);
+        setImageLoading(false);
       } catch (error) {
         console.log("Error uploading file: ", error);
       }
     } else {
-      setLoading(false);
+      setImageLoading(false);
       setWrongImageType(true);
     }
   };
@@ -105,6 +113,9 @@ const CreatePin = () => {
   };
 
   const createMarketItemForSale = async (url) => {
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
+
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -113,29 +124,36 @@ const CreatePin = () => {
     /* next, create the item */
     let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
     let transaction = await contract.createToken(url);
-
+    
+    setLoadingMessage(mintLoadingMessage)
     let tx = await transaction.wait();
     // console.log(tx.evens, "ddddddddddddddddddddddddddddddd")
     let event = tx.events[0];
     let value = event.args[2];
     let tokenId = value.toNumber();
 
-    // console.log(contract, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    setLoadingMessage(confirmLoadingMessage)
     // approving NFT to marketplace
     transaction = await contract.approve(nftmarketaddress, tokenId);
 
+    setLoadingMessage(approvalLoadingMessage)
     await transaction.wait();
     // console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDD")
+
+    setLoadingMessage(confirmLoadingMessage)
 
     const auctionPrice = ethers.utils.parseUnits(price, "ether");
 
     /* then list the item for sale on the marketplace */
     contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+
     transaction = await contract.createMarketItemForSale(
       nftaddress,
       tokenId,
       auctionPrice
     );
+
+    setLoadingMessage(createSaleLoadingMessage)
     tx = await transaction.wait();
 
     console.log(tx.events, "kdjddddddddddddddddddddddddddddddddddddd");
@@ -162,9 +180,13 @@ const CreatePin = () => {
       category,
       auctionEnded: true
     });
+
+    
   };
 
   const createMarketItemForAuction = async (url) => {
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -174,18 +196,24 @@ const CreatePin = () => {
     let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
     let transaction = await contract.createToken(url);
 
+    setLoadingMessage(mintLoadingMessage)
+
     let tx = await transaction.wait();
     // console.log(tx.evens, "ddddddddddddddddddddddddddddddd")
     let event = tx.events[0];
     let value = event.args[2];
     let tokenId = value.toNumber();
 
-    // console.log(contract, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    setLoadingMessage(confirmLoadingMessage)
     // approving NFT to marketplace
     transaction = await contract.approve(nftmarketaddress, tokenId);
 
+    setLoadingMessage(approvalLoadingMessage)
+
     await transaction.wait();
     // console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDD")
+
+    setLoadingMessage(confirmLoadingMessage)
 
     /* then list the item for sale on the marketplace */
     contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
@@ -193,6 +221,8 @@ const CreatePin = () => {
       nftaddress,
       tokenId,
     );
+
+    setLoadingMessage(createAuctionLoadingMessage)
     tx = await transaction.wait();
 
     console.log(tx.events, "kdjddddddddddddddddddddddddddddddddddddd");
@@ -222,6 +252,8 @@ const CreatePin = () => {
   };
 
   const createMarketItem = async (url) => {
+    setLoading(true)
+    setLoadingMessage(confirmLoadingMessage)
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -231,29 +263,28 @@ const CreatePin = () => {
     let contract = new ethers.Contract(nftaddress, NFT.abi, signer);
     let transaction = await contract.createToken(url);
 
+    setLoadingMessage(mintLoadingMessage)
+
     let tx = await transaction.wait();
+
     // console.log(tx.evens, "ddddddddddddddddddddddddddddddd")
     let event = tx.events[0];
     let value = event.args[2];
     let tokenId = value.toNumber();
 
-    // console.log(contract, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-    // approving NFT to marketplace
-    transaction = await contract.approve(nftmarketaddress, tokenId);
-
-    await transaction.wait();
-    // console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDD")
-
+    setLoadingMessage(confirmLoadingMessage)
     /* then list the item for sale on the marketplace */
     contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-    transaction = await contract.createMarketItemForAuction(
+    transaction = await contract.createMarketItem(
       nftaddress,
       tokenId,
     );
+
+    setLoadingMessage(createSaleLoadingMessage)
     tx = await transaction.wait();
 
     console.log(tx.events, "kdjddddddddddddddddddddddddddddddddddddd");
-    event = tx.events[2];
+    event = tx.events[0];
     const { args } = event;
     let itemId = args[0].toString();
     let nftContract = args[1].toString();
@@ -283,9 +314,17 @@ const CreatePin = () => {
       .post("/api/pins", obj)
       .then((res) => {
         router.push("/");
+        setLoading(false)
       })
-      .catch((e) => {});
+      .catch((e) => {
+        setLoading(false)
+        alert("Something went wrong!")
+      });
   };
+
+  if(loading) {
+    return <Spinner title={loadingMessage} message={`Please Do Not Leave This Page...`} />
+  }
 
   return (
     <>
@@ -316,7 +355,7 @@ const CreatePin = () => {
         <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
           <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-full">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
-              {loading && <Spinner />}
+              {imageLoading && <Spinner />}
               {wrongImageType && <p>It&apos;s wrong file type.</p>}
               {!fileUrl ? (
                 // eslint-disable-next-line jsx-a11y/label-has-associated-control
