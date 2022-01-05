@@ -3,14 +3,16 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { HAS_MORE, MORE_LOADING, PAGE_SET, SEARCH_TERM_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import { HAS_MORE, MARKET_CONTRACT, MORE_LOADING, PAGE_SET, SEARCH_TERM_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import { chainData, toHex } from "../utils/data";
+import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
 import Web3 from "web3";
 import Web3Modal from "web3modal";
 import Image from "next/image";
 import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
+import { nftmarketaddress } from "../config";
 
 
 
@@ -31,7 +33,8 @@ const HomeLayout = ({ children }) => {
   const connectToMetamask = async () => {
 
     if (!window?.ethereum) {
-      alert("Web3 is not enabled in this browser, Please Checkout Metamask!");
+      // window.ethereum.isMetaMask
+      alert("Web3 is not enabled in this browser, Please install Metamask to get started!");
       return
     }
 
@@ -47,7 +50,16 @@ const HomeLayout = ({ children }) => {
 
     provider = await web3Modal.connect();
 
+    // console.log(provider, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDdd")
+
     web3 = new Web3(provider);
+
+    const marketContract = new web3.eth.Contract(Market.abi, nftmarketaddress)
+
+    dispatch({
+      type: MARKET_CONTRACT,
+      payload: marketContract
+    })
 
     accounts = await web3.eth.getAccounts();
 
@@ -103,7 +115,7 @@ const HomeLayout = ({ children }) => {
     provider &&
       provider.on("chainChanged", (chainId) => {
         if(chainId !== chain.hexChainId) {
-          logout()
+          // logout()
         } else {
           login(accounts[0])
         }

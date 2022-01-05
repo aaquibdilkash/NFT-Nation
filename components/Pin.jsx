@@ -29,12 +29,12 @@ const Pin = ({ pin }) => {
   } = pin;
 
   const priceShowCondition =
-    price !== "0" &&
+    price !== "0.0" &&
     owner === etherAddress &&
     auctionEnded;
 
   const highestBidShowCondition =
-    price === "0" &&
+    price === "0.0" &&
     owner === etherAddress &&
     !auctionEnded;
 

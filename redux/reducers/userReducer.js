@@ -7,6 +7,7 @@ import {
   PAGE_SET,
   HAS_MORE,
   MORE_LOADING,
+  MARKET_CONTRACT,
 } from "../constants/UserTypes";
 
 const initialState = {
@@ -15,7 +16,8 @@ const initialState = {
   refresh: false,
   page: 1,
   hasMore: true,
-  moreLoading: false
+  moreLoading: false,
+  marketContract: {}
 };
 
 export const userReducer = (state = initialState, action) => {
@@ -59,6 +61,12 @@ export const userReducer = (state = initialState, action) => {
       return {
         ...state,
         refresh: action.payload,
+      };
+
+    case MARKET_CONTRACT:
+      return {
+        ...state,
+        marketContract: action.payload,
       };
       
     case CLEAR_ERRORS:

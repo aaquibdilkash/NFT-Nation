@@ -9,20 +9,29 @@ import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  approvalLoadingMessage,
+  buyLoadingMessage,
+  cancelAuctionLoadingMessage,
+  cancelSaleLoadingMessage,
+  confirmLoadingMessage,
+  createAuctionLoadingMessage,
+  createSaleLoadingMessage,
   etherAddress,
+  getEventData,
   getMaxBid,
   getUserBid,
   getUserName,
   isValidAmount,
   loginMessage,
+  makeBidLoadingMessage,
+  withrawBidLoadingMessage,
 } from "../../utils/data";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import moment from "moment";
 import { HAS_MORE, MORE_LOADING } from "../../redux/constants/UserTypes";
-import { FaCopy, FaDice, FaDiceD20, FaHashtag } from "react-icons/fa";
+import { FaCopy, FaDiceD20 } from "react-icons/fa";
 
 const buttonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-medium rounded-full text-secondTheme px-8 py-3 cursor-pointer";
@@ -31,7 +40,7 @@ const PinDetail = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pinId } = router.query;
-  const { user, page, moreLoading } = useSelector((state) => state.userReducer);
+  const { user, page } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [pins, setPins] = useState([]);
   const [pinDetail, setPinDetail] = useState();
@@ -44,15 +53,7 @@ const PinDetail = () => {
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading...")
-  const approvalLoadingMessage = `Approving Your Token...`
-  const confirmLoadingMessage = `Waiting For Your Confirmation...`
-  const withrawBidLoadingMessage = `Withdrawing Your Bid...`
-  const makeBidLoadingMessage = `Making Your Bid...`
-  const createSaleLoadingMessage = `Creating Sale For Your Token...`
-  const cancelSaleLoadingMessage = `Putting Down Your Token From Sale...`
-  const createAuctionLoadingMessage = `Creating An Auction For Your Token...`
-  const cancelAuctionLoadingMessage = `Putting Down Your Token From Auction...`
-  const buyLoadingMessage = `Transfering The Ownership Of This Token To You...`
+
 
   const {
     _id,
@@ -93,31 +94,31 @@ const PinDetail = () => {
   let alreadySaved = saved?.find((item) => item === user?._id);
 
   const executeMarketSaleCondition =
-    price !== "0" &&
+    price !== "0.0" &&
     owner === etherAddress &&
     seller !== user?.address &&
     auctionEnded;
 
   const createMarketSaleCondition =
-    price === "0" &&
+    price === "0.0" &&
     owner === user?.address &&
     seller === etherAddress &&
     auctionEnded;
 
   const cancelMarketSaleCondition =
-    price !== "0" &&
+    price !== "0.0" &&
     seller === user?.address &&
     owner === etherAddress &&
     auctionEnded;
 
   const createMarketAuctionCondition =
-    price === "0" &&
+    price === "0.0" &&
     owner === user?.address &&
     seller === etherAddress &&
     auctionEnded;
 
   const executeMarketAuctionEndCondition =
-    price === "0" &&
+    price === "0.0" &&
     seller === user?.address &&
     owner === etherAddress &&
     !auctionEnded;
@@ -135,10 +136,10 @@ const PinDetail = () => {
     !auctionEnded;
 
   const priceShowCondition =
-    price !== "0" && owner === etherAddress && auctionEnded;
+    price !== "0.0" && owner === etherAddress && auctionEnded;
 
   const highestBidShowCondition =
-    price === "0" && owner === etherAddress && !auctionEnded;
+    price === "0.0" && owner === etherAddress && !auctionEnded;
 
   const fetchPinDetails = () => {
     axios
@@ -225,27 +226,26 @@ const PinDetail = () => {
 
     const auctionPrice = ethers.utils.parseUnits(price, "ether");
 
-    setLoadingMessage(buyLoadingMessage)
-
+    
     const transaction = await contract.executeMarketSale(nftaddress, itemId, {
       value: auctionPrice,
     });
+    
+    setLoadingMessage(buyLoadingMessage)
 
     const tx = await transaction.wait();
+    console.log(event, "DDDDDDDDDDDDDDDDDDd")
+    const event = tx.events[2];
 
-    console.log(tx.events);
-    const event = tx.events[0];
-
-    let newPrice = "0";
-    let newSeller = etherAddress;
-    let newOwner = user?.address;
+    const eventData = getEventData(event)
+    console.log(eventData)
 
     updatePin({
-      price: newPrice,
-      owner: newOwner,
-      seller: newSeller,
+      ...eventData,
       postedBy: user?._id,
+      destination: "https://nft-nation.vercel.app",
     });
+
   };
 
   const createMarketSale = async () => {
@@ -293,20 +293,19 @@ const PinDetail = () => {
     setLoadingMessage(createSaleLoadingMessage)
 
     const tx = await transaction.wait();
+    console.log(tx.events)
 
-    console.log(tx.events, "DDDDDDD");
-    const event = tx.events[0];
+    const event = tx.events[2];
 
-    let newPrice = inputPrice;
-    let newOwner = etherAddress;
-    let newSeller = user?.address;
+    const eventData = getEventData(event)
+    console.log(eventData)
 
     updatePin({
-      price: newPrice,
-      owner: newOwner,
-      seller: newSeller,
+      ...eventData,
       postedBy: user?._id,
+      destination: "https://nft-nation.vercel.app",
     });
+
   };
 
   const makeAuctionBid = async () => {
@@ -346,6 +345,9 @@ const PinDetail = () => {
     console.log(tx.events, "DDDDDDD");
     const event = tx.events[0];
 
+    const eventData = getEventData(event)
+    console.log(eventData)
+
     let newBid = inputPrice;
     let newBidder = user?._id;
 
@@ -379,8 +381,11 @@ const PinDetail = () => {
     setLoadingMessage(withrawBidLoadingMessage)
 
     const tx = await transaction.wait();
-    console.log(tx.events, "DDDDDDD");
+    console.log(event, "DDDDDDDDDDDDDDDDDDd")
     const event = tx.events[0];
+
+    const eventData = getEventData(event)
+    console.log(eventData)
 
     withdrawAuctionBidRequest({
       user: user?._id,
@@ -423,19 +428,17 @@ const PinDetail = () => {
 
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
-    const event = tx.events[0];
+    const event = tx.events[2];
 
-    let newPrice = "0";
-    let newOwner = etherAddress;
-    let newSeller = user?.address;
+    const eventData = getEventData(event)
+    console.log(eventData)
 
     updatePin({
-      price: newPrice,
-      owner: newOwner,
-      seller: newSeller,
+      ...eventData,
       postedBy: user?._id,
-      auctionEnded: false,
+      destination: "https://nft-nation.vercel.app",
     });
+
   };
 
   const executeMarketAuctionEnd = async () => {
@@ -466,19 +469,22 @@ const PinDetail = () => {
 
     const tx = await transaction.wait();
     console.log(tx.events, "DDDDDDD");
-    const event = tx.events[0];
+    const event = tx.events[2];
+    console.log(event, "DDDDDDDDDDDDDDDDDDd")
 
-    let newPrice = "0";
-    let newOwner = bids?.length ? getMaxBid(bids)?.user?.address : user?.address;
-    let newSeller = etherAddress;
+    // let newPrice = "0.0";
+    let newOwner = bids?.length ? getMaxBid(bids)?.user : user;
+    // let newSeller = etherAddress;
+
+    const eventData = getEventData(event)
+    console.log(eventData)
 
     updatePin({
-      price: newPrice,
-      owner: newOwner,
-      seller: newSeller,
-      postedBy: user?._id,
-      auctionEnded: true,
+      ...eventData,
+      postedBy: newOwner?._id,
+      destination: "https://nft-nation.vercel.app",
     });
+
   };
 
   const cancelMarketSale = async () => {
@@ -505,19 +511,19 @@ const PinDetail = () => {
 
     const tx = await transaction.wait();
 
-    console.log(tx.events);
-    const event = tx.events[0];
+    // console.log(tx.events);
+    const event = tx.events[2];
 
-    let newPrice = "0";
-    let newOwner = user?.address;
-    let newSeller = etherAddress;
+    const eventData = getEventData(event)
+    console.log(eventData)
 
     updatePin({
-      price: newPrice,
-      owner: newOwner,
-      seller: newSeller,
+      ...eventData,
       postedBy: user?._id,
+      destination: "https://nft-nation.vercel.app",
     });
+
+
   };
 
   const addComment = () => {
@@ -811,7 +817,7 @@ const PinDetail = () => {
                 }}
               >
                 <span className={buttonStyles}>
-                  {`Put Down From Auction${
+                  {`End Auction${
                     bids?.length
                       ? ` (Highest Bid: ${getMaxBid(bids).bid} Matic)`
                       : ` (No Bids Yet)`

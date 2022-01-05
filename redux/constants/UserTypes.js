@@ -11,4 +11,6 @@ export const MORE_LOADING = "MORE_LOADING"
 
 export const REFRESH_SET = "REFRESH_SET"
 
+export const MARKET_CONTRACT = "MARKET_CONTRACT"
+
 export const CLEAR_ERRORS = "CLEAR_ERRORS"

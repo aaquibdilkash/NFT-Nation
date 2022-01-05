@@ -51,6 +51,21 @@ contract NFTMarket is ReentrancyGuard {
         listingPrice = _listingPrice;
     }
 
+    function emitEvent(uint itemId) private {
+        emit UpdatedMarketItem(
+            itemId,
+            idToMarketItem[itemId].nftContract,
+            idToMarketItem[itemId].tokenId,
+            idToMarketItem[itemId].seller,
+            idToMarketItem[itemId].owner,
+            idToMarketItem[itemId].price,
+            idToMarketItem[itemId].highestBidder,
+            idToMarketItem[itemId].highestBid,
+            idToMarketItem[itemId].pendingBidders,
+            idToMarketItem[itemId].auctionEnded
+        );
+    }
+
 
     function createMarketItem(address nftContract, uint256 tokenId)
         public
@@ -70,8 +85,8 @@ contract NFTMarket is ReentrancyGuard {
             itemId,
             nftContract,
             tokenId,
-            payable(msg.sender),
             payable(address(0)),
+            payable(msg.sender),
             0,
             payable(msg.sender),
             0,
@@ -79,18 +94,7 @@ contract NFTMarket is ReentrancyGuard {
             true
         );
 
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            tokenId,
-            payable(msg.sender),
-            payable(address(0)),
-            0,
-            payable(msg.sender),
-            0,
-            emptyArray,
-            true
-        );
+        emitEvent(itemId);
     }
 
     function createMarketItemForSale(
@@ -128,18 +132,7 @@ contract NFTMarket is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            tokenId,
-            payable(msg.sender),
-            payable(address(0)),
-            price,
-            payable(msg.sender),
-            0,
-            emptyArray,
-            true
-        );
+        emitEvent(itemId);
     }
 
     function createMarketItemForAuction(
@@ -176,18 +169,7 @@ contract NFTMarket is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            tokenId,
-            payable(msg.sender),
-            payable(address(0)),
-            0,
-            payable(msg.sender),
-            0,
-            emptyArray,
-            false
-        );
+        emitEvent(itemId);
     }
 
     function createMarketSale(
@@ -223,18 +205,7 @@ contract NFTMarket is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), token_id);
 
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            token_id,
-            payable(msg.sender),
-            payable(address(0)),
-            price,
-            payable(msg.sender),
-            0,
-            emptyArray,
-            false
-        );
+        emitEvent(itemId);
     }
 
     function createMarketAuction(
@@ -269,18 +240,7 @@ contract NFTMarket is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), token_id);
 
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            token_id,
-            payable(msg.sender),
-            payable(address(0)),
-            0,
-            payable(msg.sender),
-            0,
-            emptyArray,
-            false
-        );
+        emitEvent(itemId);
     }
 
     function executeMarketSale(address nftContract, uint256 itemId)
@@ -290,7 +250,6 @@ contract NFTMarket is ReentrancyGuard {
     {
         uint256 price = idToMarketItem[itemId].price;
         uint256 tokenId = idToMarketItem[itemId].tokenId;
-        address payable[] memory emptyArray;
 
         require(
             msg.value == price,
@@ -302,21 +261,11 @@ contract NFTMarket is ReentrancyGuard {
 
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].seller = payable(address(0));
+        idToMarketItem[itemId].price = 0;
 
         payable(owner).transfer((msg.value * listingPrice) / 100);
 
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            tokenId,
-            payable(address(0)),
-            payable(msg.sender),
-            0,
-            payable(msg.sender),
-            0,
-            emptyArray,
-            true
-        );
+        emitEvent(itemId);
     }
 
     function executeMarketAuctionEnd(address nftContract, uint256 itemId)
@@ -341,6 +290,13 @@ contract NFTMarket is ReentrancyGuard {
             address(highestBidder),
             tokenId
         );
+
+        for(uint i = 0; i < idToMarketItem[itemId].pendingBidders.length; i++) {
+            if(idToMarketItem[itemId].pendingBidders[i] != address(0) && pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]] > 0) {
+                payable(idToMarketItem[itemId].pendingBidders[i]).transfer(pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]]);
+            }
+        }
+        
         idToMarketItem[itemId].owner = payable(highestBidder);
         idToMarketItem[itemId].seller = payable(address(0));
         idToMarketItem[itemId].highestBidder = payable(address(highestBidder));
@@ -348,24 +304,7 @@ contract NFTMarket is ReentrancyGuard {
         idToMarketItem[itemId].auctionEnded = true;
         idToMarketItem[itemId].pendingBidders = emptyArray;
 
-        for(uint i = 0; i < idToMarketItem[itemId].pendingBidders.length; i++) {
-            if(idToMarketItem[itemId].pendingBidders[i] != address(0) && pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]] > 0) {
-                payable(idToMarketItem[itemId].pendingBidders[i]).transfer(pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]]);
-            }
-        }
-
-        emit UpdatedMarketItem(
-            itemId,
-            nftContract,
-            tokenId,
-            payable(address(0)),
-            payable(highestBidder),
-            0,
-            payable(highestBidder),
-            0,
-            emptyArray,
-            true
-        );
+        emitEvent(itemId);
     }
 
     function makeAuctionBid(uint256 itemId) public payable nonReentrant {
@@ -391,18 +330,7 @@ contract NFTMarket is ReentrancyGuard {
             idToMarketItem[itemId].pendingBidders.push(payable(msg.sender));
         }
 
-        emit UpdatedMarketItem(
-            itemId,
-            idToMarketItem[itemId].nftContract,
-            idToMarketItem[itemId].tokenId,
-            idToMarketItem[itemId].seller,
-            idToMarketItem[itemId].owner,
-            idToMarketItem[itemId].price,
-            idToMarketItem[itemId].highestBidder,
-            idToMarketItem[itemId].highestBid,
-            idToMarketItem[itemId].pendingBidders,
-            idToMarketItem[itemId].auctionEnded
-        );
+        emitEvent(itemId);
 
     }
 
@@ -456,18 +384,7 @@ contract NFTMarket is ReentrancyGuard {
             delete idToMarketItem[itemId].pendingBidders[nextHighestBidderIndex];
         }
 
-        emit UpdatedMarketItem(
-            itemId,
-            idToMarketItem[itemId].nftContract,
-            idToMarketItem[itemId].tokenId,
-            idToMarketItem[itemId].seller,
-            idToMarketItem[itemId].owner,
-            idToMarketItem[itemId].price,
-            idToMarketItem[itemId].highestBidder,
-            idToMarketItem[itemId].highestBid,
-            idToMarketItem[itemId].pendingBidders,
-            idToMarketItem[itemId].auctionEnded
-        );
+        emitEvent(itemId);
     }
 
     function cancelMarketSale(address nftContract, uint256 itemId)
@@ -482,23 +399,13 @@ contract NFTMarket is ReentrancyGuard {
             "You must be the Owner to cancel a sale"
         );
 
-        idToMarketItem[itemId].owner = payable(msg.sender);
-        idToMarketItem[itemId].seller = payable(address(0));
-
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
 
-        emit UpdatedMarketItem(
-            itemId,
-            idToMarketItem[itemId].nftContract,
-            idToMarketItem[itemId].tokenId,
-            idToMarketItem[itemId].seller,
-            idToMarketItem[itemId].owner,
-            idToMarketItem[itemId].price,
-            idToMarketItem[itemId].highestBidder,
-            idToMarketItem[itemId].highestBid,
-            idToMarketItem[itemId].pendingBidders,
-            idToMarketItem[itemId].auctionEnded
-        );
+        idToMarketItem[itemId].owner = payable(msg.sender);
+        idToMarketItem[itemId].seller = payable(address(0));
+        idToMarketItem[itemId].price = 0;
+
+        emitEvent(itemId);
     }
 
     function fetchMarketItems(uint256 pageNumber, uint256 pageSize)

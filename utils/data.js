@@ -1,28 +1,38 @@
-import {  FaCat, FaGamepad, FaLaugh, FaPaintBrush, FaPaperclip, FaPencilAlt, FaQuestion, FaReadme, FaSmile } from "react-icons/fa";
-
+import { ethers } from "ethers";
+import {
+  FaCat,
+  FaGamepad,
+  FaLaugh,
+  FaPaintBrush,
+  FaPaperclip,
+  FaPencilAlt,
+  FaQuestion,
+  FaReadme,
+  FaSmile,
+} from "react-icons/fa";
 
 export const sidebarCategories = {
   "Discover Categories": [
     {
       name: "Art",
-      icon: <FaPaintBrush className="" size={25} />
+      icon: <FaPaintBrush className="" size={25} />,
     },
     {
       name: "Gaming",
-      icon: <FaGamepad className="" size={25} />
+      icon: <FaGamepad className="" size={25} />,
     },
     {
       name: "Collectibles",
-      icon: <FaCat className="" size={25} />
+      icon: <FaCat className="" size={25} />,
     },
     {
       name: "Memes",
-      icon: <FaLaugh className="" size={25} />
+      icon: <FaLaugh className="" size={25} />,
     },
     {
       name: "Gifs",
-      icon: <FaSmile className="" size={25} />
-    }
+      icon: <FaSmile className="" size={25} />,
+    },
   ],
   // "Help Section": [
   //   {
@@ -46,9 +56,7 @@ export const sidebarCategories = {
   //     icon: <FaReadme className="" size={25} />
   //   }
   // ]
-}
-
-
+};
 
 export const chainData = {
   main: {
@@ -119,22 +127,22 @@ export const toHex = (num) => {
 };
 
 export const isValidAmount = (number) => {
-  return !isNaN(parseFloat(number)) && parseFloat(number) > 0
-}
+  return !isNaN(parseFloat(number)) && parseFloat(number) > 0;
+};
 
 export const getMaxBid = (bids) => {
-  return bids?.reduce( (prev, current) => {
+  return bids?.reduce((prev, current) => {
     if (+current.bid > +prev.bid) {
-        return current;
+      return current;
     } else {
-        return prev;
+      return prev;
     }
-});
-}
+  });
+};
 
 export const getUserBid = (bids, user) => {
-  return bids?.find((item) => item?.user?._id === user)
-}
+  return bids?.find((item) => item?.user?._id === user);
+};
 
 export const getUserName = (string) => {
   return string?.length !== 42
@@ -144,64 +152,33 @@ export const getUserName = (string) => {
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
-export const loginMessage = "This Action requires you to Log in..."
+export const loginMessage = "This Action requires you to Log in...";
+export const approvalLoadingMessage = `Approving Your Token...`;
+export const confirmLoadingMessage = `Waiting For Your Confirmation...`;
+export const mintLoadingMessage = `Minting Your Token...`;
+export const createSaleLoadingMessage = `Creating Sale For Your Token...`;
+export const createItemLoadingMessage = `Adding Your Token To Marketplace...`;
+export const createAuctionLoadingMessage = `Creating An Auction For Your Token...`;
+export const withrawBidLoadingMessage = `Withdrawing Your Bid...`
+export const makeBidLoadingMessage = `Making Your Bid...`
+export const cancelSaleLoadingMessage = `Putting Down Your Token From Sale...`
+export const cancelAuctionLoadingMessage = `Putting Down Your Token From Auction...`
+export const buyLoadingMessage = `Transfering The Ownership Of This Token To You...`
 
 
-const addToNetwork = async () => {
-  let chain = chainData.test
-  if (window.ethereum && window.ethereum.isMetaMask) {
-    window.web3 = new Web3(ethereum);
-    console.log("MetaMask Here!");
-    const params = {
-      chainId: toHex(chain.chainId), // A 0x-prefixed hexadecimal string
-      chainName: chain.name,
-      nativeCurrency: {
-        name: chain.nativeCurrency.name,
-        symbol: chain.nativeCurrency.symbol, // 2-6 characters long
-        decimals: chain.nativeCurrency.decimals,
-      },
-      rpcUrls: chain.rpc,
-      blockExplorerUrls: [
-        chain.explorers &&
-        chain.explorers.length > 0 &&
-        chain.explorers[0].url
-          ? chain.explorers[0].url
-          : chain.infoURL,
-      ],
-    };
+export const getEventData = (event) => {
+  const [itemId, nftContract, tokenId, seller, owner, price, highestBidder, highestBid, pendingBidders, auctionEnded] = event?.args
 
-    window.web3.eth.getAccounts((error, accounts) => {
-      window.ethereum
-        .request({
-          method: "wallet_addEthereumChain",
-          params: [params, accounts[0]],
-        })
-        .then((result) => {
-          
-          axios
-            .post("/api/users", {
-              address: accounts[0],
-              userName: accounts[0],
-              image:
-                "https://aaquibdilkashdev.web.app/images/AaquibDilkash.jpeg",
-            })
-            .then((res) => {
-              console.log(res, "dfjdkfjdkfjkdjfdf")
-              localStorage.setItem("user", JSON.stringify(res.data.user));
-              dispatch({
-                type: USER_GET_SUCCESS,
-                payload: res.data.user,
-              });
-              router.push("/");
-            }).catch((e) => {
-              console.log(e)
-            })
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    });
-  } else {
-    alert("Please install MetaMask browser extension to interact");
+  return {
+    itemId: itemId.toString(),
+    nftContract: nftContract.toString(),
+    tokenId: tokenId.toString(),
+    seller: seller.toString(),
+    owner: owner.toString(),
+    price: ethers.utils.formatEther(price).toString(),
+    highestBidder: highestBidder.toString(),
+    highestBid: highestBid.toString(),
+    pendingBidders: pendingBidders,
+    auctionEnded: Boolean(auctionEnded)
   }
-};
+}
