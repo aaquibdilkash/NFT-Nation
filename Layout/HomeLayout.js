@@ -13,6 +13,7 @@ import Image from "next/image";
 import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { nftmarketaddress } from "../config";
+import { toast } from "react-toastify";
 
 
 
@@ -34,7 +35,9 @@ const HomeLayout = ({ children }) => {
 
     if (!window?.ethereum) {
       // window.ethereum.isMetaMask
-      alert("Web3 is not enabled in this browser, Please install Metamask to get started!");
+      toast.info("Web3 is not enabled in this browser, Please install Metamask to get started!", {
+        autoClose: 6000
+      });
       return
     }
 
@@ -54,12 +57,12 @@ const HomeLayout = ({ children }) => {
 
     web3 = new Web3(provider);
 
-    const marketContract = new web3.eth.Contract(Market.abi, nftmarketaddress)
+    // const marketContract = new web3.eth.Contract(Market.abi, nftmarketaddress)
 
-    dispatch({
-      type: MARKET_CONTRACT,
-      payload: marketContract
-    })
+    // dispatch({
+    //   type: MARKET_CONTRACT,
+    //   payload: marketContract
+    // })
 
     accounts = await web3.eth.getAccounts();
 
@@ -95,7 +98,7 @@ const HomeLayout = ({ children }) => {
 
         })
         .catch((e) => {
-          alert("Something went wrong while selecting Polygon Matic Network");
+          toast.error("Something went wrong while selecting Polygon Matic Network");
         });
 
     } else {
@@ -115,7 +118,7 @@ const HomeLayout = ({ children }) => {
     provider &&
       provider.on("chainChanged", (chainId) => {
         if(chainId !== chain.hexChainId) {
-          // logout()
+          logout()
         } else {
           login(accounts[0])
         }
@@ -144,13 +147,15 @@ const HomeLayout = ({ children }) => {
     axios
       .post("/api/users", obj)
       .then((res) => {
+        toast.success("Logged In Successfuly!")
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
         });
       })
       .catch((e) => {
-        console.log(e);
+        toast.error("Something went wrong while logging you in!")
+        // console.log(e);
       });
   };
 
@@ -189,6 +194,8 @@ const HomeLayout = ({ children }) => {
         type: SEARCH_TERM_SET,
         payload: ""
       })
+
+      setToggleSidebar(false)
     
   }, [router])
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-import { getUserName } from "../../utils/data";
+import { getUserName, shareInfoMessage } from "../../utils/data";
 import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
 import { useRouter } from "next/router";
@@ -10,6 +10,8 @@ import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
 import { HAS_MORE, MORE_LOADING, PAGE_SET } from "../../redux/constants/UserTypes";
+import { toast } from "react-toastify";
+import { FaShareAlt } from "react-icons/fa";
 
 const activeBtnStyles =
   "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
@@ -35,7 +37,9 @@ const UserProfilePage = () => {
       .then((res) => {
         setUserProfile(res.data.user);
       })
-      .catch((e) => {});
+      .catch((e) => {
+        toast.error("Something went wrong!")
+      });
   };
 
   const userPinQuery = (query) => {
@@ -65,7 +69,7 @@ const UserProfilePage = () => {
           type: MORE_LOADING,
           payload: false
         });
-        console.log(e);
+        toast.error("Something went wrong!")
       });
   };
 
@@ -146,6 +150,22 @@ const UserProfilePage = () => {
             <h1 className="font-bold text-3xl text-center mt-3">
               {getUserName(userProfile?.userName)}
             </h1>
+            {!editing && (
+              <div className="absolute top-0 z-1 left-0 p-2">
+                <button
+                  type="button"
+                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `https:nft-nation.vercel.app/user-profile/${userId}`
+                    );
+                    toast.info(shareInfoMessage)
+                  }}
+                >
+                  <FaShareAlt color="themeColor" fontSize={21} />
+                </button>
+              </div>
+            )}
             {user?._id === userProfile?._id && (
               <div className="absolute top-0 z-1 right-0 p-2">
                 <button
@@ -162,9 +182,10 @@ const UserProfilePage = () => {
           </div>
 
           <div className="text-center mb-7">
-            {["Owned", "On Sale", "On Auction", "Bids", "Saved"].map((item) => {
+            {["Owned", "On Sale", "On Auction", "Bids", "Saved"].map((item, index) => {
               return (
                 <button
+                  key={index}
                   type="button"
                   onClick={(e) => {
                     setText(item);

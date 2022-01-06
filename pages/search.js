@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Head from "next/head";
 import { HAS_MORE, MORE_LOADING } from "../redux/constants/UserTypes";
+import { toast } from "react-toastify";
 
 const SearchPage = () => {
   const CancelToken = axios.CancelToken;
@@ -42,13 +43,15 @@ const source = CancelToken.source();
           });
         })
         .catch((e) => {
-          setLoading(false);
+          if (axios.isCancel(e)) {
+            // console.log('Request canceled', e.message);
+          } {
+            setLoading(false);
           dispatch({
             type: MORE_LOADING,
             payload: false
           });
-          if (axios.isCancel(e)) {
-            console.log('Request canceled', e.message);
+          toast.error("Something went wrong!")
           }
         });
     } else {

@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
@@ -18,11 +19,12 @@ const ProfileEdit = ({ userId, setEditing }) => {
   const { user } = useSelector((state) => state.userReducer);
   const [userName, setUserName] = useState("");
   const [about, setAbout] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [fields, setFields] = useState();
-
   const [fileUrl, setFileUrl] = useState("");
   const [wrongImageType, setWrongImageType] = useState(false);
+  const [progress, setProgress] = useState(0);
+
 
   const uploadImage = async (e) => {
     const selectedFile = e.target.files[0];
@@ -34,14 +36,14 @@ const ProfileEdit = ({ userId, setEditing }) => {
       selectedFile.type === "image/tiff"
     ) {
       setWrongImageType(false);
-      setLoading(true);
+      setImageLoading(true);
       try {
         const added = await ipfsClient.add(selectedFile, {
-          progress: (prog) => console.log(`received: ${prog}`),
+          progress: (prog) => setProgress(parseInt((prog/selectedFile.size)*100)),
         });
         const url = `https://ipfs.infura.io/ipfs/${added.path}`;
         setFileUrl(url);
-        setLoading(false);
+        setImageLoading(false);
       } catch (error) {
         console.log("Error uploading file: ", error);
       }
@@ -71,67 +73,77 @@ const ProfileEdit = ({ userId, setEditing }) => {
       .put(`/api/users/${userId}`, obj)
       .then((res) => {
         setEditing(false)
+        toast.success("Profile Updated Successfuly!")
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
         });
       })
       .catch((e) => {
-        console.log("Error in updating profile: ", e);
+        toast.error("Something went wrong!")
+        // console.log("Error in updating profile: ", e);
       });
   };
 
   return (
-    <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
+    <div className="flex flex-col justify-center items-center mt-0 lg:h-4/5">
       {fields && (
         <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
           Please add all fields.
         </p>
       )}
-      <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
-        <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-full">
+      <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-auto  w-full">
+        <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-4/5">
           <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
-            {loading && <Spinner />}
+          {imageLoading && (
+            <div className="flex flex-col items-center justify-center h-full w-full px-16 mx-16">
+              <Spinner title="Uploading..." message={`${progress}%`}/>
+            </div>
+          )}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
-            {!fileUrl ? (
-              // eslint-disable-next-line jsx-a11y/label-has-associated-control
-              <label>
-                <div className="flex flex-col items-center justify-center h-full">
-                  <div className="flex flex-col justify-center items-center">
-                    <p className="font-bold text-2xl">
-                      <AiOutlineCloudUpload />
-                    </p>
-                    <p className="text-lg">Click to upload</p>
-                  </div>
+            {!fileUrl && !imageLoading && (
+                // eslint-disable-next-line jsx-a11y/label-has-associated-control
+                <label>
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <div className="flex flex-col justify-center items-center">
+                      <p className="font-bold text-2xl">
+                        <AiOutlineCloudUpload />
+                      </p>
+                      <p className="text-lg">Click to upload</p>
+                    </div>
 
-                  <p className="mt-32 text-gray-400">
-                    Recommendation: Use high-quality JPG, JPEG, SVG, PNG, GIF or
-                    TIFF less than 20MB
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  name="upload-image"
-                  onChange={uploadImage}
-                  className="w-0 h-0"
-                />
-              </label>
-            ) : (
-              <div className="relative h-full">
-                <img
+                    <p className="mt-32 text-gray-400">
+                      Recommendation: Use high-quality JPG, JPEG, SVG, PNG, GIF
+                      or TIFF less than 20MB
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    name="upload-image"
+                    onChange={uploadImage}
+                    className="w-0 h-0"
+                  />
+                </label>
+              ) } 
+              {fileUrl && !imageLoading && (
+                <div className="relative h-full">
+                  <img
                     src={fileUrl}
                     alt="uploaded-pic"
                     className="h-full w-full"
                   />
-                <button
-                  type="button"
-                  className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
-                  onClick={() => setFileUrl(null)}
-                >
-                  <MdDelete />
-                </button>
-              </div>
-            )}
+                  <button
+                    type="button"
+                    className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                    onClick={() => {
+                      setFileUrl(null)
+                      setProgress(0)
+                    }}
+                  >
+                    <MdDelete />
+                  </button>
+                </div>
+              )}
           </div>
         </div>
 

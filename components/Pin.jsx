@@ -90,12 +90,12 @@ const Pin = ({ pin }) => {
           style={{ height: "100%" }}
         >
           <div className="flex items-center justify-between">
-          <button
+          {/* <button
               type="button"
               className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
             >
               {`${saved?.length} Saved`}{" "}
-            </button>
+            </button> */}
           {/* <button
               type="button"
               className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
