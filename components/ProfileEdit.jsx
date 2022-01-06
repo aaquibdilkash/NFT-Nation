@@ -167,7 +167,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
           />
           {user?._id && (
             <Link href={`/user-profile/${user?._id}`} >
-              <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1">
+              <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1">
               <Image
                 height={40}
                 width={40}

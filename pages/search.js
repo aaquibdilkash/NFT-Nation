@@ -45,7 +45,7 @@ const source = CancelToken.source();
         .catch((e) => {
           if (axios.isCancel(e)) {
             // console.log('Request canceled', e.message);
-          } {
+          } else {
             setLoading(false);
           dispatch({
             type: MORE_LOADING,

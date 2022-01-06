@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import {
+  FaBook,
   FaCat,
   FaGamepad,
   FaLaugh,
@@ -8,6 +9,7 @@ import {
   FaPencilAlt,
   FaQuestion,
   FaReadme,
+  FaSign,
   FaSmile,
 } from "react-icons/fa";
 
@@ -34,28 +36,32 @@ export const sidebarCategories = {
       icon: <FaSmile className="" size={25} />,
     },
   ],
-  // "Help Section": [
-  //   {
-  //     name: "FAQs",
-  //     icon: <FaQuestion className="" size={25} />
-  //   },
-  //   {
-  //     name: "Contact Us",
-  //     icon: <FaPencilAlt className="" size={25} />
-  //   },
-  //   {
-  //     name: "About Us",
-  //     icon: <FaSign className="" size={25} />
-  //   },
-  //   {
-  //     name: "Privacy Policy",
-  //     icon: <FaPaperclip className="" size={25} />
-  //   },
-  //   {
-  //     name: "Terms and Conditions",
-  //     icon: <FaReadme className="" size={25} />
-  //   }
-  // ]
+  "Help Section": [
+    {
+      name: "FAQs",
+      icon: <FaQuestion className="" size={25} />
+    },
+    {
+      name: "Blogs",
+      icon: <FaBook className="" size={25} />
+    },
+    {
+      name: "Contact Us",
+      icon: <FaPencilAlt className="" size={25} />
+    },
+    {
+      name: "About Us",
+      icon: <FaSign className="" size={25} />
+    },
+    {
+      name: "Privacy Policy",
+      icon: <FaPaperclip className="" size={25} />
+    },
+    {
+      name: "Terms and Conditions",
+      icon: <FaReadme className="" size={25} />
+    }
+  ]
 };
 
 export const chainData = {
