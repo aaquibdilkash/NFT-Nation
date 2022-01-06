@@ -69,7 +69,7 @@ const HomeLayout = ({ children }) => {
     chainId = await web3.eth.getChainId();
 
     if (chainId != chain.chainId) {
-      alert("Wrong network! Switch to Polygon (Matic)");
+      toast.info("Wrong Network Detected! Please Switch to Polygon (Matic)");
 
       const params = {
         chainId: toHex(chain.chainId), // A 0x-prefixed hexadecimal string

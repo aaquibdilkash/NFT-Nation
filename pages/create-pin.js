@@ -135,7 +135,7 @@ const CreatePin = () => {
       } else if (sellOrAuct === "Mint NFT and Put on Auction") {
         createMarketItemForAuction(url);
       } else {
-        alert("Please Select Your Choice...");
+        toast.info("Please Select Your Choice...");
       }
     } catch (error) {
       toast.error(fileUploadErrorMessage)

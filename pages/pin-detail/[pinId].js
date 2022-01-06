@@ -800,7 +800,7 @@ const PinDetail = () => {
                   </Link>
                 )}
                 <input
-                  className=" flex-1 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
+                  className=" flex-1 border-gray-100 outline-none border-2 p-2 mb- rounded-2xl focus:border-gray-300"
                   type="text"
                   placeholder="Add a comment"
                   value={comment}
