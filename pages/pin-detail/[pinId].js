@@ -875,7 +875,7 @@ const PinDetail = () => {
               <FaCopy className="inline mr-2" size={25} />
               <span className="align-middle">
                 {/* {moment(createdAt).format("MMM DD, YYYY")} */}
-                {`Contract Address`}
+                {`NFT Contract Address`}
               </span>
             </div>
 
@@ -884,6 +884,13 @@ const PinDetail = () => {
               <span className="align-middle">
                 {/* {moment(createdAt).format("MMM DD, YYYY")} */}
                 {`Token ID: #${tokenId}`}
+              </span>
+            </div>
+            <div className="font-bold text-gray-700 mr-2">
+              <FaDiceD20 className="inline mr-2" size={25} />
+              <span className="align-middle">
+                {/* {moment(createdAt).format("MMM DD, YYYY")} */}
+                {`Item ID: #${itemId}`}
               </span>
             </div>
           </div>

@@ -16,7 +16,12 @@ module.exports = {
     mainnet: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${PROJECT_ID}`,
       accounts: [PRIVATE_KEY]
+    },
+    ropsten: {
+      url: `https://eth-ropsten.alchemyapi.io/v2/${PROJECT_ID}`,
+      accounts: [PRIVATE_KEY]
     }
+    
   },
   solidity: "0.8.4",
 };

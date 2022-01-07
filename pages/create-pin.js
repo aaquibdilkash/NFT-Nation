@@ -284,6 +284,7 @@ const CreatePin = () => {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
+    // const provider = new ethers.providers.JsonRpcProvider(`https://polygon-mumbai.g.alchemy.com/v2/${process.env.PROJECT_ID}`);
     const signer = provider.getSigner();
 
     /* next, create the item */
@@ -296,6 +297,7 @@ const CreatePin = () => {
       var event = tx.events[0];
       var tokenId = event.args[2].toNumber();
     } catch (e) {
+      console.log(e)
       toast.error(tokenMintErrorMessage);
       setLoading(false);
       return

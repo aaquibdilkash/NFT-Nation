@@ -12,6 +12,7 @@ import Image from "next/image";
 import { HAS_MORE, MORE_LOADING, PAGE_SET } from "../../redux/constants/UserTypes";
 import { toast } from "react-toastify";
 import { FaShareAlt } from "react-icons/fa";
+import moment from "moment";
 
 const activeBtnStyles =
   "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
@@ -89,7 +90,7 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     userId && fetchUserDetails();
-  }, [userId]);
+  }, [userId, user]);
 
   useEffect(() => {
     if (userProfile?._id) {
@@ -150,6 +151,12 @@ const UserProfilePage = () => {
             <h1 className="font-bold text-3xl text-center mt-3">
               {getUserName(userProfile?.userName)}
             </h1>
+            <p className="font-semibold text-center mt-1">
+              {`Joined On: ${moment(userProfile?.createdAt).format("MMM DD, YYYY")}`}
+            </p>
+            <p className="font-bold text-center mt-1">
+              {userProfile?.about}
+            </p>
             {!editing && (
               <div className="absolute top-0 z-1 left-0 p-2">
                 <button

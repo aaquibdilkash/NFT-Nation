@@ -60,7 +60,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                   return (
                     <Link
                       key={`${category?.name}`}
-                      href={`${item === "Discover Categories" ? `/category` : ``}/${category?.name}`}
+                      href={`${item === "Discover Categories" ? `/category` : ``}/${category?.link}`}
                     >
                       <div
                         onClick={handleCloseSidebar}

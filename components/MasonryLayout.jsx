@@ -22,11 +22,11 @@ const MasonryLayout = ({ pins }) => {
         className="flex animate-slide-fwd"
         breakpointCols={breakpointColumnsObj}
       >
-        {pins?.map((pin, index) => {
+        {pins?.map((pin) => {
           return <Pin key={pin._id} pin={pin} className="w-max" />;
         })}
       </Masonry>
-      {moreLoading && <Spinner message={`We are adding more to your feed!`} />}
+      {moreLoading && <Spinner message={`We are adding more to your feed...`} />}
     </>
   );
 };

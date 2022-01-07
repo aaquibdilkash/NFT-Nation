@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { etherAddress, getMaxBid, getUserName, loginMessage } from "../utils/data";
+import { etherAddress, getMaxBid, getUserName, loginMessage, saveErrorMessage, saveSuccessMessage, unsaveSuccessMessage } from "../utils/data";
 import axios from "axios";
 import { REFRESH_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
+import { FaHeart } from "react-icons/fa";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { toast } from "react-toastify";
 
 const Pin = ({ pin }) => {
   const [savingPost, setSavingPost] = useState(false);
@@ -40,32 +43,34 @@ const Pin = ({ pin }) => {
 
   const router = useRouter();
 
-  // let { user, refresh } = useSelector((state) => state.userReducer);
+  const { user, refresh } = useSelector((state) => state.userReducer);
 
-  // let alreadySaved = pin?.saved?.find((item) => item === user?._id);
+  let alreadySaved = pin?.saved?.find((item) => item === user?._id);
 
-  // const savePin = () => {
-  //   if(!user?._id) {
-  //     alert(loginMessage)
-  //     return
-  //   }
-  //   setSavingPost(true);
-  //   axios
-  //     .put(`/api/pins/save/${_id}`, {
-  //       user: user?._id,
-  //     })
-  //     .then((res) => {
-  //       setSavingPost(false);
-  //       dispatch({
-  //         type: REFRESH_SET,
-  //         payload: !refresh,
-  //       });
-  //     })
-  //     .catch((e) => {
-  //       console.log(e);
-  //       setSavingPost(false);
-  //     });
-  // };
+  const savePin = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+    setSavingPost(true);
+    axios
+      .put(`/api/pins/save/${_id}`, {
+        user: user?._id,
+      })
+      .then((res) => {
+        setSavingPost(false);
+        dispatch({
+          type: REFRESH_SET,
+          payload: !refresh
+        })
+        toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+      })
+      .catch((e) => {
+        console.log(e);
+        setSavingPost(false);
+        toast.error(saveErrorMessage);
+      });
+  };
 
   return (
     <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
@@ -90,33 +95,13 @@ const Pin = ({ pin }) => {
           style={{ height: "100%" }}
         >
           <div className="flex items-center justify-between">
-          {/* <button
-              type="button"
-              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-            >
-              {`${saved?.length} Saved`}{" "}
-            </button> */}
-          {/* <button
-              type="button"
-              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-              onClick={(e) => {
-                e.stopPropagation();
-                savePin(_id);
-              }}
-            >
-              {alreadySaved
-                ? `${saved?.length} Saved`
-                : savingPost
-                ? `Saving...`
-                : `Save`}{" "}
-            </button> */}
             {(priceShowCondition || highestBidShowCondition) && (
               <button
                 type="button"
                 className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  savePin(_id);
+                  // e.stopPropagation();
+                  // savePin(_id);
                 }}
               >
                 {priceShowCondition ? `On Sale` : `On Auction`}{" "}
@@ -145,7 +130,8 @@ const Pin = ({ pin }) => {
       <Link
         href={`/user-profile/${postedBy?._id}`}
       >
-        <div className="transition transition duration-500 ease transform hover:-translate-y-1 inline-block flex gap-2 mt-2 items-center">
+        <div className="transition transition duration-500 ease transform hover:-translate-y-1 inline-block flex gap-2 mt-2 items-center justify-between">
+          <div className="flex gap-2 items-center">
           <Image
             height={35}
             width={35}
@@ -156,6 +142,19 @@ const Pin = ({ pin }) => {
           <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
             {getUserName(postedBy?.userName)}
           </p>
+          </div>
+          {/* {
+            !alreadySaved && <AiOutlineHeart onClick={(e) => {
+              e.stopPropagation();
+              savePin();
+            }} className="text-themeColor transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg" size={25}/>
+          }
+          {
+            alreadySaved && <AiFillHeart onClick={(e) => {
+              e.stopPropagation();
+              savePin();
+            }} className="text-themeColor transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg" size={25}/>
+          } */}
         </div>
       </Link>
     </div>

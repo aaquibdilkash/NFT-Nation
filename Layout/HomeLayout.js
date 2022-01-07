@@ -29,7 +29,7 @@ const HomeLayout = ({ children }) => {
   let web3;
   let accounts;
   let chainId;
-  const chain = chainData.test;
+  const chain = chainData.ropsten;
 
   const connectToMetamask = async () => {
 
@@ -46,7 +46,7 @@ const HomeLayout = ({ children }) => {
     };
 
     web3Modal = new Web3Modal({
-      network: "mainnet", // optional
+      network: "maticmum", // optional
       cacheProvider: true, // optional
       providerOptions, // required
     });
@@ -69,7 +69,7 @@ const HomeLayout = ({ children }) => {
     chainId = await web3.eth.getChainId();
 
     if (chainId != chain.chainId) {
-      toast.info("Wrong Network Detected! Please Switch to Polygon (Matic)");
+      toast.info(`Wrong Network Detected! Please Switch to ${chain?.name}`);
 
       const params = {
         chainId: toHex(chain.chainId), // A 0x-prefixed hexadecimal string
@@ -89,17 +89,40 @@ const HomeLayout = ({ children }) => {
         ],
       };
 
-      window.ethereum
-        .request({
-          method: "wallet_addEthereumChain",
-          params: [params, accounts[0]],
-        })
-        .then((res) => {
-
-        })
-        .catch((e) => {
-          toast.error("Something went wrong while selecting Polygon Matic Network");
+      try {
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: chain.hexChainId }],
         });
+      } catch (switchError) {
+        // This error code indicates that the chain has not been added to MetaMask.
+        if (switchError.code === 4902) {
+          try {
+            await ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [params, accounts[0]],
+            });
+          } catch (addError) {
+            // handle "add" error
+            toast.error(`Something went wrong while adding ${chain?.name} network`);
+          }
+        }
+        // handle other "switch" errors
+        toast.error(`Something went wrong while switching network to ${chain?.name}`);
+      }
+      
+
+      // window.ethereum
+      //   .request({
+      //     method: "wallet_addEthereumChain",
+      //     params: [params, accounts[0]],
+      //   })
+      //   .then((res) => {
+
+      //   })
+      //   .catch((e) => {
+      //     toast.error("Something went wrong while selecting Polygon Matic Network");
+      //   });
 
     } else {
       login(accounts[0]);
