@@ -58,7 +58,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { HAS_MORE, MORE_LOADING } from "../../redux/constants/UserTypes";
+import { HAS_MORE, MORE_LOADING, REFRESH_SET } from "../../redux/constants/UserTypes";
 import { FaCopy, FaDiceD20 } from "react-icons/fa";
 import { toast } from "react-toastify";
 
@@ -69,7 +69,7 @@ const PinDetail = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pinId } = router.query;
-  const { user, page } = useSelector((state) => state.userReducer);
+  const { user, page, marketContract } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [pins, setPins] = useState([]);
   const [pinDetail, setPinDetail] = useState();
@@ -168,6 +168,20 @@ const PinDetail = () => {
 
   const highestBidShowCondition =
     price === "0.0" && owner === etherAddress && !auctionEnded;
+
+
+  useEffect(() => {
+    const listener = () => {
+      setTimeout(() => {
+        setRefresh(prev => !prev)
+      }, 5000)
+    }
+
+    marketContract && marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
+      listener()
+    })
+
+  }, [])
 
   const fetchPinDetails = () => {
     axios
@@ -376,11 +390,12 @@ const PinDetail = () => {
       setLoadingMessage(makeBidLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenBidSuccessMessage);
-      console.log(tx.events, "DDDDDDD");
-      const event = tx.events[1];
+      const event = tx.events[0];
       var eventData = getEventData(event);
       console.log(eventData);
+      console.log(tx.events, "DDDDDDD");
     } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^")
       toast.error(tokenBidErrorMessage);
       setLoading(false);
       return;
@@ -411,10 +426,12 @@ const PinDetail = () => {
       setLoadingMessage(withrawBidLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenBidWithdrawSuccessMessage);
-      const event = tx.events[1];
+      const event = tx.events[0];
       var eventData = getEventData(event);
+      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
       console.log(eventData);
     } catch (e) {
+      console.log(e,"^^^^^^^^^^^^^^^^^^^^^")
       toast.error(tokenBidWithdrawErrorMessage);
       setLoading(false);
       return;
@@ -459,8 +476,10 @@ const PinDetail = () => {
       toast.success(tokenAuctionSuccessMessage);
       const event = tx.events[2];
       var eventData = getEventData(event);
+      console.log(tx.events);
       console.log(eventData);
     } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^")
       toast.error(tokenAuctionErrorMessage);
       setLoading(false);
       return;
@@ -498,12 +517,14 @@ const PinDetail = () => {
       );
       setLoadingMessage(cancelAuctionLoadingMessage);
       const tx = await transaction.wait();
+      console.log(tx);
       toast.success(tokenAuctionEndSuccessMessage);
-      var newOwner = bids?.length ? getMaxBid(bids)?.user : user;
-      const event = bids?.length ? tx.events[4] : tx.events[2];
+      const event = tx.events[2];
       var eventData = getEventData(event);
       console.log(eventData);
+      var newOwner = bids?.length ? getMaxBid(bids)?.user : user;
     } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
       toast.error(tokenAuctionEndErrorMessage);
       setLoading(false);
       return;
@@ -911,7 +932,7 @@ const PinDetail = () => {
               }
             })}
           </div>
-          {(addingBidPrice || addingSellPrice) && (
+          {(makeAuctionBidCondition || createMarketSaleCondition) && (addingBidPrice || addingSellPrice) && (
             <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
               <div className="flex flex-wrap m-2 gap-3">
                 {user?._id && (

@@ -3,7 +3,7 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { HAS_MORE, MARKET_CONTRACT, MORE_LOADING, PAGE_SET, SEARCH_TERM_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import { HAS_MORE, MARKET_CONTRACT, MORE_LOADING, PAGE_SET, REFRESH_SET, SEARCH_TERM_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import { chainData, toHex } from "../utils/data";
 import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
@@ -19,11 +19,9 @@ import { toast } from "react-toastify";
 
 const HomeLayout = ({ children }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
-  // const scrollRef = useRef(null);
   const dispatch = useDispatch();
   const router = useRouter()
-  const { user, page, hasMore } = useSelector((state) => state.userReducer);
-
+  const { user, page, hasMore, marketContract, refresh } = useSelector((state) => state.userReducer);
   let web3Modal;
   let provider;
   let web3;
@@ -32,14 +30,6 @@ const HomeLayout = ({ children }) => {
   const chain = chainData.ropsten;
 
   const connectToMetamask = async () => {
-
-    if (!window?.ethereum) {
-      // window.ethereum.isMetaMask
-      toast.info("Web3 is not enabled in this browser, Please install Metamask to get started!", {
-        autoClose: 6000
-      });
-      return
-    }
 
     const providerOptions = {
       /* See Provider Options Section */
@@ -53,16 +43,23 @@ const HomeLayout = ({ children }) => {
 
     provider = await web3Modal.connect();
 
-    // console.log(provider, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDdd")
-
     web3 = new Web3(provider);
 
-    // const marketContract = new web3.eth.Contract(Market.abi, nftmarketaddress)
+    const contract = new web3.eth.Contract(Market.abi, nftmarketaddress)
 
-    // dispatch({
-    //   type: MARKET_CONTRACT,
-    //   payload: marketContract
-    // })
+    dispatch({
+      type: MARKET_CONTRACT,
+      payload: contract
+    })
+
+
+    if (!window?.ethereum) {
+      // window.ethereum.isMetaMask
+      toast.info("Web3 is not enabled in this browser, Please install Metamask to get started!", {
+        autoClose: 6000
+      });
+      return
+    }
 
     accounts = await web3.eth.getAccounts();
 
@@ -196,6 +193,24 @@ const HomeLayout = ({ children }) => {
     // scrollRef.current.scrollTo(0, 0);
     connectToMetamask()
   }, []);
+
+
+  // useEffect(() => {
+  //   const listener = () => {
+  //     setTimeout(() => {
+  //       setRefresh(prev => !prev)
+  //       dispatch({
+  //         type: REFRESH_SET,
+  //         payload: !refresh
+  //       })
+  //     }, 5000)
+  //   }
+
+  //   marketContract && marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
+  //     listener()
+  //   })
+
+  // }, [])
 
   useEffect(() => {
       dispatch({

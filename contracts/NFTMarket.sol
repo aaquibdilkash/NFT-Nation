@@ -294,6 +294,7 @@ contract NFTMarket is ReentrancyGuard {
         for(uint i = 0; i < idToMarketItem[itemId].pendingBidders.length; i++) {
             if(idToMarketItem[itemId].pendingBidders[i] != address(0) && pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]] > 0) {
                 payable(idToMarketItem[itemId].pendingBidders[i]).transfer(pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]]);
+                pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]] = 0;
             }
         }
         
@@ -322,8 +323,10 @@ contract NFTMarket is ReentrancyGuard {
             idToMarketItem[itemId].highestBidder = payable(msg.sender);
             idToMarketItem[itemId].highestBid = msg.value;
 
-            idToMarketItem[itemId].pendingBidders.push(payable(prevHighestBidder));
-            pendingReturns[itemId][prevHighestBidder] = prevHighestBid;
+            if(prevHighestBid > 0 && prevHighestBidder != idToMarketItem[itemId].seller) {
+                idToMarketItem[itemId].pendingBidders.push(payable(prevHighestBidder));
+                pendingReturns[itemId][prevHighestBidder] = prevHighestBid;
+            }
 
         } else {
             pendingReturns[itemId][msg.sender] = msg.value;
@@ -353,15 +356,22 @@ contract NFTMarket is ReentrancyGuard {
                 }
             }
         } else {
+            require(
+                idToMarketItem[itemId].highestBidder == msg.sender,
+                "You don't have any previous bid to withdraw on this NFT"
+            );
+
             uint256 prevHighestBid = idToMarketItem[itemId].highestBid;
-            address prevHighestBidder = idToMarketItem[itemId].highestBidder;
+            // address prevHighestBidder = idToMarketItem[itemId].highestBidder;
             payable(msg.sender).transfer(prevHighestBid);
 
-            idToMarketItem[itemId].highestBid = 0;
-            idToMarketItem[itemId].highestBidder = idToMarketItem[itemId].seller;
+            // idToMarketItem[itemId].highestBid = 0;
+            // idToMarketItem[itemId].highestBidder = idToMarketItem[itemId].seller;
 
-            address nextHighestBidder = pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[0]] > 0 ? idToMarketItem[itemId].pendingBidders[0] : idToMarketItem[itemId].seller;
-            uint256 nextHighestBidderIndex = 0;
+            // address nextHighestBidder = pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[0]] > 0 ? idToMarketItem[itemId].pendingBidders[0] : idToMarketItem[itemId].seller;
+            uint nextHighestBid = 0;
+            address nextHighestBidder = idToMarketItem[itemId].seller;
+            uint256 nextHighestBidderIndex = idToMarketItem[itemId].pendingBidders.length + 1;
 
             for (
                 uint256 i = 0;
@@ -370,18 +380,23 @@ contract NFTMarket is ReentrancyGuard {
             ) {
                 if (
                     pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]] >
-                    pendingReturns[itemId][nextHighestBidder] &&
-                    idToMarketItem[itemId].pendingBidders[i] != prevHighestBidder
+                    pendingReturns[itemId][nextHighestBidder]
+                    // idToMarketItem[itemId].pendingBidders[i] != prevHighestBidder
                 ) {
                     nextHighestBidder = idToMarketItem[itemId].pendingBidders[i];
+                    nextHighestBid = pendingReturns[itemId][idToMarketItem[itemId].pendingBidders[i]];
                     nextHighestBidderIndex = i;
                 }
             }
 
             idToMarketItem[itemId].highestBidder = payable(nextHighestBidder);
-            idToMarketItem[itemId].highestBid = pendingReturns[itemId][nextHighestBidder];
+            idToMarketItem[itemId].highestBid = nextHighestBid;
+            // idToMarketItem[itemId].highestBid = pendingReturns[itemId][nextHighestBidder];
             pendingReturns[itemId][nextHighestBidder] = 0;
-            delete idToMarketItem[itemId].pendingBidders[nextHighestBidderIndex];
+
+            if(nextHighestBidderIndex != idToMarketItem[itemId].pendingBidders.length + 1) {
+                delete idToMarketItem[itemId].pendingBidders[nextHighestBidderIndex];
+            }
         }
 
         emitEvent(itemId);

@@ -76,6 +76,32 @@ export const sidebarCategories = {
 };
 
 export const chainData = {
+  localhost: {
+    name: "Localhost",
+    chain: "ETH",
+    network: "localhost",
+    rpc: [
+      "http://localhost:8545"
+    ],
+    faucets: [],
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    // infoURL: "https://polygon.technology/",
+    shortName: "localhost",
+    chainId: 1337,
+    hexChainId: "0x539",
+    networkId: 1337,
+    // explorers: [
+    //   {
+    //     name: "polygonscan",
+    //     url: "https://polygonscan.com/",
+    //     standard: "EIP3091",
+    //   },
+    // ],
+  },
   maticmain: {
     name: "Polygon Mainnet",
     chain: "Polygon",
@@ -277,7 +303,7 @@ export const getEventData = (event) => {
     owner: owner.toString(),
     price: ethers.utils.formatEther(price).toString(),
     highestBidder: highestBidder.toString(),
-    highestBid: highestBid.toString(),
+    highestBid: ethers.utils.formatEther(highestBid).toString(),
     pendingBidders: pendingBidders,
     auctionEnded: Boolean(auctionEnded),
   };
