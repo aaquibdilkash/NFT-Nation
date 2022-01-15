@@ -1,27 +1,12 @@
 import {
   FaBaseballBall,
-    FaBook,
     FaCat,
-    FaDollarSign,
     FaGamepad,
     FaLaugh,
-    FaMoneyBill,
     FaPaintBrush,
-    FaPaperclip,
-    FaPencilAlt,
-    FaPhone,
-    FaQuestion,
-    FaReadme,
-    FaSalesforce,
-    FaShoppingBag,
-    FaSign,
-    FaSmile,
-    FaUser,
   } from "react-icons/fa";
 import { HiPhotograph } from "react-icons/hi";
-import { IoIosAperture, IoMdAperture, IoMdArrowDropdown, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
-import { MdArrowDropDownCircle, MdArrowDropUp, MdCardGiftcard, MdCardMembership, MdSports } from "react-icons/md";
-import { etherAddress } from "./data";
+import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
   
   export const sidebarCategories = {
     "Discover Categories": [

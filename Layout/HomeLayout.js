@@ -220,7 +220,7 @@ const HomeLayout = ({ children }) => {
       undefined,
       { shallow: true }
     );
-  }, [keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort]);
+  }, [category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort]);
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;

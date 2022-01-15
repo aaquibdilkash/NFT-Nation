@@ -67,7 +67,7 @@ export const getEventData = (event) => {
 // }
 
 export const isSubset = (superObj, subObj) => {
-  return Object.keys(subObj).every(ele => {
+  return Object.keys(subObj)?.every(ele => {
       if (typeof subObj[ele] == 'object') {
           return isSubset(superObj[ele], subObj[ele]);
       }

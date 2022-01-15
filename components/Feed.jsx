@@ -35,7 +35,7 @@ const Feed = () => {
   }`;
 
   const fetchPins = () => {
-    setLoading(!page);
+    setLoading(!page || page == 1);
 
     axios
       .get(link, {
@@ -66,7 +66,7 @@ const Feed = () => {
   }, [router]);
 
   const ideaName = category || "new";
-  if (loading && parseInt(page) === 1) {
+  if (loading && (!page || page == 1)) {
     return <Spinner message={`We are adding ${ideaName} pins to your feed!`} />;
   }
 
