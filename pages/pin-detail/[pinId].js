@@ -9,6 +9,14 @@ import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  etherAddress,
+  getEventData,
+  getMaxBid,
+  getUserBid,
+  getUserName,
+  isValidAmount,
+} from "../../utils/data";
+import {
   approvalLoadingMessage,
   buyLoadingMessage,
   cancelAuctionLoadingMessage,
@@ -20,15 +28,9 @@ import {
   createAuctionLoadingMessage,
   createSaleLoadingMessage,
   errorMessage,
-  etherAddress,
   finalErrorMessage,
   finalProcessingErrorMessage,
   finalSuccessMessage,
-  getEventData,
-  getMaxBid,
-  getUserBid,
-  getUserName,
-  isValidAmount,
   loginMessage,
   makeBidLoadingMessage,
   saveErrorMessage,
@@ -53,7 +55,7 @@ import {
   unsaveSuccessMessage,
   validAmountErrorMessage,
   withrawBidLoadingMessage,
-} from "../../utils/data";
+} from "../../utils/messages";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
@@ -61,13 +63,17 @@ import Image from "next/image";
 import { HAS_MORE, MORE_LOADING, REFRESH_SET } from "../../redux/constants/UserTypes";
 import { FaCopy, FaDiceD20 } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { Feed } from "../../components";
 
 const buttonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-medium rounded-full text-secondTheme px-8 py-3 cursor-pointer";
+  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-bold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
 
 const PinDetail = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { pathname, query } = router;
+  // const { keyword } = query;
+  
   const { pinId } = router.query;
   const { user, page, marketContract } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
@@ -188,6 +194,18 @@ const PinDetail = () => {
       .get(`/api/pins/${pinId}`)
       .then((res) => {
         setPinDetail(res.data.pin);
+
+        router.push(
+          {
+            pathname: pathname,
+            query: {
+              pinId,
+              category: res.data.pin.category
+            },
+          },
+          undefined,
+          { shallow: true }
+        );
       })
       .catch((e) => {
         toast.error(errorMessage);
@@ -195,48 +213,48 @@ const PinDetail = () => {
       });
   };
 
-  const fetchRelatedPins = () => {
-    page === 1 && setSimilarLoading(true);
-    dispatch({
-      type: MORE_LOADING,
-      payload: page !== 1,
-    });
-    axios
-      .get(`/api/pins?page=${page}&category=${category}`)
-      .then((res) => {
-        const { pins, resultPerPage, filteredPinsCount } = res.data;
-        let filtered = pins.filter((pin) => pin?._id !== pinId);
-        setSimilarLoading(false);
-        page === 1
-          ? setPins(filtered)
-          : setPins((prev) => [...prev, ...filtered]);
-        dispatch({
-          type: MORE_LOADING,
-          payload: false,
-        });
-        dispatch({
-          type: HAS_MORE,
-          payload: page * resultPerPage < filteredPinsCount,
-        });
-      })
-      .catch((e) => {
-        setSimilarLoading(false);
-        dispatch({
-          type: MORE_LOADING,
-          payload: false,
-        });
-        toast.error(errorMessage);
-        // console.log(e);
-      });
-  };
+  // const fetchRelatedPins = () => {
+  //   page === 1 && setSimilarLoading(true);
+  //   dispatch({
+  //     type: MORE_LOADING,
+  //     payload: page !== 1,
+  //   });
+  //   axios
+  //     .get(`/api/pins?page=${page}&category=${category}`)
+  //     .then((res) => {
+  //       const { pins, resultPerPage, filteredPinsCount } = res.data;
+  //       let filtered = pins.filter((pin) => pin?._id !== pinId);
+  //       setSimilarLoading(false);
+  //       page === 1
+  //         ? setPins(filtered)
+  //         : setPins((prev) => [...prev, ...filtered]);
+  //       dispatch({
+  //         type: MORE_LOADING,
+  //         payload: false,
+  //       });
+  //       dispatch({
+  //         type: HAS_MORE,
+  //         payload: page * resultPerPage < filteredPinsCount,
+  //       });
+  //     })
+  //     .catch((e) => {
+  //       setSimilarLoading(false);
+  //       dispatch({
+  //         type: MORE_LOADING,
+  //         payload: false,
+  //       });
+  //       toast.error(errorMessage);
+  //       // console.log(e);
+  //     });
+  // };
 
   useEffect(() => {
     pinId && fetchPinDetails();
   }, [pinId, refresh]);
 
-  useEffect(() => {
-    category && fetchRelatedPins();
-  }, [pinDetail, page]);
+  // useEffect(() => {
+  //   category && fetchRelatedPins();
+  // }, [pinDetail, page]);
 
   const updatePin = (body) => {
     axios
@@ -973,15 +991,13 @@ const PinDetail = () => {
           )}
         </div>
       )}
-      {pins?.length > 0 && (
         <>
           <h2 className="text-center font-bold text-2xl mt-8 mb-4">
             More like this
           </h2>
-          <MasonryLayout pins={pins} />
+          {/* <MasonryLayout pins={pins} /> */}
+          <Feed />
         </>
-      )}
-      {similarLoading && <Spinner message="Loading more pins" />}
     </>
   );
 };

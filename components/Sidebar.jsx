@@ -3,7 +3,8 @@ import Link from "next/link";
 import { FaArtstation, FaHome } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
-import { getUserName, sidebarCategories } from "../utils/data";
+import { getUserName, isSubset } from "../utils/data";
+import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -14,6 +15,8 @@ const isActiveStyle =
 
 const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   const router = useRouter();
+  const {query, asPath, pathname} = router
+  const {category} = query
   const handleCloseSidebar = () => {
     setToggleSidebar(false);
   };
@@ -43,7 +46,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
             <div
               onClick={handleCloseSidebar}
               className={
-                router.pathname === "/" ? isActiveStyle : isNotActiveStyle
+                pathname === "/" ? isActiveStyle : isNotActiveStyle
               }
             >
               <FaHome className="" size={25} />
@@ -56,24 +59,39 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                 <h3 className="mt-2 px-5 text-base 2xl:text-xl font-bold">
                   {item}
                 </h3>
-                {sidebarCategories[`${item}`].map((category) => {
+                {sidebarCategories[`${item}`].map((cat) => {
+                  const {link, name, icon} = cat
                   return (
-                    <Link
-                      key={`${category?.name}`}
-                      href={`${item === "Discover Categories" ? `/category` : ``}/${category?.link}`}
-                    >
+                    // <Link
+                    //   key={`${name}`}
+                    //   href={`${link}`}
+                    // >
                       <div
-                        onClick={handleCloseSidebar}
+                        onClick={() => {
+                          router.push(
+                            {
+                              pathname: pathname,
+                              query: {
+                                ...query,
+                                ...cat.query
+                              },
+                            },
+                            undefined,
+                            { shallow: true }
+                          );
+                          handleCloseSidebar()
+                        }}
                         className={
-                          router.query.categoryId === category?.name
+                          // (item === "Discover Categories" ? (category === name) : (asPath === link))
+                          isSubset(query, cat?.query)
                             ? isActiveStyle
                             : isNotActiveStyle
                         }
                       >
-                        {category?.icon}
-                        {category?.name}
+                        {icon}
+                        {name}
                       </div>
-                    </Link>
+                    // </Link>
                   );
                 })}
               </div>

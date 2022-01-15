@@ -3,8 +3,12 @@ import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { HAS_MORE, MARKET_CONTRACT, MORE_LOADING, PAGE_SET, REFRESH_SET, SEARCH_TERM_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
-import { chainData, toHex } from "../utils/data";
+import {
+  MARKET_CONTRACT,
+  USER_GET_SUCCESS,
+} from "../redux/constants/UserTypes";
+import { toHex } from "../utils/data";
+import { chainData } from "../utils/chainData";
 import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
 import Web3 from "web3";
@@ -15,13 +19,15 @@ import { useRouter } from "next/router";
 import { nftmarketaddress } from "../config";
 import { toast } from "react-toastify";
 
-
-
 const HomeLayout = ({ children }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const dispatch = useDispatch();
-  const router = useRouter()
-  const { user, page, hasMore, marketContract, refresh } = useSelector((state) => state.userReducer);
+  const router = useRouter();
+  const { pathname, query } = router;
+  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
+  const { user, marketContract, refresh, hasMore } = useSelector(
+    (state) => state.userReducer
+  );
   let web3Modal;
   let provider;
   let web3;
@@ -30,7 +36,6 @@ const HomeLayout = ({ children }) => {
   const chain = chainData.ropsten;
 
   const connectToMetamask = async () => {
-
     const providerOptions = {
       /* See Provider Options Section */
     };
@@ -45,20 +50,22 @@ const HomeLayout = ({ children }) => {
 
     web3 = new Web3(provider);
 
-    const contract = new web3.eth.Contract(Market.abi, nftmarketaddress)
+    const contract = new web3.eth.Contract(Market.abi, nftmarketaddress);
 
     dispatch({
       type: MARKET_CONTRACT,
-      payload: contract
-    })
-
+      payload: contract,
+    });
 
     if (!window?.ethereum) {
       // window.ethereum.isMetaMask
-      toast.info("Web3 is not enabled in this browser, Please install Metamask to get started!", {
-        autoClose: 6000
-      });
-      return
+      toast.info(
+        "Web3 is not enabled in this browser, Please install Metamask to get started!",
+        {
+          autoClose: 6000,
+        }
+      );
+      return;
     }
 
     accounts = await web3.eth.getAccounts();
@@ -88,7 +95,7 @@ const HomeLayout = ({ children }) => {
 
       try {
         await ethereum.request({
-          method: 'wallet_switchEthereumChain',
+          method: "wallet_switchEthereumChain",
           params: [{ chainId: chain.hexChainId }],
         });
       } catch (switchError) {
@@ -96,31 +103,21 @@ const HomeLayout = ({ children }) => {
         if (switchError.code === 4902) {
           try {
             await ethereum.request({
-              method: 'wallet_addEthereumChain',
+              method: "wallet_addEthereumChain",
               params: [params, accounts[0]],
             });
           } catch (addError) {
             // handle "add" error
-            toast.error(`Something went wrong while adding ${chain?.name} network`);
+            toast.error(
+              `Something went wrong while adding ${chain?.name} network`
+            );
           }
         }
         // handle other "switch" errors
-        toast.error(`Something went wrong while switching network to ${chain?.name}`);
+        toast.error(
+          `Something went wrong while switching network to ${chain?.name}`
+        );
       }
-      
-
-      // window.ethereum
-      //   .request({
-      //     method: "wallet_addEthereumChain",
-      //     params: [params, accounts[0]],
-      //   })
-      //   .then((res) => {
-
-      //   })
-      //   .catch((e) => {
-      //     toast.error("Something went wrong while selecting Polygon Matic Network");
-      //   });
-
     } else {
       login(accounts[0]);
     }
@@ -129,7 +126,7 @@ const HomeLayout = ({ children }) => {
     provider &&
       provider.on("accountsChanged", async (accounts) => {
         // let address = await web3.eth.getAccounts();
-        logout()
+        logout();
         console.log(accounts, "on accountChanged");
         // login(address[0])
       });
@@ -137,10 +134,10 @@ const HomeLayout = ({ children }) => {
     // Subscribe to chainId change
     provider &&
       provider.on("chainChanged", (chainId) => {
-        if(chainId !== chain.hexChainId) {
-          logout()
+        if (chainId !== chain.hexChainId) {
+          logout();
         } else {
-          login(accounts[0])
+          login(accounts[0]);
         }
         console.log(chainId, "chain Changed");
       });
@@ -167,14 +164,14 @@ const HomeLayout = ({ children }) => {
     axios
       .post("/api/users", obj)
       .then((res) => {
-        toast.success("Logged In Successfuly!")
+        toast.success("Logged In Successfuly!");
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
         });
       })
       .catch((e) => {
-        toast.error("Something went wrong while logging you in!")
+        toast.error("Something went wrong while logging you in!");
         // console.log(e);
       });
   };
@@ -190,10 +187,8 @@ const HomeLayout = ({ children }) => {
   };
 
   useEffect(() => {
-    // scrollRef.current.scrollTo(0, 0);
-    connectToMetamask()
+    connectToMetamask();
   }, []);
-
 
   // useEffect(() => {
   //   const listener = () => {
@@ -213,41 +208,38 @@ const HomeLayout = ({ children }) => {
   // }, [])
 
   useEffect(() => {
-      dispatch({
-        type: PAGE_SET,
-        payload: 1
-      })
-  
-      dispatch({
-        type: HAS_MORE,
-        payload: true
-      })
-  
-      dispatch({
-        type: MORE_LOADING,
-        payload: false
-      })
-
-      dispatch({
-        type: SEARCH_TERM_SET,
-        payload: ""
-      })
-
-      setToggleSidebar(false)
-    
-  }, [router])
+    setToggleSidebar(false);
+    router.push(
+      {
+        pathname: pathname,
+        query: {
+          ...query,
+          page: 1,
+        },
+      },
+      undefined,
+      { shallow: true }
+    );
+  }, [keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort]);
 
   const onScroll = (e) => {
-    const {scrollTop, clientHeight, scrollHeight} = e.currentTarget;
-
+    const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+    console.log(hasMore)
     if (scrollHeight - scrollTop === clientHeight && hasMore) {
-      console.log(page)
-      dispatch({
-        type: PAGE_SET,
-        payload: page+1
-      })
+      console.log(page);
+      router.push(
+        {
+          pathname: pathname,
+          query: {
+            ...query,
+            page: page ? parseInt(page) + 1 : 2,
+          },
+        },
+        undefined,
+        { shallow: true }
+      );
     }
-  }
+  };
 
   return (
     <div className="flex bg-gradient-to-r from-secondTheme to-themeColor md:flex-row flex-col h-screen transition-height duration-75 ease-out">
@@ -270,13 +262,13 @@ const HomeLayout = ({ children }) => {
           {user?._id && (
             <Link href={`/user-profile/${user?._id}`}>
               <div>
-              <Image
-                height={40}
-                width={40}
-                src={user?.image}
-                alt="user-pic"
-                className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
-              />
+                <Image
+                  height={40}
+                  width={40}
+                  src={user?.image}
+                  alt="user-pic"
+                  className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
+                />
               </div>
             </Link>
           )}
@@ -291,14 +283,14 @@ const HomeLayout = ({ children }) => {
           </div>
         )}
       </div>
-      <div onScroll={onScroll} className="pb-2 flex-1 h-screen overflow-y-scroll" 
-      // ref={scrollRef}
+      <div
+        onScroll={onScroll}
+        className="pb-2 flex-1 h-screen overflow-y-scroll"
+        // ref={scrollRef}
       >
         <div className="px-2 md:px-5">
           <div className="transparent">
-            <Navbar
-              connectToMetamask={connectToMetamask}
-            />
+            <Navbar connectToMetamask={connectToMetamask} />
           </div>
           <div className="h-full">{children}</div>
         </div>

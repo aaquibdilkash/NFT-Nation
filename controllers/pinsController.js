@@ -4,7 +4,7 @@ import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 
 const allPins = catchAsyncErrors(async (req, res) => {
-  const resultPerPage = 12;
+  const resultPerPage = 8;
   const pinsCount = await Pin.countDocuments();
 
   const searchPagination = new SearchPagination(
@@ -14,7 +14,15 @@ const allPins = catchAsyncErrors(async (req, res) => {
     .search()
     .filter()
     .saved()
-    .bids();
+    .bids()
+    .notin()
+    .sorted()
+
+  if(req.query.feed) {
+    const user = await User.findById(req.query.id)
+
+    searchPagination.feed(user?.followings)
+  }
 
   let pins = await searchPagination.query;
 
@@ -34,7 +42,10 @@ const allPins = catchAsyncErrors(async (req, res) => {
 });
 
 const getPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id).populate("postedBy").populate("comments.user").populate("bids.user");
+  const pin = await Pin.findById(req.query.id)
+    .populate("postedBy")
+    .populate("comments.user")
+    .populate("bids.user");
 
   if (!pin) {
     return res.status(404).json({
@@ -44,7 +55,7 @@ const getPin = catchAsyncErrors(async (req, res) => {
   }
   res.status(200).json({
     success: true,
-    pin
+    pin,
   });
 });
 
@@ -104,132 +115,128 @@ const savePin = catchAsyncErrors(async (req, res) => {
     });
   }
 
-  let saved
-  if(pin?.saved?.find((item) => item?.toString() === req.body.user)) {
-    saved = pin?.saved?.filter((item) => item != req.body.user)
-    pin.saved = saved
+  let saved;
+  if (pin?.saved?.find((item) => item?.toString() === req.body.user)) {
+    saved = pin?.saved?.filter((item) => item != req.body.user);
+    pin.saved = saved;
   } else {
-    pin.saved.push(req.body.user)
+    pin.saved.unshift(req.body.user);
   }
 
-  await pin.save({validateBeforeSave: false})
+  await pin.save({ validateBeforeSave: false });
 
   res.status(200).json({
-      success: true,
-  })
+    success: true,
+  });
 });
 
+
 const commentPin = catchAsyncErrors(async (req, res, next) => {
-    const { user, comment } = req.body;
-  
-    const newComment = {
-      user,
-      comment
-    };
-  
-    let pin = await Pin.findById(req.query.id);
-  
-    const alreadyCommented = pin.comments.find(
-      (com) => com.user.toString() === user
-    );
-  
-    if (alreadyCommented) {
-      pin.comments.forEach((com) => {
-        if (com.user.toString() === user) {
-            com.comment = comment
-        }
-      });
-    } else {
-      pin.comments.unshift(newComment);
+  console.log("in comment pin", req.body)
+  const { user, comment } = req.body;
+
+  const newComment = {
+    user,
+    comment,
+  };
+
+  console.log(user, comment, newComment, "DDDDDDDDDDDDDDDDDDD")
+
+  let pin = await Pin.findById(req.query.id);
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+
+  pin.comments.unshift(newComment);
+
+  await pin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const updatePinComment = catchAsyncErrors(async (req, res, next) => {
+  const { commentId, user, comment } = req.body;
+
+  let pin = await Pin.findById(req.query.id);
+
+  pin.comments.forEach((com) => {
+    if (com.user.toString() === user && com._id.toString() === commentId) {
+      com.comment = comment;
     }
-  
+  });
+
+  await pin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const deletePinComment = catchAsyncErrors(async (req, res, next) => {
+  const { commentId, user } = req.body;
+
+  let pin = await Pin.findById(req.query.id);
+
+  pin.comments = pin.comments.filter(
+    (com) =>
+      com?.user?.toString() !== user && com?._id?.toString() !== commentId
+  );
+
+  pin = await pin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
+  const { user, bid } = req.body;
+
+  const newBid = {
+    user,
+    bid,
+  };
+
+  let pin = await Pin.findById(req.query.id);
+
+  const alreadyBid = pin.bids.find((bid) => bid.user.toString() === user);
+
+  if (alreadyBid) {
+    res.status(403).json({
+      success: false,
+      message: "You already have an existing bid for this item",
+    });
+  } else {
+    pin.bids.unshift(newBid);
+
     pin = await pin.save({ validateBeforeSave: false });
-  
+
     res.status(200).json({
       success: true,
     });
-  });
-
-  const deleteComment = catchAsyncErrors(async (req, res, next) => {
-    const { user } = req.body;
-  
-    let pin = await Pin.findById(req.query.id);
-  
-    const alreadyCommented = pin.comments.find(
-      (com) => com.user.toString() === user
-    );
-  
-  
-    if (!alreadyCommented) {
-      res.status(404).json({
-        success: false,
-        message: "You don't have any existing comment for this item",
-      });
-  
-    } else {
-      pin.comments = pin.comments.filter(com => com?.user?.toString() !== user)
-  
-      pin = await pin.save({ validateBeforeSave: false });
-  
-      res.status(200).json({
-        success: true,
-      });
-    }
-
-  })
-
-const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
-    const { user, bid } = req.body;
-  
-    const newBid = {
-      user,
-      bid
-    };
-    
-  
-    let pin = await Pin.findById(req.query.id);
-  
-    const alreadyBid = pin.bids.find(
-      (bid) => bid.user.toString() === user
-    );
-  
-    if (alreadyBid) {
-      res.status(403).json({
-        success: false,
-        message: "You already have an existing bid for this item",
-      });
-
-    } else {
-      pin.bids.unshift(newBid);
-
-      pin = await pin.save({ validateBeforeSave: false });
-
-      res.status(200).json({
-        success: true,
-      });
-    }
-
-  });
-
+  }
+});
 
 const withdrawAuctionBid = catchAsyncErrors(async (req, res, next) => {
   const { user } = req.body;
 
   let pin = await Pin.findById(req.query.id);
 
-  const alreadyBid = pin.bids.find(
-    (bid) => bid.user.toString() === user
-  );
-
+  const alreadyBid = pin.bids.find((bid) => bid.user.toString() === user);
 
   if (!alreadyBid) {
     res.status(403).json({
       success: false,
       message: "You don't have any existing bid for this item",
     });
-
   } else {
-    pin.bids = pin.bids.filter(bid => bid?.user?.toString() !== user)
+    pin.bids = pin.bids.filter((bid) => bid?.user?.toString() !== user);
 
     pin = await pin.save({ validateBeforeSave: false });
 
@@ -237,7 +244,18 @@ const withdrawAuctionBid = catchAsyncErrors(async (req, res, next) => {
       success: true,
     });
   }
+});
 
-  });
-
-export { allPins, getPin, createPin, updatePin, deletePin, savePin, commentPin, deleteComment, makeAuctionBid, withdrawAuctionBid };
+export {
+  allPins,
+  getPin,
+  createPin,
+  updatePin,
+  deletePin,
+  savePin,
+  commentPin,
+  updatePinComment,
+  deletePinComment,
+  makeAuctionBid,
+  withdrawAuctionBid,
+};

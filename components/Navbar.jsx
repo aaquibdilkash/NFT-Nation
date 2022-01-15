@@ -3,16 +3,14 @@ import Link from "next/link";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
 import { AiOutlineLogin } from "react-icons/ai";
 import Image from "next/image";
-import { SEARCH_TERM_SET } from "../redux/constants/UserTypes";
 
-const Navbar = ({connectToMetamask}) => {
-  const dispatch = useDispatch();
+const Navbar = ({ connectToMetamask }) => {
   const { user } = useSelector((state) => state.userReducer);
-  const { searchTerm } = useSelector((state) => state.userReducer);
   const router = useRouter();
+  const { pathname, query } = router;
+  const { keyword } = query;
 
   return (
     <div className="flex gap-2 md:gap-5 w-full mt-5 pb-7">
@@ -21,15 +19,21 @@ const Navbar = ({connectToMetamask}) => {
         <input
           type="text"
           onChange={(e) => {
-            dispatch({
-              type: SEARCH_TERM_SET,
-              payload: e.target.value,
-            });
+            router.push(
+              {
+                pathname: pathname,
+                query: {
+                  ...query,
+                  keyword: e.target.value,
+                },
+              },
+              undefined,
+              { shallow: true }
+            );
           }}
-          placeholder="Search"
-          value={searchTerm}
-          onFocus={() => router.push("/search")}
-          autoFocus={router.pathname === "/search"}
+          placeholder="Search NFTs By Name, Description or Owner's Address..."
+          value={keyword}
+          onFocus={() => pathname !== "/" && router.push("/")}
           className="p-2 w-full bg-secondTheme outline-none"
         />
       </div>
@@ -37,23 +41,26 @@ const Navbar = ({connectToMetamask}) => {
         {user?._id && (
           <Link href={`/user-profile/${user?._id}`}>
             <div className="w-12 h-12 relative transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
-            <Image
-              src={user?.image}
-              alt="user-pic"
-              placeholder="blur"
-              blurDataURL="/favicon.png"
-              // height={100}
-              // width={100}
-              layout="fill"
-              className="rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
-            />
+              <Image
+                src={user?.image}
+                alt="user-pic"
+                placeholder="blur"
+                blurDataURL="/favicon.png"
+                // height={100}
+                // width={100}
+                layout="fill"
+                className="rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+              />
             </div>
           </Link>
         )}
         {!user?._id && (
-            <div onClick={connectToMetamask} className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
-            <AiOutlineLogin color="themeColor" fontSize={21}/>
-            </div>
+          <div
+            onClick={connectToMetamask}
+            className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+          >
+            <AiOutlineLogin color="themeColor" fontSize={21} />
+          </div>
         )}
         <Link href="/create-pin">
           <div className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">

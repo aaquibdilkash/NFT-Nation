@@ -3,79 +3,71 @@ import MasonryLayout from "./MasonryLayout";
 import Spinner from "./Spinner";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import Head from "next/head";
-import { HAS_MORE, MORE_LOADING } from "../redux/constants/UserTypes";
+import { HAS_MORE } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
+import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
-const Feed = ({ categoryId }) => {
+const Feed = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const [pins, setPins] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const { page } = useSelector((state) => state.userReducer);
+  const [loading, setLoading] = useState(true);
+  const { user, hasMore } = useSelector((state) => state.userReducer);
+  const CancelToken = axios.CancelToken;
+  const source = CancelToken.source();
+
+  const {query} = router
+  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
+
+  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${
+    keyword ? `&keyword=${keyword}` : ``
+  }${
+    feed ? `&feed=${user?._id}` : ``
+  }${category ? `&category=${category}` : ``}${owner ? `&owner=${owner}` : ``}${
+    seller ? `&seller=${seller}` : ``
+  }${bids ? `&bids=${bids}` : ``}${saved ? `&saved=${saved}` : ``}${
+    auctionEnded ? `&auctionEnded=${auctionEnded}` : ``
+  }${
+    pinId ? `&ne=${pinId}` : ``
+  }${
+    sort ? `&sort=${sort}` : ``
+  }`;
 
   const fetchPins = () => {
-    if (categoryId) {
-      page === 1 && setLoading(true)
-    dispatch({
-      type: MORE_LOADING,
-      payload: page !== 1
-    });
-      axios
-        .get(`/api/pins?page=${page}&category=${categoryId}`)
-        .then((res) => {
-          const { pins, resultPerPage, filteredPinsCount } = res.data;
-          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
-          setLoading(false);
-          dispatch({
-            type: MORE_LOADING,
-            payload: false
-          });
-          dispatch({
-            type: HAS_MORE,
-            payload: page * resultPerPage < filteredPinsCount,
-          });
-        })
-        .catch((e) => {
-          setLoading(false);
-          dispatch({
-            type: MORE_LOADING,
-            payload: false
-          });
-          dispatch({
-            type: MORE_LOADING,
-            payload: false
-          });
+    setLoading(!page);
+
+    axios
+      .get(link, {
+        cancelToken: source.token,
+      })
+      .then((res) => {
+        const { pins, resultPerPage, filteredPinsCount } = res.data;
+        (page ? parseInt(page) === 1 : true) ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+        setLoading(false);
+        dispatch({
+          type: HAS_MORE,
+          payload: (page ? parseInt(page) : 1) * resultPerPage < filteredPinsCount,
         });
-    } else {
-      setLoading(true);
-      axios
-        .get(`/api/pins?page=${page}`)
-        .then((res) => {
-          const { pins, resultPerPage, pinsCount } = res.data;
+      })
+      .catch((e) => {
+        if (axios.isCancel(e)) {
+        } else {
           setLoading(false);
-          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
-          dispatch({
-            type: HAS_MORE,
-            payload: page * resultPerPage < pinsCount,
-          });
-        })
-        .catch((e) => {
-          setLoading(false);
-        });
-    }
+          toast.error("Something went wrong!");
+        }
+      });
   };
 
   useEffect(() => {
     fetchPins();
 
-    return () => {}
-  }, [categoryId, page]);
+    return () => source.cancel("Operation canceled by the user.");
+  }, [router]);
 
-  const ideaName = categoryId || "new";
-  if (loading && page === 1) {
-    return (
-      <Spinner message={`We are adding ${ideaName} pins to your feed!`} />
-    );
+  const ideaName = category || "new";
+  if (loading && parseInt(page) === 1) {
+    return <Spinner message={`We are adding ${ideaName} pins to your feed!`} />;
   }
 
   if (!loading && pins?.length === 0) {
@@ -86,31 +78,9 @@ const Feed = ({ categoryId }) => {
 
   return (
     <>
-      {categoryId && (
-        <Head>
-          <title>{`${categoryId} NFTs | NFT Nation`}</title>
-          <meta
-            name="description"
-            content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
-          />
-          <meta
-            property="og:title"
-            content={`${categoryId} NFTs | NFT Nation`}
-          />
-          <meta
-            property="og:description"
-            content={`${categoryId} category ERC721 based NFT Tokens on NFT Nation which is a Polygon blockchain based Marketplace for trading ERC-21 NFT Tokens with MATIC Tokens`}
-          />
-          <meta
-            property="og:url"
-            content={`https://nft-nation.vercel.app/${categoryId}`}
-          />
-          <meta property="og:type" content="website" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-      )}
       <div className="">
         {pins?.length > 0 && <MasonryLayout pins={pins} />}
+        {hasMore && <Spinner message={`We are adding more ${ideaName} pins to your feed!`} />}
       </div>
     </>
   );

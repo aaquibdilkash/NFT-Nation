@@ -8,6 +8,14 @@ import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import {
+  getEventData,
+  getUserName,
+  isValidAmount,
+} from "../utils/data";
+import {
+  sidebarCategories,
+} from "../utils/sidebarCategories";
+import {
   approvalLoadingMessage,
   confirmLoadingMessage,
   createAuctionLoadingMessage,
@@ -16,14 +24,10 @@ import {
   fileUploadErrorMessage,
   finalErrorMessage,
   finalSuccessMessage,
-  getEventData,
-  getUserName,
-  isValidAmount,
   loginMessage,
   marketItemErrorMessage,
   MarketItemSuccessMessage,
   mintLoadingMessage,
-  sidebarCategories,
   tokenApproveErrorMessage,
   tokenApproveSuccessMessage,
   tokenAuctionErrorMessage,
@@ -33,7 +37,7 @@ import {
   tokenSaleErrorMessage,
   tokenSaleSuccessMessage,
   validAmountErrorMessage,
-} from "../utils/data";
+} from "../utils/messages";
 import Spinner from "../components/Spinner";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";

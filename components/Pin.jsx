@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { etherAddress, getMaxBid, getUserName, loginMessage, saveErrorMessage, saveSuccessMessage, unsaveSuccessMessage } from "../utils/data";
+import { etherAddress, getMaxBid, getUserName } from "../utils/data";
+import { loginMessage, saveErrorMessage, saveSuccessMessage, unsaveSuccessMessage } from "../utils/messages";
 import axios from "axios";
 import { REFRESH_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
@@ -20,6 +21,7 @@ const Pin = ({ pin }) => {
     postedBy,
     image,
     _id,
+    category,
     destination,
     itemId,
     tokenId,
@@ -75,7 +77,7 @@ const Pin = ({ pin }) => {
   return (
     <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
       <div
-        onClick={() => router.push(`/pin-detail/${_id}`)}
+        onClick={() => router.push(`/pin-detail/${_id}?category=${category}`)}
         className=" relative cursor-pointer w-25 shadow-lg hover:drop-shadow-lg rounded-lg overflow-hidden transition-all duration-500 ease-in-out"
       >
         {image && (

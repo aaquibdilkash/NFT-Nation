@@ -20,6 +20,20 @@ const userSchema = new mongoose.Schema({
     maxlength: [128, "userName field cannot exceeds 80 characters"],
     unique: false
   },
+  followers: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
+  followings: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now

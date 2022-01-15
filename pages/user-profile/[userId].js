@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-import { getUserName, shareInfoMessage } from "../../utils/data";
-import MasonryLayout from "../../components/MasonryLayout";
+import { getUserName } from "../../utils/data";
+import { shareInfoMessage } from "../../utils/messages";
 import Spinner from "../../components/Spinner";
 import { useRouter } from "next/router";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import ProfileEdit from "../../components/ProfileEdit";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { HAS_MORE, MORE_LOADING, PAGE_SET } from "../../redux/constants/UserTypes";
 import { toast } from "react-toastify";
 import { FaShareAlt } from "react-icons/fa";
 import moment from "moment";
+import { Feed } from "../../components";
 
 const activeBtnStyles =
   "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
@@ -21,15 +21,11 @@ const notActiveBtnStyles =
 
 const UserProfilePage = () => {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { user, page } = useSelector((state) => state.userReducer);
+  const { pathname } = router;
+  const { user } = useSelector((state) => state.userReducer);
   const { userId } = router.query;
-  const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState();
   const [editing, setEditing] = useState(false);
-
-  const [pins, setPins] = useState();
-  const [text, setText] = useState("Owned");
   const [activeBtn, setActiveBtn] = useState("Owned");
 
   const fetchUserDetails = () => {
@@ -37,93 +33,45 @@ const UserProfilePage = () => {
       .get(`/api/users/${userId}`)
       .then((res) => {
         setUserProfile(res.data.user);
+
+        router.push(
+          {
+            pathname: pathname,
+            query: {
+              userId,
+              owner: res.data.user.address,
+            },
+          },
+          undefined,
+          { shallow: true }
+        );
       })
       .catch((e) => {
-        toast.error("Something went wrong!")
+        toast.error("Something went wrong!");
       });
-  };
-
-  const userPinQuery = (query) => {
-    page === 1 && setLoading(true)
-    dispatch({
-      type: MORE_LOADING,
-      payload: page !== 1
-    });
-    axios
-      .get(query)
-      .then((res) => {
-        const { pins, resultPerPage, filteredPinsCount } = res.data;
-          setLoading(false);
-          page === 1 ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
-          dispatch({
-            type: MORE_LOADING,
-            payload: false
-          });
-          dispatch({
-            type: HAS_MORE,
-            payload: page * resultPerPage < filteredPinsCount,
-          });
-      })
-      .catch((e) => {
-        setLoading(false);
-        dispatch({
-          type: MORE_LOADING,
-          payload: false
-        });
-        toast.error("Something went wrong!")
-      });
-  };
-
-  const fetchUserPins = () => {
-    if (text === "Owned") {
-      userPinQuery(`/api/pins?page=${page}&owner=${userProfile?.address}`)
-    } else if (text === "On Sale") {
-      userPinQuery(`/api/pins?page=${page}&seller=${userProfile?.address}&auctionEnded=${true}`)
-    } else if (text === "On Auction") {
-      userPinQuery(`/api/pins?page=${page}&seller=${userProfile?.address}&auctionEnded=${false}`)
-    } else if (text === "Bids") {
-      userPinQuery(`/api/pins?page=${page}&bids=${userProfile?._id}&auctionEnded=${false}`)
-    } else {
-      userPinQuery(`/api/pins?page=${page}&saved=${userId}`)
-    }
   };
 
   useEffect(() => {
     userId && fetchUserDetails();
   }, [userId, user]);
 
-  useEffect(() => {
-    if (userProfile?._id) {
-      fetchUserPins()
-    }
-  }, [userProfile, page]);
-
-  useEffect(() => {
-    setPins([])
-    dispatch({
-      type: PAGE_SET,
-      payload: 1
-    })
-    if (userProfile?._id) {
-      fetchUserPins()
-    }
-  }, [text])
-
   if (!userProfile) return <Spinner message="Loading profile" />;
+
+  const { _id, userName, about, address, image, createdAt } = userProfile;
 
   return (
     <>
       <Head>
-        <title>{`${userProfile?.userName}'s Profile  | NFT Nation`}</title>
-        <meta name="description" content={`${userProfile?.about}`} />
+        <title>{`${userName}'s Profile  | NFT Nation`}</title>
+        <meta name="description" content={`${about}`} />
         <meta
           property="og:title"
-          content={`${userProfile?.userName}'s Profile  | NFT Nation`}
+          content={`${userName}'s Profile  | NFT Nation`}
         />
-        <meta property="og:description" content={`${userProfile?.about}`} />
+        <meta property="og:description" content={`${about}`} />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/user-profile/${userProfile?._id}`}
+          content={`https://nft-nation.vercel.app/user-profile/${_id}`}
         />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
@@ -144,19 +92,17 @@ const UserProfilePage = () => {
               )}
               <img
                 className="rounded-full w-20 h-20 -mt-10 shadow-xl object-cover"
-                src={userProfile.image}
+                src={image}
                 alt="userProfile-pic"
               />
             </div>
             <h1 className="font-bold text-3xl text-center mt-3">
-              {getUserName(userProfile?.userName)}
+              {getUserName(userName)}
             </h1>
             <p className="font-semibold text-center mt-1">
-              {`Joined On: ${moment(userProfile?.createdAt).format("MMM DD, YYYY")}`}
+              {`Joined On: ${moment(createdAt).format("MMM DD, YYYY")}`}
             </p>
-            <p className="font-bold text-center mt-1">
-              {userProfile?.about}
-            </p>
+            <p className="font-bold text-center mt-1">{about}</p>
             {!editing && (
               <div className="absolute top-0 z-1 left-0 p-2">
                 <button
@@ -166,14 +112,14 @@ const UserProfilePage = () => {
                     navigator.clipboard.writeText(
                       `https:nft-nation.vercel.app/user-profile/${userId}`
                     );
-                    toast.info(shareInfoMessage)
+                    toast.info(shareInfoMessage);
                   }}
                 >
                   <FaShareAlt color="themeColor" fontSize={21} />
                 </button>
               </div>
             )}
-            {user?._id === userProfile?._id && (
+            {user?._id === _id && (
               <div className="absolute top-0 z-1 right-0 p-2">
                 <button
                   type="button"
@@ -189,35 +135,74 @@ const UserProfilePage = () => {
           </div>
 
           <div className="text-center mb-7">
-            {["Owned", "On Sale", "On Auction", "Bids", "Saved"].map((item, index) => {
+            {[
+              {
+                name: "Owned",
+                query: {
+                  owner: address,
+                },
+              },
+              {
+                name: "On Sale",
+                query: {
+                  seller: address,
+                  auctionEnded: true,
+                },
+              },
+              {
+                name: "On Auction",
+                query: {
+                  seller: address,
+                  auctionEnded: false,
+                },
+              },
+              {
+                name: "Bids",
+                query: {
+                  bids: _id,
+                },
+              },
+              {
+                name: "Saved",
+                query: {
+                  saved: userId,
+                },
+              },
+            ].map((item, index) => {
               return (
                 <button
                   key={index}
                   type="button"
                   onClick={(e) => {
-                    setText(item);
-                    setActiveBtn(item);
+                    setActiveBtn(item.name);
+
+                    router.push(
+                      {
+                        pathname: pathname,
+                        query: {
+                          userId,
+                          ...item?.query,
+                        },
+                      },
+                      undefined,
+                      { shallow: true }
+                    );
                   }}
                   className={`${
-                    activeBtn === item ? activeBtnStyles : notActiveBtnStyles
+                    activeBtn === item?.name
+                      ? activeBtnStyles
+                      : notActiveBtnStyles
                   }`}
                 >
-                  {item}
+                  {item?.name}
                 </button>
               );
             })}
           </div>
 
           <div className="px-2">
-            {pins?.length > 0 && <MasonryLayout pins={pins} />}
-            {loading && <Spinner message={`Loading ${text} Pins`} />}
+            <Feed />
           </div>
-
-          {pins?.length === 0 && !loading && (
-            <div className="flex justify-center font-bold items-center w-full text-1xl font-bold mt-2">
-              No Pins Found!
-            </div>
-          )}
         </div>
       </div>
     </>

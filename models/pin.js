@@ -53,7 +53,7 @@ const pinSchema = new mongoose.Schema({
   postedBy: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
-    required: false,
+    required: true,
   },
   saved: [
     {

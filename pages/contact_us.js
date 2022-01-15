@@ -1,6 +1,78 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
+import {
+  FaDiscord,
+  FaInstagram,
+  FaReddit,
+  FaTelegram,
+  FaTwitter,
+} from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { errorMessage } from "../utils/messages";
+import { sidebarCategories } from "../utils/sidebarCategories";
+
+const wayToReach = [
+  "Email",
+  "Instagram",
+  "Twitter",
+  "Telegram",
+  "Discord",
+  "Reddit"
+]
+
+const messageCategory = [
+  "Mint NFT",
+  "Mint and Sell",
+  "Mint and Auct",
+  "Buy NFT",
+  "Sell NFT",
+  "Auct NFT",
+  "Bid",
+  "Withdraw Bid",
+  "End Auction",
+  "Feedback",
+  "Suggession"
+]
 
 const ContactUs = () => {
+  const { user } = useSelector((state) => state.userReducer);
+  const [state, setState] = useState({
+    name: "",
+    subject: "",
+    description: "",
+    category: "",
+    image: "",
+    wayToReach: "",
+    reachId: "",
+  });
+
+  const handleSubmit = () => {
+    axios
+      .post(`/api/messages`, {
+        ...state,
+        postedBy: user?._id
+      })
+      .then((res) => {
+        console.log(res);
+        toast.success("Your Feedback has been submitted successfuly!");
+        setState({
+          name: "",
+          subject: "",
+          description: "",
+          category: "",
+          image: "",
+          wayToReach: "",
+          reachId: "",
+        })
+      })
+      .catch((e) => {
+        console.log(e);
+        toast.error(errorMessage);
+      });
+  };
+
   return (
     <div>
       <section className="text-gray-600 body-font relative">
@@ -10,21 +82,30 @@ const ContactUs = () => {
               Contact Us
             </h1>
             <p className="lg:w-2/3 mx-auto leading-relaxed text-base">
-              Whatever cardigan tote bag tumblr hexagon brooklyn asymmetrical
-              gentrify.
+              Any thoughts you wanna share with us...?
             </p>
           </div>
           <div className="lg:w-1/2 md:w-2/3 mx-auto">
             <div className="flex flex-wrap -m-2">
-              <div className="p-2 w-1/2">
+              <div className="p-2 w-full">
                 <div className="relative">
-                  <label for="name" className="leading-7 text-sm text-gray-600">
+                  <label
+                    htmlFor="name"
+                    className="leading-7 text-sm text-gray-600"
+                  >
                     Name
                   </label>
                   <input
                     type="text"
                     id="name"
                     name="name"
+                    value={state.name}
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        name: e.target.value,
+                      }));
+                    }}
                     className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                   />
                 </div>
@@ -32,15 +113,147 @@ const ContactUs = () => {
               <div className="p-2 w-1/2">
                 <div className="relative">
                   <label
-                    for="email"
+                    htmlFor="wayToReach"
                     className="leading-7 text-sm text-gray-600"
                   >
-                    Email
+                    Way To Reach
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        wayToReach: e.target.value,
+                      }));
+                    }}
+                    value={state.wayToReach}
+                    className="outline-none w-full h-10 text-base border-b-0 border-gray-200 p-2 rounded cursor-pointer bg-[#ffffff]"
+                  >
+                    <option value="" className="sm:text-bg bg-white">
+                      Select an Option
+                    </option>
+                    {wayToReach.map((item) => (
+                      <option
+                        key={`${item}`}
+                        className="text-base border-0 outline-none capitalize bg-[#ffffff] text-textColor "
+                        value={item}
+                      >
+                        {item}
+                      </option>
+                    ))}
+                    <option
+                      value="other"
+                      className="sm:text-bg bg-secondTheme"
+                    >
+                      Other
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div className="p-2 w-1/2">
+                <div className="relative">
+                  <label
+                    htmlFor="reachId"
+                    className="leading-7 text-sm text-gray-600"
+                  >
+                    How To Reach
                   </label>
                   <input
-                    type="email"
-                    id="email"
-                    name="email"
+                    type="text"
+                    id="reachId"
+                    name="reachId"
+                    value={state.reachId}
+                    placeholder={`eg: @nftnation`}
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        reachId: e.target.value,
+                      }));
+                    }}
+                    className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-[#ffffff] focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                  />
+                </div>
+              </div>
+              <div className="p-2 w-1/2">
+                <div className="relative">
+                  <label
+                    htmlFor="category"
+                    className="leading-7 text-sm text-gray-600"
+                  >
+                    Category
+                  </label>
+                  <select
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        category: e.target.value,
+                      }));
+                    }}
+                    value={state.category}
+                    className="outline-none w-full h-10 text-base border-b-0 border-gray-200 p-2 rounded cursor-pointer bg-[#ffffff]"
+                  >
+                    <option value="" className="sm:text-bg bg-white">
+                      Select Category
+                    </option>
+                    {messageCategory.map((item) => (
+                      <option
+                        key={`${item}`}
+                        className="text-base border-0 outline-none capitalize bg-white text-textColor "
+                        value={item}
+                      >
+                        {item}
+                      </option>
+                    ))}
+                    <option
+                      value="other"
+                      className="sm:text-bg bg-secondTheme"
+                    >
+                      Other
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div className="p-2 w-1/2">
+                <div className="relative">
+                  <label
+                    htmlFor="image"
+                    className="leading-7 text-sm text-gray-600"
+                  >
+                    Screenshot
+                  </label>
+                  <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    value={state.image}
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        image: e.target.value,
+                      }));
+                    }}
+                    className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-[#000000] bg-[#ffffff] focus:ring-0 focus:ring-[#000000] text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                  />
+                </div>
+              </div>
+              <div className="p-2 w-full">
+                <div className="relative">
+                  <label
+                    htmlFor="subject"
+                    className="leading-7 text-sm text-gray-600"
+                  >
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    value={state.subject}
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        subject: e.target.value,
+                      }));
+                    }}
                     className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                   />
                 </div>
@@ -48,7 +261,7 @@ const ContactUs = () => {
               <div className="p-2 w-full">
                 <div className="relative">
                   <label
-                    for="message"
+                    htmlFor="message"
                     className="leading-7 text-sm text-gray-600"
                   >
                     Message
@@ -56,81 +269,67 @@ const ContactUs = () => {
                   <textarea
                     id="message"
                     name="message"
+                    value={state.description}
+                    onChange={(e) => {
+                      setState((state) => ({
+                        ...state,
+                        description: e.target.value,
+                      }));
+                    }}
                     className="w-full bg-gray-100 bg-opacity-50 rounded border border-gray-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"
                   ></textarea>
                 </div>
               </div>
               <div className="p-2 w-full">
-                <button className="flex mx-auto text-[#ffffff] bg-themeColor border-0 py-2 px-8 focus:outline-none hover:drop-shadow-lg rounded text-lg">
+                <button
+                  onClick={() => {
+                    handleSubmit();
+                  }}
+                  className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 flex mx-auto text-[#ffffff] bg-themeColor border-0 py-2 px-8 focus:outline-none drop-shadow-lg rounded text-lg"
+                >
                   Button
                 </button>
               </div>
               <div className="p-2 w-full pt-8 mt-8 border-t border-gray-200 text-center">
                 <a className="text-indigo-500">example@email.com</a>
-                <p className="leading-normal my-5">
-                  49 Smith St.
-                  <br />
-                  Saint Cloud, MN 56301
-                </p>
-                <span className="inline-flex">
-                  <a className="text-gray-500">
-                    <svg
-                      fill="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
-                    </svg>
+                <div className="flex justify-between my-5">
+                  <a href="mailto:abc@example.com" target="_blank">
+                    <MdEmail
+                      size={28}
+                      className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 text-black text-bold cursor-pointer"
+                    />
                   </a>
-                  <a className="ml-4 text-gray-500">
-                    <svg
-                      fill="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
-                    </svg>
+                  <a href="#" target="_blank">
+                    <FaDiscord
+                      size={28}
+                      className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 text-black text-bold cursor-pointer"
+                    />
                   </a>
-                  <a className="ml-4 text-gray-500">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <rect
-                        width="20"
-                        height="20"
-                        x="2"
-                        y="2"
-                        rx="5"
-                        ry="5"
-                      ></rect>
-                      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
-                    </svg>
+                  <a href="#" target="_blank">
+                    <FaTelegram
+                      size={28}
+                      className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 text-black text-bold cursor-pointer"
+                    />
                   </a>
-                  <a className="ml-4 text-gray-500">
-                    <svg
-                      fill="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      className="w-5 h-5"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"></path>
-                    </svg>
+                  <a href="#" target="_blank">
+                    <FaTwitter
+                      size={28}
+                      className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 text-black text-bold cursor-pointer"
+                    />
                   </a>
-                </span>
+                  <a href="#" target="_blank">
+                    <FaInstagram
+                      size={28}
+                      className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 text-black text-bold cursor-pointer"
+                    />
+                  </a>
+                  <a href="#" target="_blank">
+                    <FaReddit
+                      size={28}
+                      className="transition transition duration-500 ease transhtmlForm hover:-translate-y-1 text-black text-bold cursor-pointer"
+                    />
+                  </a>
+                </div>
               </div>
             </div>
           </div>

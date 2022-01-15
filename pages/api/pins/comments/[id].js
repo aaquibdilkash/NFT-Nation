@@ -1,6 +1,6 @@
 import dbConnect from "../../../../config/dbConnect"
 import nc from "next-connect"
-import { commentPin, deleteComment } from "../../../../controllers/pinsController"
+import { commentPin, deletePinComment, updatePinComment } from "../../../../controllers/pinsController"
 
 dbConnect()
 
@@ -8,6 +8,8 @@ const handler = nc()
 
 handler.post(commentPin)
 
-handler.delete(deleteComment)
+handler.put(updatePinComment)
+
+handler.delete(deletePinComment)
 
 export default handler;

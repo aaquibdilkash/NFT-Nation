@@ -10,6 +10,9 @@ class SearchPagination {
           $or: [
             { title: { $regex: this.queryStr.keyword, $options: "i" } },
             { about: { $regex: this.queryStr.keyword, $options: "i" } },
+            { seller: { $regex: this.queryStr.keyword, $options: "i" } },
+            { owner: { $regex: this.queryStr.keyword, $options: "i" } },
+            { "postedBy._id": { $regex: this.queryStr.keyword, $options: "i" } },
           ],
         }
       : {};
@@ -22,7 +25,7 @@ class SearchPagination {
     const queryCopy = { ...this.queryStr };
 
     // removing some fields for category
-    const removedFields = ["keyword", "page", "saved", "bids"];
+    const removedFields = ["keyword", "page", "saved", "bids", "feed", "sort", "ne"];
 
     removedFields.forEach((key) => {
       delete queryCopy[key];
@@ -36,6 +39,20 @@ class SearchPagination {
     return this;
   }
 
+  notin() {
+    const keyword = this.queryStr.ne ? { "_id": { "$ne": this.queryStr.ne } } : {};
+
+    this.query = this.query.find({ ...keyword });
+    return this;
+  }
+
+  sorted() {
+    const sortMethod = this.queryStr.sort ?? "-createdAt"
+    const keyword = sortMethod.includes("price") ? { "price": { "$ne": "0.0" } } : sortMethod.includes("bids") ? {"auctionEnded": false} : {};
+    this.query = this.query.find({ ...keyword }).sort(sortMethod);
+    return this;
+  }
+
   saved() {
     const keyword = this.queryStr.saved ? { saved: this.queryStr.saved } : {};
 
@@ -44,7 +61,14 @@ class SearchPagination {
   }
 
   bids() {
-    const keyword = this.queryStr.bids ? { saved: this.queryStr.bids } : {};
+    const keyword = this.queryStr.bids ? { "bids.user": this.queryStr.bids } : {};
+
+    this.query = this.query.find({ ...keyword });
+    return this;
+  }
+
+  feed(followings) {
+    const keyword = this.queryStr.feed ? {"postedBy._id": {$in: followings}} : {};
 
     this.query = this.query.find({ ...keyword });
     return this;

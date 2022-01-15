@@ -12,7 +12,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
-    <ToastContainer draggable={false} transition={Slide} autoClose={3000}/>
+    <ToastContainer draggable={false} transition={Slide} autoClose={1500} position="bottom-right"/>
       <HomeLayout>
         <Component {...pageProps} />
       </HomeLayout>

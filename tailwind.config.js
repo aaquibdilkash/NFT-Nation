@@ -10,7 +10,14 @@ module.exports = {
     colors: {
       transparent: 'transparent',
       current: 'currentColor',
-      themeColor: "#191970",
+      themeColor: "#56229f",
+      // themeColor: "#333333",
+      // themeColor: "#202020",
+      // themeColor: "#51b7b7",
+      // themeColor: "#b97be3",
+      // themeColor: "#19bfb0",
+      // themeColor: "#37dccd",
+      // themeColor: "#191970",
       secondTheme: "#ffffff",
       textColor: "#000000"
 

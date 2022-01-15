@@ -1,16 +1,36 @@
 import User from "../models/user";
-import Pin from "../models/pin";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
+import SearchPagination from "../middleware/searchPagination";
 
 const allUsers = catchAsyncErrors(async (req, res) => {
-    const users = await User.find();
-  
-      res.status(200).json({
-        success: true,
-        users,
-      });
-    
+  const resultPerPage = 12;
+  const usersCount = await User.countDocuments();
+
+  const searchPagination = new SearchPagination(
+    User.find(),
+    req.query
+  )
+    .search()
+    .filter()
+    .saved()
+    .bids();
+
+  let users = await searchPagination.query;
+
+  let filteredUsersCount = users.length;
+
+  searchPagination.pagination(resultPerPage);
+
+  users = await searchPagination.query.clone();
+
+  res.status(200).json({
+    success: true,
+    users,
+    usersCount,
+    filteredUsersCount,
+    resultPerPage,
   });
+});
 
 const getUser = catchAsyncErrors(async (req, res) => {
 
@@ -86,4 +106,32 @@ const updateUser = catchAsyncErrors(async (req, res) => {
     
   });
 
-export { allUsers, getUser, createUser, updateUser, deleteUser };
+  const followUser = catchAsyncErrors(async (req, res) => {
+    let followee = await User.findById(req.query.id);
+    let follower = await User.findById(req.body.id);
+  
+    if (!followee) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found with this ID",
+      });
+    }
+  
+    const alreadyFollowed = followee?.followers?.find((item) => item?.toString() === req.body.user)
+    if (alreadyFollowed) {
+      followee?.followers?.filter((item) => item.toString() != req.body.user);
+      follower?.followings?.filter((item) => item.toString() != req.query.id);
+    } else {
+      followee?.followers.unshift(req.body.user);
+      follower?.followings.unshift(req.query.id);
+    }
+  
+    await followee.save({ validateBeforeSave: false });
+    await follower.save({ validateBeforeSave: false });
+  
+    res.status(200).json({
+      success: true,
+    });
+  });
+
+export { allUsers, getUser, createUser, updateUser, deleteUser, followUser };
