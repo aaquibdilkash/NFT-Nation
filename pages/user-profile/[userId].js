@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { getUserName } from "../../utils/data";
-import { shareInfoMessage } from "../../utils/messages";
+import { followErrorMessage, followSuccessMessage, loginMessage, shareInfoMessage, unFollowErrorMessage, unFollowSuccessMessage } from "../../utils/messages";
 import Spinner from "../../components/Spinner";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
@@ -10,9 +10,10 @@ import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
 import { toast } from "react-toastify";
-import { FaShareAlt } from "react-icons/fa";
+import { FaShareAlt, FaSignInAlt } from "react-icons/fa";
 import moment from "moment";
 import { Feed } from "../../components";
+import { MdFollowTheSigns } from "react-icons/md";
 
 const activeBtnStyles =
   "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
@@ -48,6 +49,31 @@ const UserProfilePage = () => {
       })
       .catch((e) => {
         toast.error("Something went wrong!");
+      });
+  };
+
+  const [following, setFollowing] = useState(false)
+  let alreadyFollowed = userProfile?.followers?.find((item) => item === user?._id);
+
+  const followUser = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+    setFollowing(true);
+    axios
+      .put(`/api/users/follow/${userId}`, {
+        user: user?._id,
+      })
+      .then((res) => {
+        setFollowing(false);
+        // setRefresh((prev) => !prev);
+        toast.success(alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage);
+      })
+      .catch((e) => {
+        console.log(e);
+        setFollowing(false);
+        toast.error(alreadyFollowed ? followErrorMessage : unFollowErrorMessage);
       });
   };
 
@@ -132,6 +158,19 @@ const UserProfilePage = () => {
                 </button>
               </div>
             )}
+            {/* {user?._id !== _id && (
+              <div className="absolute top-0 z-1 right-0 p-2">
+                <button
+                  type="button"
+                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
+                  onClick={() => {
+                    followUser()
+                  }}
+                >
+                  <FaSignInAlt color="themeColor" fontSize={21} />
+                </button>
+              </div>
+            )} */}
           </div>
 
           <div className="text-center mb-7">

@@ -18,6 +18,7 @@ import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { nftmarketaddress } from "../config";
 import { toast } from "react-toastify";
+import Footer from "../components/Footer";
 
 const HomeLayout = ({ children }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
@@ -291,10 +292,13 @@ const HomeLayout = ({ children }) => {
         // ref={scrollRef}
       >
         <div className="px-2 md:px-5">
-          <div className="transparent">
+          <div className="transparent sticky top-4 z-50">
             <Navbar connectToMetamask={connectToMetamask} />
           </div>
           <div className="h-full">{children}</div>
+          {/* <div className="transparent sticky fixed bottom-0 z-50">
+            <Footer />
+          </div> */}
         </div>
       </div>
     </div>

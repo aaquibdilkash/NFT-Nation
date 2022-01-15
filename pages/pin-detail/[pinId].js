@@ -52,6 +52,7 @@ import {
   tokenSaleCancelSuccessMessage,
   tokenSaleErrorMessage,
   tokenSaleSuccessMessage,
+  unSaveErrorMessage,
   unsaveSuccessMessage,
   validAmountErrorMessage,
   withrawBidLoadingMessage,
@@ -60,7 +61,6 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { HAS_MORE, MORE_LOADING, REFRESH_SET } from "../../redux/constants/UserTypes";
 import { FaCopy, FaDiceD20 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
@@ -69,18 +69,13 @@ const buttonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-bold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
 
 const PinDetail = () => {
-  const dispatch = useDispatch();
   const router = useRouter();
-  const { pathname, query } = router;
-  // const { keyword } = query;
-  
+  const { pathname } = router;  
   const { pinId } = router.query;
-  const { user, page, marketContract } = useSelector((state) => state.userReducer);
+  const { user, marketContract } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
-  const [pins, setPins] = useState([]);
   const [pinDetail, setPinDetail] = useState();
   const [loading, setLoading] = useState(false);
-  const [similarLoading, setSimilarLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
   const [addingComment, setAddingComment] = useState(false);
@@ -213,48 +208,9 @@ const PinDetail = () => {
       });
   };
 
-  // const fetchRelatedPins = () => {
-  //   page === 1 && setSimilarLoading(true);
-  //   dispatch({
-  //     type: MORE_LOADING,
-  //     payload: page !== 1,
-  //   });
-  //   axios
-  //     .get(`/api/pins?page=${page}&category=${category}`)
-  //     .then((res) => {
-  //       const { pins, resultPerPage, filteredPinsCount } = res.data;
-  //       let filtered = pins.filter((pin) => pin?._id !== pinId);
-  //       setSimilarLoading(false);
-  //       page === 1
-  //         ? setPins(filtered)
-  //         : setPins((prev) => [...prev, ...filtered]);
-  //       dispatch({
-  //         type: MORE_LOADING,
-  //         payload: false,
-  //       });
-  //       dispatch({
-  //         type: HAS_MORE,
-  //         payload: page * resultPerPage < filteredPinsCount,
-  //       });
-  //     })
-  //     .catch((e) => {
-  //       setSimilarLoading(false);
-  //       dispatch({
-  //         type: MORE_LOADING,
-  //         payload: false,
-  //       });
-  //       toast.error(errorMessage);
-  //       // console.log(e);
-  //     });
-  // };
-
   useEffect(() => {
     pinId && fetchPinDetails();
   }, [pinId, refresh]);
-
-  // useEffect(() => {
-  //   category && fetchRelatedPins();
-  // }, [pinDetail, page]);
 
   const updatePin = (body) => {
     axios
@@ -668,7 +624,7 @@ const PinDetail = () => {
       .catch((e) => {
         console.log(e);
         setSavingPost(false);
-        toast.error(saveErrorMessage);
+        toast.error(alreadySaved ? saveErrorMessage: unSaveErrorMessage);
       });
   };
 

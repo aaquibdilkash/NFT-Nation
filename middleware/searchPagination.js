@@ -68,7 +68,7 @@ class SearchPagination {
   }
 
   feed(followings) {
-    const keyword = this.queryStr.feed ? {"postedBy._id": {$in: followings}} : {};
+    const keyword = this.queryStr.feed ? {"postedBy": {$in: followings}} : {};
 
     this.query = this.query.find({ ...keyword });
     return this;

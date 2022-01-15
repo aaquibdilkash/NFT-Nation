@@ -1,9 +1,15 @@
+import { AiFillDollarCircle, AiFillLike, AiOutlineDollarCircle } from "react-icons/ai";
 import {
   FaBaseballBall,
     FaCat,
+    FaClock,
+    FaComments,
     FaGamepad,
     FaLaugh,
+    FaMusic,
     FaPaintBrush,
+    FaSmile,
+    FaVideo,
   } from "react-icons/fa";
 import { HiPhotograph } from "react-icons/hi";
 import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
@@ -58,14 +64,6 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         },
         icon: <FaBaseballBall className="" size={25} />,
       },
-      // {
-      //   name: "Trading Cards",
-      //   link: "/",
-      //   query: {
-      //     category: "Trading Cards"
-      //   },
-      //   icon: <MdCardGiftcard className="" size={25} />,
-      // },
       {
         name: "Memes",
         link: "/",
@@ -82,55 +80,118 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
       //   },
       //   icon: <FaSmile className="" size={25} />,
       // },
+      // {
+      //   name: "Music",
+      //   link: "/",
+      //   query: {
+      //     category: "Music"
+      //   },
+      //   icon: <FaMusic className="" size={25} />,
+      // },
+      // {
+      //   name: "Videos",
+      //   link: "/",
+      //   query: {
+      //     category: "Videos"
+      //   },
+      //   icon: <FaVideo className="" size={25} />,
+      // },
     ],
     "Sort By": [
       {
-        name: "Time: Recent",
+        name: "Recent",
         link: "/",
-        query: {
-          sort: "-createdAt"
-        },
-        icon: <IoMdArrowDropdownCircle className="" size={25} />,
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-createdAt"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "createdAt"
+            }
+          },
+        ],
+        icon: <FaClock className="" size={25} />,
       },
       {
-        name: "Time: Oldest",
+        name: "Price",
         link: "/",
-        query: {
-          sort: "createdAt"
-        },
-        icon: <IoMdArrowDropupCircle className="" size={25} />,
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-price"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "price"
+            }
+          },
+        ],
+        icon: <AiFillDollarCircle className="" size={28} />,
       },
       {
-        name: "Price: Highest",
+        name: "Highest Bid",
         link: "/",
-        query: {
-          sort: "-price"
-        },
-        icon: <IoMdArrowDropdownCircle className="" size={25} />,
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-bids"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "bids"
+            }
+          },
+        ],
+        icon: <AiOutlineDollarCircle className="" size={25} />,
       },
       {
-        name: "Price: Lowest",
+        name: "Commented",
         link: "/",
-        query: {
-          sort: "price"
-        },
-        icon: <IoMdArrowDropupCircle className="" size={25} />,
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-comments"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "comments"
+            }
+          },
+        ],
+        icon: <FaComments className="" size={25} />,
       },
       {
-        name: "Bid: Highest",
+        name: "Saved",
         link: "/",
-        query: {
-          sort: "-bids"
-        },
-        icon: <IoMdArrowDropdownCircle className="" size={25} />,
-      },
-      {
-        name: "Bid: Lowest",
-        link: "/",
-        query: {
-          sort: "bids"
-        },
-        icon: <IoMdArrowDropupCircle className="" size={25} />,
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-saved"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "saved"
+            }
+          },
+        ],
+        icon: <AiFillLike className="" size={25} />,
       },
     ],
     // "Sort By": [

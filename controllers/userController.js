@@ -12,8 +12,8 @@ const allUsers = catchAsyncErrors(async (req, res) => {
   )
     .search()
     .filter()
-    .saved()
-    .bids();
+    // .saved()
+    // .bids();
 
   let users = await searchPagination.query;
 
@@ -108,7 +108,7 @@ const updateUser = catchAsyncErrors(async (req, res) => {
 
   const followUser = catchAsyncErrors(async (req, res) => {
     let followee = await User.findById(req.query.id);
-    let follower = await User.findById(req.body.id);
+    let follower = await User.findById(req.body.user);
   
     if (!followee) {
       return res.status(404).json({
@@ -118,9 +118,11 @@ const updateUser = catchAsyncErrors(async (req, res) => {
     }
   
     const alreadyFollowed = followee?.followers?.find((item) => item?.toString() === req.body.user)
+    console.log(alreadyFollowed)
+
     if (alreadyFollowed) {
-      followee?.followers?.filter((item) => item.toString() != req.body.user);
-      follower?.followings?.filter((item) => item.toString() != req.query.id);
+      followee.followers = followee?.followers?.filter((item) => item.toString() != req.body.user);
+      follower.followings = follower?.followings?.filter((item) => item.toString() != req.query.id);
     } else {
       followee?.followers.unshift(req.body.user);
       follower?.followings.unshift(req.query.id);
