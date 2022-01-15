@@ -209,7 +209,7 @@ const HomeLayout = ({ children }) => {
 
   useEffect(() => {
     setToggleSidebar(false);
-    router.push(
+    page && router.push(
       {
         pathname: pathname,
         query: {
