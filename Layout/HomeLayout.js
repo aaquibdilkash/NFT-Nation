@@ -36,6 +36,19 @@ const HomeLayout = ({ children }) => {
   const chain = chainData.ropsten;
 
   const connectToMetamask = async () => {
+
+    if (!window?.ethereum) {
+      // window.ethereum.isMetaMask
+      toast.info(
+        "Web3 is not enabled in this browser, Please install Metamask to get started!",
+        {
+          autoClose: 6000,
+        }
+      );
+      return;
+    }
+
+    
     const providerOptions = {
       /* See Provider Options Section */
     };
@@ -56,17 +69,6 @@ const HomeLayout = ({ children }) => {
       type: MARKET_CONTRACT,
       payload: contract,
     });
-
-    if (!window?.ethereum) {
-      // window.ethereum.isMetaMask
-      toast.info(
-        "Web3 is not enabled in this browser, Please install Metamask to get started!",
-        {
-          autoClose: 6000,
-        }
-      );
-      return;
-    }
 
     accounts = await web3.eth.getAccounts();
 
@@ -183,7 +185,7 @@ const HomeLayout = ({ children }) => {
       payload: {},
     });
 
-    router.push("/");
+    // router.push("/");
   };
 
   useEffect(() => {
@@ -209,7 +211,7 @@ const HomeLayout = ({ children }) => {
 
   useEffect(() => {
     setToggleSidebar(false);
-    page && router.push(
+    page && pathname == "/" && router.push(
       {
         pathname: pathname,
         query: {
