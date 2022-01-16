@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { getUserName } from "../../utils/data";
 import {
+  errorMessage,
   followErrorMessage,
   followSuccessMessage,
   loginMessage,
@@ -24,9 +25,9 @@ import { MdFollowTheSigns } from "react-icons/md";
 import UserFeed from "../../components/UserFeed";
 
 const activeBtnStyles =
-  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 px-3 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 const notActiveBtnStyles =
-  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 px-3 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const UserProfilePage = () => {
   const router = useRouter();
@@ -37,18 +38,27 @@ const UserProfilePage = () => {
   const [editing, setEditing] = useState(false);
   const [activeBtn, setActiveBtn] = useState("Owned");
 
+  const [following, setFollowing] = useState(false);
+  const [followingsLength, setFollowingsLength] = useState(0);
+  const [followersLength, setFollowersLength] = useState(0);
+  const [alreadyFollowed, setAlreadyFollowed] = useState(false);
+
   const fetchUserDetails = () => {
     axios
       .get(`/api/users/${userId}`)
       .then((res) => {
-        setUserProfile(res.data.user);
+        const { followers, followings, address } = res?.data?.user;
+        setUserProfile(res?.data?.user);
+        setAlreadyFollowed(followers?.find((item) => item === user?._id))
+        setFollowersLength(followers?.length);
+        setFollowingsLength(followings?.length);
 
         router.push(
           {
             pathname: pathname,
             query: {
               userId,
-              owner: res.data.user.address,
+              owner: address,
             },
           },
           undefined,
@@ -56,14 +66,9 @@ const UserProfilePage = () => {
         );
       })
       .catch((e) => {
-        toast.error("Something went wrong!");
+        toast.error(errorMessage);
       });
   };
-
-  const [following, setFollowing] = useState(false);
-  let alreadyFollowed = userProfile?.followers?.find(
-    (item) => item === user?._id
-  );
 
   const followUser = () => {
     if (!user?._id) {
@@ -78,9 +83,10 @@ const UserProfilePage = () => {
       .then((res) => {
         setFollowing(false);
         // setRefresh((prev) => !prev);
-        toast.success(
-          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
-        );
+        // toast.success(
+        //   alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+        // );
+        setAlreadyFollowed((prev) => !prev);
       })
       .catch((e) => {
         console.log(e);
@@ -92,7 +98,7 @@ const UserProfilePage = () => {
   };
 
   useEffect(() => {
-    setActiveBtn("Owned")
+    setActiveBtn("Owned");
     userId && fetchUserDetails();
   }, [userId, user]);
 
@@ -147,22 +153,28 @@ const UserProfilePage = () => {
   const userButtonArray = [
     {
       name: `Followers`,
-      text: `Followers (${followers.length})`,
+      text: `Followers (${followersLength})`,
       query: {
         followers: _id,
       },
     },
     {
       name: `Followings`,
-      text: `Followings (${followings.length})`,
+      text: `Followings (${followingsLength})`,
       query: {
         followings: _id,
       },
     },
   ];
 
-  const showFeedCondition = ["Owned", "On Sale", "On Auction", "Bids", "Saved"].includes(activeBtn)
-  const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn)
+  const showFeedCondition = [
+    "Owned",
+    "On Sale",
+    "On Auction",
+    "Bids",
+    "Saved",
+  ].includes(activeBtn);
+  const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn);
 
   return (
     <>
@@ -283,6 +295,20 @@ const UserProfilePage = () => {
                 </button>
               );
             })}
+            {_id !== user?._id && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  followUser();
+                }}
+                className={`${
+                  alreadyFollowed ? activeBtnStyles : notActiveBtnStyles
+                }`}
+              >
+                {console.log(alreadyFollowed, "DDDDDDDDDDDDDDD")}
+                {alreadyFollowed ? `Followed` : `Follow`}
+              </button>
+            )}
           </div>
 
           <div className="text-center mb-7">
@@ -319,12 +345,10 @@ const UserProfilePage = () => {
           </div>
 
           <div className="px-2">
-            {
-              showFeedCondition && <Feed />
-            }
-            {
-              showUserFeedCondition && <UserFeed />
-            }
+            {showFeedCondition && <Feed />}
+            {showUserFeedCondition && (
+              <UserFeed setFollowingsLength={setFollowingsLength} />
+            )}
           </div>
         </div>
       </div>

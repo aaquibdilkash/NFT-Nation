@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
-const UserFeed = () => {
+const UserFeed = ({setFollowingsLength}) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [users, setUsers] = useState([]);
@@ -84,7 +84,7 @@ const UserFeed = () => {
   return (
     <>
       <div className="">
-        {users?.length > 0 && <MasonryLayout comp={users} type="user" />}
+        {users?.length > 0 && <MasonryLayout setFollowingsLength={setFollowingsLength} comp={users} type="user" />}
         {hasMore && (
           <Spinner message={`We are fetching more users to your feed!`} />
         )}

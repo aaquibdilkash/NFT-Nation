@@ -12,7 +12,7 @@ const breakpointColumnsObj = {
   600: 1,
 };
 
-const MasonryLayout = ({ comp, type="pin" }) => {
+const MasonryLayout = ({ comp, type="pin", setFollowingsLength= () => {} }) => {
 
   return (
     <>
@@ -24,7 +24,7 @@ const MasonryLayout = ({ comp, type="pin" }) => {
           return <Pin key={index} pin={pin} className="w-max" />;
         })}
         {type === "user" && comp?.map((user, index) => {
-          return <User key={index} userProfile={user} className="w-max" />;
+          return <User setFollowingsLength={setFollowingsLength} key={index} userProfile={user} className="w-max" />;
         })}
       </Masonry>
     </>

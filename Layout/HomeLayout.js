@@ -227,9 +227,7 @@ const HomeLayout = ({ children }) => {
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    console.log(hasMore)
     if (scrollHeight - scrollTop === clientHeight && hasMore && changePage) {
-      console.log(page);
       router.push(
         {
           pathname: pathname,
@@ -277,7 +275,7 @@ const HomeLayout = ({ children }) => {
           )}
         </div>
         {toggleSidebar && (
-          <div className="fixed w-3/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-50 animate-slide-in">
+          <div className="fixed w-3/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-50 animate-slide-in duration-100">
             <Sidebar
               setToggleSidebar={setToggleSidebar}
               user={user && user}

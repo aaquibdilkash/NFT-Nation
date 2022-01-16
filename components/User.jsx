@@ -6,9 +6,11 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { etherAddress, getMaxBid, getUserName } from "../utils/data";
 import {
+  followErrorMessage,
   loginMessage,
   saveErrorMessage,
   saveSuccessMessage,
+  unFollowErrorMessage,
   unsaveSuccessMessage,
 } from "../utils/messages";
 import axios from "axios";
@@ -18,7 +20,12 @@ import { FaHeart } from "react-icons/fa";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 
-const User = ({ userProfile }) => {
+const activeBtnStyles =
+  "bg-themeColor mr-4 mt-0 text-secondTheme font-semibold p-1 px-3 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+const notActiveBtnStyles =
+  "bg-primary mr-4 mt-0 text-textColor font-semibold p-1 px-3 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+
+const User = ({ userProfile, setFollowingsLength }) => {
   const [following, setFollowing] = useState(false);
   const dispatch = useDispatch();
 
@@ -33,12 +40,13 @@ const User = ({ userProfile }) => {
     createdAt,
   } = userProfile;
 
-
   const router = useRouter();
 
   const { user, refresh } = useSelector((state) => state.userReducer);
 
-  let alreadyFollowed = user?.followers?.find((item) => item === user?._id);
+  const [alreadyFollowed, setAlreadyFollowed] = useState(
+    followers?.find((item) => item === user?._id)
+  );
 
   const followUser = () => {
     if (!user?._id) {
@@ -52,13 +60,16 @@ const User = ({ userProfile }) => {
       })
       .then((res) => {
         setFollowing(false);
-        // setRefresh((prev) => !prev);
-        toast.success(alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage);
+        // toast.success(alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage);
+        setFollowingsLength((prev) => (alreadyFollowed ? prev - 1 : prev + 1));
+        setAlreadyFollowed((prev) => !prev);
       })
       .catch((e) => {
         console.log(e);
         setFollowing(false);
-        toast.error(alreadyFollowed ? followErrorMessage : unFollowErrorMessage);
+        toast.error(
+          alreadyFollowed ? followErrorMessage : unFollowErrorMessage
+        );
       });
   };
 
@@ -85,20 +96,20 @@ const User = ({ userProfile }) => {
           style={{ height: "100%" }}
         >
           <div className="flex items-center justify-between">
-              <button
-                type="button"
-                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-              >
-                {`${followers?.length} Followers`}{" "}
-              </button>
+            <button
+              type="button"
+              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+            >
+              {`${followers?.length} Followers`}{" "}
+            </button>
           </div>
           <div className=" flex justify-between items-center gap-2 w-full">
-              <button
-                type="button"
-                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-              >
-                {`${followings.length} Followings`}{" "}
-              </button>
+            <button
+              type="button"
+              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+            >
+              {`${followings.length} Followings`}{" "}
+            </button>
           </div>
         </div>
       </div>
@@ -116,18 +127,22 @@ const User = ({ userProfile }) => {
               {getUserName(userName)}
             </p>
           </div>
-          {/* {
-            !alreadySaved && <AiOutlineHeart onClick={(e) => {
-              e.stopPropagation();
-              savePin();
-            }} className="text-themeColor transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg" size={25}/>
-          }
           {
-            alreadySaved && <AiFillHeart onClick={(e) => {
-              e.stopPropagation();
-              savePin();
-            }} className="text-themeColor transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg" size={25}/>
-          } */}
+              _id !== user?._id && (
+                <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  followUser();
+                }}
+                className={`${
+                  alreadyFollowed ? activeBtnStyles : notActiveBtnStyles
+                }`}
+              >
+                {alreadyFollowed ? `Followed` : `Follow`}
+              </button>
+              )
+          }
         </div>
       </Link>
     </div>

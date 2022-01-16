@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { useRouter } from "next/router";
@@ -47,7 +47,8 @@ const Pin = ({ pin }) => {
 
   const { user, refresh } = useSelector((state) => state.userReducer);
 
-  let alreadySaved = pin?.saved?.find((item) => item === user?._id);
+  const [alreadySaved, setAlreadySaved] = useState(saved?.find((item) => item === user?._id));
+  const [savedLength, setSavedLenth] = useState(saved?.length);
 
   const savePin = () => {
     if (!user?._id) {
@@ -61,11 +62,11 @@ const Pin = ({ pin }) => {
       })
       .then((res) => {
         setSavingPost(false);
-        dispatch({
-          type: REFRESH_SET,
-          payload: !refresh
-        })
-        toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+        // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+        setSavedLenth((prev) => (
+          alreadySaved ? prev - 1 : prev + 1
+        ))
+        setAlreadySaved((prev) => !prev)
       })
       .catch((e) => {
         console.log(e);
@@ -73,6 +74,7 @@ const Pin = ({ pin }) => {
         toast.error(saveErrorMessage);
       });
   };
+
 
   return (
     <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
@@ -145,18 +147,23 @@ const Pin = ({ pin }) => {
             {getUserName(postedBy?.userName)}
           </p>
           </div>
-          {/* {
+          <div className="flex gap-2 items-center">
+          <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
+            {savedLength}
+          </p>
+          {
             !alreadySaved && <AiOutlineHeart onClick={(e) => {
               e.stopPropagation();
               savePin();
-            }} className="text-themeColor transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg" size={25}/>
+            }} className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer" size={25}/>
           }
           {
             alreadySaved && <AiFillHeart onClick={(e) => {
               e.stopPropagation();
               savePin();
-            }} className="text-themeColor transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg" size={25}/>
-          } */}
+            }} className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer" size={25}/>
+          }
+          </div>
         </div>
       </Link>
     </div>

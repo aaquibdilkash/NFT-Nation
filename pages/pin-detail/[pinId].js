@@ -61,16 +61,17 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { FaCopy, FaDiceD20 } from "react-icons/fa";
+import { FaCopy, FaDiceD20, FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 const buttonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-bold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
+  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-semibold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
 
 const PinDetail = () => {
   const router = useRouter();
-  const { pathname } = router;  
+  const { pathname } = router;
   const { pinId } = router.query;
   const { user, marketContract } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
@@ -83,6 +84,9 @@ const PinDetail = () => {
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
+  const [alreadySaved, setAlreadySaved] = useState(false);
+  const [savedLength, setSavedLenth] = useState(0);
+
 
   const {
     _id,
@@ -119,8 +123,6 @@ const PinDetail = () => {
     auctionEnded: true,
     postedBy: {},
   };
-
-  let alreadySaved = saved?.find((item) => item === user?._id);
 
   const executeMarketSaleCondition =
     price !== "0.0" &&
@@ -170,32 +172,33 @@ const PinDetail = () => {
   const highestBidShowCondition =
     price === "0.0" && owner === etherAddress && !auctionEnded;
 
-
   useEffect(() => {
     const listener = () => {
       setTimeout(() => {
-        setRefresh(prev => !prev)
-      }, 5000)
-    }
+        setRefresh((prev) => !prev);
+      }, 5000);
+    };
 
-    marketContract && marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
-      listener()
-    })
-
-  }, [])
+    marketContract &&
+      marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
+        listener();
+      });
+  }, []);
 
   const fetchPinDetails = () => {
     axios
       .get(`/api/pins/${pinId}`)
       .then((res) => {
-        setPinDetail(res.data.pin);
+        setPinDetail(res?.data?.pin);
+        setAlreadySaved(res?.data?.pin?.saved?.find((item) => item === user?._id))
+        setSavedLenth(res?.data?.pin?.saved?.length)
 
         router.push(
           {
             pathname: pathname,
             query: {
               pinId,
-              category: res.data.pin.category
+              category: res.data.pin.category,
             },
           },
           undefined,
@@ -207,6 +210,10 @@ const PinDetail = () => {
         // console.log(e);
       });
   };
+
+  useEffect(() => {
+    user?._id && setAlreadySaved(saved?.find((item) => item === user?._id))
+  }, [user])
 
   useEffect(() => {
     pinId && fetchPinDetails();
@@ -369,7 +376,7 @@ const PinDetail = () => {
       console.log(eventData);
       console.log(tx.events, "DDDDDDD");
     } catch (e) {
-      console.log(e, "^^^^^^^^^^^^^^")
+      console.log(e, "^^^^^^^^^^^^^^");
       toast.error(tokenBidErrorMessage);
       setLoading(false);
       return;
@@ -402,10 +409,10 @@ const PinDetail = () => {
       toast.success(tokenBidWithdrawSuccessMessage);
       const event = tx.events[0];
       var eventData = getEventData(event);
-      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
       console.log(eventData);
     } catch (e) {
-      console.log(e,"^^^^^^^^^^^^^^^^^^^^^")
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^");
       toast.error(tokenBidWithdrawErrorMessage);
       setLoading(false);
       return;
@@ -453,7 +460,7 @@ const PinDetail = () => {
       console.log(tx.events);
       console.log(eventData);
     } catch (e) {
-      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^")
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^");
       toast.error(tokenAuctionErrorMessage);
       setLoading(false);
       return;
@@ -498,7 +505,7 @@ const PinDetail = () => {
       console.log(eventData);
       var newOwner = bids?.length ? getMaxBid(bids)?.user : user;
     } catch (e) {
-      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
       toast.error(tokenAuctionEndErrorMessage);
       setLoading(false);
       return;
@@ -606,6 +613,7 @@ const PinDetail = () => {
       });
   };
 
+  
   const savePin = () => {
     if (!user?._id) {
       toast.info(loginMessage);
@@ -613,18 +621,19 @@ const PinDetail = () => {
     }
     setSavingPost(true);
     axios
-      .put(`/api/pins/save/${pinId}`, {
+      .put(`/api/pins/save/${_id}`, {
         user: user?._id,
       })
       .then((res) => {
         setSavingPost(false);
-        setRefresh((prev) => !prev);
-        toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+        // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+        setSavedLenth((prev) => (alreadySaved ? prev - 1 : prev + 1));
+        setAlreadySaved((prev) => !prev);
       })
       .catch((e) => {
         console.log(e);
         setSavingPost(false);
-        toast.error(alreadySaved ? saveErrorMessage: unSaveErrorMessage);
+        toast.error(saveErrorMessage);
       });
   };
 
@@ -677,27 +686,6 @@ const PinDetail = () => {
       } Matic)`,
       condition: withdrawAuctionBidCondition,
       function: withdrawAuctionBid,
-    },
-    {
-      text: `${
-        alreadySaved
-          ? `${saved?.length} Saved`
-          : savingPost
-          ? `Saving...`
-          : `Save`
-      }`,
-      condition: true,
-      function: savePin,
-    },
-    {
-      text: `Share`,
-      condition: true,
-      function: () => {
-        navigator.clipboard.writeText(
-          `https:nft-nation.vercel.app/pin-detail/${pinId}`
-        );
-        toast.info(shareInfoMessage)
-      },
     },
   ];
 
@@ -863,7 +851,7 @@ const PinDetail = () => {
             <div
               onClick={() => {
                 navigator.clipboard.writeText(`${nftContract}`);
-                toast.info(contractAddressCopiedMessage)
+                toast.info(contractAddressCopiedMessage);
               }}
               className="font-bold text-gray-700 mr-2 cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1"
             >
@@ -905,55 +893,101 @@ const PinDetail = () => {
                 );
               }
             })}
-          </div>
-          {(makeAuctionBidCondition || createMarketSaleCondition) && (addingBidPrice || addingSellPrice) && (
-            <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
-              <div className="flex flex-wrap m-2 gap-3">
-                {user?._id && (
-                  <Link href={`/user-profile/${user?._id}`}>
-                    <div>
-                      {user?.image && (
-                        <Image
-                          height={40}
-                          width={40}
-                          src={user?.image}
-                          className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
-                          alt="user-profile"
-                        />
-                      )}
-                    </div>
-                  </Link>
+            <button className={buttonStyles}>
+              <div className="flex gap-2 items-center">
+                <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
+                  {savedLength}
+                </p>
+                {!alreadySaved && (
+                  <AiOutlineHeart
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      savePin();
+                    }}
+                    className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                    size={25}
+                  />
                 )}
-                <input
-                  className=" flex-1 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
-                  type="text"
-                  placeholder="Enter Price..."
-                  maxLength={10}
-                  value={inputPrice}
-                  onChange={(e) => setInputPrice(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                  onClick={() => {
-                    addingSellPrice && createMarketSale();
-                    addingBidPrice && makeAuctionBid();
-                  }}
-                >
-                  {`Confirm`}
-                </button>
+                {alreadySaved && (
+                  <AiFillHeart
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      savePin();
+                    }}
+                    className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                    size={25}
+                  />
+                )}
               </div>
-            </div>
-          )}
+            </button>
+            <button className={buttonStyles}>
+              <div className="flex gap-2 items-center">
+                {/* <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
+                  {savedLength}
+                </p> */}
+                  <FaShareAlt
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(
+                        `https:nft-nation.vercel.app/pin-detail/${pinId}`
+                      );
+                      toast.info(shareInfoMessage);
+                    }}
+                    className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                    size={25}
+                  />
+              </div>
+            </button>
+          </div>
+          {(makeAuctionBidCondition || createMarketSaleCondition) &&
+            (addingBidPrice || addingSellPrice) && (
+              <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
+                <div className="flex flex-wrap m-2 gap-3">
+                  {user?._id && (
+                    <Link href={`/user-profile/${user?._id}`}>
+                      <div>
+                        {user?.image && (
+                          <Image
+                            height={40}
+                            width={40}
+                            src={user?.image}
+                            className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
+                            alt="user-profile"
+                          />
+                        )}
+                      </div>
+                    </Link>
+                  )}
+                  <input
+                    className=" flex-1 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
+                    type="text"
+                    placeholder="Enter Price..."
+                    maxLength={10}
+                    value={inputPrice}
+                    onChange={(e) => setInputPrice(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                    onClick={() => {
+                      addingSellPrice && createMarketSale();
+                      addingBidPrice && makeAuctionBid();
+                    }}
+                  >
+                    {`Confirm`}
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
       )}
-        <>
-          <h2 className="text-center font-bold text-2xl mt-8 mb-4">
-            More like this
-          </h2>
-          {/* <MasonryLayout pins={pins} /> */}
-          <Feed />
-        </>
+      <>
+        <h2 className="text-center font-bold text-2xl mt-8 mb-4">
+          More like this
+        </h2>
+        {/* <MasonryLayout pins={pins} /> */}
+        <Feed />
+      </>
     </>
   );
 };
