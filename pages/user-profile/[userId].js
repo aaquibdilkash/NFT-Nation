@@ -106,7 +106,7 @@ const UserProfilePage = () => {
     user?._id && setAlreadyFollowed(userProfile?.followers?.find((item) => item === user?._id))
   }, [user, userProfile]);
 
-  if (!userProfile) return <Spinner message="Loading profile" />;
+  if (!userProfile) return <Spinner message="Loading profile..." />;
 
   const {
     _id,

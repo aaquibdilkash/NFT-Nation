@@ -75,7 +75,7 @@ const UserFeed = ({setFollowingsLength}) => {
     return <Spinner message={`We are fetching users to your feed!`} />;
   }
 
-  if (!loading && user?.length === 0) {
+  if (!loading && users?.length === 0) {
     return (
       <div className="mt-10 text-center text-xl font-bold">No Users Found!</div>
     );
