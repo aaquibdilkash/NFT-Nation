@@ -107,10 +107,11 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
             <h3 className="mt-1 px-5 text-base 2xl:text-xl font-bold">
               Discover Categories
             </h3>
-            {sidebarCategories[`Discover Categories`].map((cat) => {
+            {sidebarCategories[`Discover Categories`].map((cat, index) => {
               const { link, name, icon } = cat;
               return (
                 <div
+                  key={index}
                   onClick={() => {
                     router.push(
                       {
@@ -142,11 +143,12 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
             <h3 className="mt-1 px-5 text-base 2xl:text-xl font-bold">
               Sort By
             </h3>
-            {sidebarCategories[`Sort By`].map((cat) => {
+            {sidebarCategories[`Sort By`].map((cat, index) => {
               const { link, name, icon, array } = cat;
               const [query1, query2] = array;
               return (
                 <div
+                  key={index}
                   onClick={() => {
                     router.push(
                       {
@@ -174,6 +176,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                     {array.map((item, index) => {
                       return (
                         <div
+                          key={index}
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(

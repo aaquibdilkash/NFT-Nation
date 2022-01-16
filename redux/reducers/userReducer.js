@@ -2,21 +2,17 @@ import {
   CLEAR_ERRORS,
   USER_GET_FAIL,
   USER_GET_SUCCESS,
-  SEARCH_TERM_SET,
   REFRESH_SET,
-  PAGE_SET,
   HAS_MORE,
-  MORE_LOADING,
+  CHANGE_PAGE,
   MARKET_CONTRACT,
 } from "../constants/UserTypes";
 
 const initialState = {
   user: {},
-  searchTerm: "",
   refresh: false,
-  page: 1,
-  hasMore: true,
-  moreLoading: false,
+  hasMore: false,
+  changePage: false,
   marketContract: {}
 };
 
@@ -33,17 +29,6 @@ export const userReducer = (state = initialState, action) => {
         ...state,
         error: action.payload,
       };
-    case SEARCH_TERM_SET:
-      return {
-        ...state,
-        searchTerm: action.payload,
-      };
-
-    case PAGE_SET:
-      return {
-        ...state,
-        page: action.payload,
-      };
 
     case HAS_MORE:
       return {
@@ -51,10 +36,10 @@ export const userReducer = (state = initialState, action) => {
         hasMore: action.payload,
       };
 
-    case MORE_LOADING:
+    case CHANGE_PAGE:
       return {
         ...state,
-        moreLoading: action.payload,
+        changePage: action.payload,
       };
 
     case REFRESH_SET:

@@ -10,10 +10,20 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     User.find(),
     req.query
   )
-    .search()
-    .filter()
+    // .search()
+    // .filter()
     // .saved()
     // .bids();
+
+  if (req.query.followers || req.query.followings) {
+    if(req.query.followings) {
+      let user = await User?.findById(req.query.followings)
+      searchPagination.follow("followings", user?.followings);
+    } else {
+      let user = await User?.findById(req.query.followers)
+      searchPagination.follow("followers", user?.followers);
+    }
+  }
 
   let users = await searchPagination.query;
 

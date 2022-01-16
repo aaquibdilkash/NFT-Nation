@@ -26,7 +26,7 @@ const HomeLayout = ({ children }) => {
   const router = useRouter();
   const { pathname, query } = router;
   const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
-  const { user, marketContract, refresh, hasMore } = useSelector(
+  const { user, marketContract, refresh, hasMore, changePage } = useSelector(
     (state) => state.userReducer
   );
   let web3Modal;
@@ -228,7 +228,7 @@ const HomeLayout = ({ children }) => {
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     console.log(hasMore)
-    if (scrollHeight - scrollTop === clientHeight && hasMore) {
+    if (scrollHeight - scrollTop === clientHeight && hasMore && changePage) {
       console.log(page);
       router.push(
         {
@@ -277,7 +277,7 @@ const HomeLayout = ({ children }) => {
           )}
         </div>
         {toggleSidebar && (
-          <div className="fixed w-3/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-10 animate-slide-in">
+          <div className="fixed w-3/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-50 animate-slide-in">
             <Sidebar
               setToggleSidebar={setToggleSidebar}
               user={user && user}
@@ -292,7 +292,7 @@ const HomeLayout = ({ children }) => {
         // ref={scrollRef}
       >
         <div className="px-2 md:px-5">
-          <div className="transparent sticky top-4 z-50">
+          <div className="transparent sticky top-4 z-40">
             <Navbar connectToMetamask={connectToMetamask} />
           </div>
           <div className="h-full">{children}</div>

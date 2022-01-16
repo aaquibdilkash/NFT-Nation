@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
 import { getUserName } from "../../utils/data";
-import { followErrorMessage, followSuccessMessage, loginMessage, shareInfoMessage, unFollowErrorMessage, unFollowSuccessMessage } from "../../utils/messages";
+import {
+  followErrorMessage,
+  followSuccessMessage,
+  loginMessage,
+  shareInfoMessage,
+  unFollowErrorMessage,
+  unFollowSuccessMessage,
+} from "../../utils/messages";
 import Spinner from "../../components/Spinner";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
@@ -14,6 +21,7 @@ import { FaShareAlt, FaSignInAlt } from "react-icons/fa";
 import moment from "moment";
 import { Feed } from "../../components";
 import { MdFollowTheSigns } from "react-icons/md";
+import UserFeed from "../../components/UserFeed";
 
 const activeBtnStyles =
   "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
@@ -52,8 +60,10 @@ const UserProfilePage = () => {
       });
   };
 
-  const [following, setFollowing] = useState(false)
-  let alreadyFollowed = userProfile?.followers?.find((item) => item === user?._id);
+  const [following, setFollowing] = useState(false);
+  let alreadyFollowed = userProfile?.followers?.find(
+    (item) => item === user?._id
+  );
 
   const followUser = () => {
     if (!user?._id) {
@@ -68,22 +78,91 @@ const UserProfilePage = () => {
       .then((res) => {
         setFollowing(false);
         // setRefresh((prev) => !prev);
-        toast.success(alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage);
+        toast.success(
+          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+        );
       })
       .catch((e) => {
         console.log(e);
         setFollowing(false);
-        toast.error(alreadyFollowed ? followErrorMessage : unFollowErrorMessage);
+        toast.error(
+          alreadyFollowed ? followErrorMessage : unFollowErrorMessage
+        );
       });
   };
 
   useEffect(() => {
+    setActiveBtn("Owned")
     userId && fetchUserDetails();
   }, [userId, user]);
 
   if (!userProfile) return <Spinner message="Loading profile" />;
 
-  const { _id, userName, about, address, image, createdAt } = userProfile;
+  const {
+    _id,
+    userName,
+    about,
+    address,
+    image,
+    createdAt,
+    followers,
+    followings,
+  } = userProfile;
+
+  const pinsButtonArray = [
+    {
+      name: "Owned",
+      query: {
+        owner: address,
+      },
+    },
+    {
+      name: "On Sale",
+      query: {
+        seller: address,
+        auctionEnded: true,
+      },
+    },
+    {
+      name: "On Auction",
+      query: {
+        seller: address,
+        auctionEnded: false,
+      },
+    },
+    {
+      name: "Bids",
+      query: {
+        bids: _id,
+      },
+    },
+    {
+      name: "Saved",
+      query: {
+        saved: userId,
+      },
+    },
+  ];
+
+  const userButtonArray = [
+    {
+      name: `Followers`,
+      text: `Followers (${followers.length})`,
+      query: {
+        followers: _id,
+      },
+    },
+    {
+      name: `Followings`,
+      text: `Followings (${followings.length})`,
+      query: {
+        followings: _id,
+      },
+    },
+  ];
+
+  const showFeedCondition = ["Owned", "On Sale", "On Auction", "Bids", "Saved"].includes(activeBtn)
+  const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn)
 
   return (
     <>
@@ -173,41 +252,41 @@ const UserProfilePage = () => {
             )} */}
           </div>
 
+          <div className="text-center mb-2">
+            {userButtonArray.map((item, index) => {
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={(e) => {
+                    setActiveBtn(item.name);
+
+                    router.push(
+                      {
+                        pathname: pathname,
+                        query: {
+                          userId,
+                          ...item?.query,
+                        },
+                      },
+                      undefined,
+                      { shallow: true }
+                    );
+                  }}
+                  className={`${
+                    activeBtn === item?.name
+                      ? activeBtnStyles
+                      : notActiveBtnStyles
+                  }`}
+                >
+                  {item?.text}
+                </button>
+              );
+            })}
+          </div>
+
           <div className="text-center mb-7">
-            {[
-              {
-                name: "Owned",
-                query: {
-                  owner: address,
-                },
-              },
-              {
-                name: "On Sale",
-                query: {
-                  seller: address,
-                  auctionEnded: true,
-                },
-              },
-              {
-                name: "On Auction",
-                query: {
-                  seller: address,
-                  auctionEnded: false,
-                },
-              },
-              {
-                name: "Bids",
-                query: {
-                  bids: _id,
-                },
-              },
-              {
-                name: "Saved",
-                query: {
-                  saved: userId,
-                },
-              },
-            ].map((item, index) => {
+            {pinsButtonArray.map((item, index) => {
               return (
                 <button
                   key={index}
@@ -240,7 +319,12 @@ const UserProfilePage = () => {
           </div>
 
           <div className="px-2">
-            <Feed />
+            {
+              showFeedCondition && <Feed />
+            }
+            {
+              showUserFeedCondition && <UserFeed />
+            }
           </div>
         </div>
       </div>

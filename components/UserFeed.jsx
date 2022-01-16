@@ -8,33 +8,27 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
-const Feed = () => {
+const UserFeed = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [pins, setPins] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user, hasMore, moreLoading } = useSelector((state) => state.userReducer);
+  const { user, hasMore, moreLoading } = useSelector(
+    (state) => state.userReducer
+  );
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
-  const {query} = router
-  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
+  const { query } = router;
+  const { page, keyword, followers, followings, userId } = query;
 
-  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${
+  const link = `/api/users?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${
-    feed ? `&feed=${user?._id}` : ``
-  }${category ? `&category=${category}` : ``}${owner ? `&owner=${owner}` : ``}${
-    seller ? `&seller=${seller}` : ``
-  }${bids ? `&bids=${bids}` : ``}${saved ? `&saved=${saved}` : ``}${
-    auctionEnded ? `&auctionEnded=${auctionEnded}` : ``
-  }${
-    pinId ? `&ne=${pinId}` : ``
-  }${
-    sort ? `&sort=${sort}` : ``
+  }${followers ? `&followers=${userId}` : ``}${
+    followings ? `&followings=${userId}` : ``
   }`;
 
-  const fetchPins = () => {
+  const fetchUsers = () => {
     setLoading(!page || page == 1);
     dispatch({
       type: CHANGE_PAGE,
@@ -46,12 +40,15 @@ const Feed = () => {
         cancelToken: source.token,
       })
       .then((res) => {
-        const { pins, resultPerPage, filteredPinsCount } = res.data;
-        (page ? parseInt(page) === 1 : true) ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+        const { users, resultPerPage, filteredUsersCount } = res.data;
+        (page ? parseInt(page) === 1 : true)
+          ? setUsers(users)
+          : setUsers((prev) => [...prev, ...users]);
         setLoading(false);
         dispatch({
           type: HAS_MORE,
-          payload: (page ? parseInt(page) : 1) * resultPerPage < filteredPinsCount,
+          payload:
+            (page ? parseInt(page) : 1) * resultPerPage < filteredUsersCount,
         });
         dispatch({
           type: CHANGE_PAGE,
@@ -68,30 +65,32 @@ const Feed = () => {
   };
 
   useEffect(() => {
-    fetchPins();
+    fetchUsers();
 
     return () => source.cancel("Operation canceled by the user.");
   }, [router]);
 
-  const ideaName = category || "new";
+  //   const ideaName = category || "new";
   if (loading && (!page || page == 1)) {
-    return <Spinner message={`We are adding ${ideaName} pins to your feed!`} />;
+    return <Spinner message={`We are fetching users to your feed!`} />;
   }
 
-  if (!loading && pins?.length === 0) {
+  if (!loading && user?.length === 0) {
     return (
-      <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
+      <div className="mt-10 text-center text-xl font-bold">No Users Found!</div>
     );
   }
 
   return (
     <>
       <div className="">
-        {pins?.length > 0 && <MasonryLayout comp={pins} type="pin" />}
-        {hasMore && <Spinner message={`We are adding more ${ideaName} pins to your feed!`} />}
+        {users?.length > 0 && <MasonryLayout comp={users} type="user" />}
+        {hasMore && (
+          <Spinner message={`We are fetching more users to your feed!`} />
+        )}
       </div>
     </>
   );
 };
 
-export default Feed;
+export default UserFeed;
