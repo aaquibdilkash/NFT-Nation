@@ -100,7 +100,11 @@ const UserProfilePage = () => {
   useEffect(() => {
     setActiveBtn("Owned");
     userId && fetchUserDetails();
-  }, [userId, user]);
+  }, [userId]);
+
+  useEffect(() => {
+    user?._id && setAlreadyFollowed(userProfile?.followers?.find((item) => item === user?._id))
+  }, [user, userProfile]);
 
   if (!userProfile) return <Spinner message="Loading profile" />;
 
@@ -305,7 +309,6 @@ const UserProfilePage = () => {
                   alreadyFollowed ? activeBtnStyles : notActiveBtnStyles
                 }`}
               >
-                {console.log(alreadyFollowed, "DDDDDDDDDDDDDDD")}
                 {alreadyFollowed ? `Followed` : `Follow`}
               </button>
             )}

@@ -213,7 +213,7 @@ const PinDetail = () => {
 
   useEffect(() => {
     user?._id && setAlreadySaved(saved?.find((item) => item === user?._id))
-  }, [user])
+  }, [user, pinDetail])
 
   useEffect(() => {
     pinId && fetchPinDetails();
