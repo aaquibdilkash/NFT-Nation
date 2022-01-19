@@ -275,7 +275,7 @@ const HomeLayout = ({ children }) => {
           )}
         </div>
         {toggleSidebar && (
-          <div className="fixed w-3/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-50 animate-slide-in duration-100">
+          <div className="fixed w-4/5 bg-secondTheme h-screen overflow-y-auto shadow-md z-50 animate-slide-in duration-100">
             <Sidebar
               setToggleSidebar={setToggleSidebar}
               user={user && user}

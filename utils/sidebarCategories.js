@@ -8,6 +8,7 @@ import {
     FaLaugh,
     FaMusic,
     FaPaintBrush,
+    FaRegComments,
     FaSmile,
     FaVideo,
   } from "react-icons/fa";
@@ -72,14 +73,14 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         },
         icon: <FaLaugh className="" size={25} />,
       },
-      // {
-      //   name: "Gifs",
-      //   link: "/",
-      //   query: {
-      //     category: "Gifs"
-      //   },
-      //   icon: <FaSmile className="" size={25} />,
-      // },
+      {
+        name: "Gifs",
+        link: "/",
+        query: {
+          category: "Gifs"
+        },
+        icon: <FaSmile className="" size={25} />,
+      },
       // {
       //   name: "Music",
       //   link: "/",
@@ -172,7 +173,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
             }
           },
         ],
-        icon: <FaComments className="" size={25} />,
+        icon: <FaRegComments className="" size={25} />,
       },
       {
         name: "Saved",

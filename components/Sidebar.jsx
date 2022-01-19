@@ -29,34 +29,38 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   return (
     <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
       <div className="flex flex-col">
-        <Link href="/">
-          <div
-            onClick={() => {
-              router.push(
-                {
-                  pathname: "/",
-                  query: {},
-                },
-                undefined,
-                { shallow: true }
-              );
-              handleCloseSidebar();
-            }}
-            className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer"
+        <div
+          // onClick={() => {
+          //   router.push(
+          //     {
+          //       pathname: "/",
+          //       query: {},
+          //     },
+          //     undefined,
+          //     { shallow: true }
+          //   );
+          //   handleCloseSidebar();
+          // }}
+          className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer"
+        >
+          <Link
+            href="/"
           >
-            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center">
+            <div
+              className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center"
+            >
               <FaArtstation className="" size={25} />{" "}
               <p className="font-bold text-lg">NFT Nation</p>
             </div>
-            <div className="flex md:hidden absolute w-full flex justify-end items-center p-2">
-              <AiFillCloseCircle
-                fontSize={30}
-                className="cursor-pointer mr-4"
-                onClick={handleCloseSidebar}
-              />
-            </div>
+          </Link>
+          <div className="flex md:hidden absolute w-full flex justify-end items-center p-2">
+            <AiFillCloseCircle
+              fontSize={30}
+              className="cursor-pointer mr-4"
+              onClick={handleCloseSidebar}
+            />
           </div>
-        </Link>
+        </div>
         <div className="flex flex-col gap-5">
           <div
             onClick={() => {

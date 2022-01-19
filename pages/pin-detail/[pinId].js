@@ -69,6 +69,8 @@ import moment from "moment";
 
 const buttonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-semibold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
+const tabButtonStyles =
+  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
 
 const PinDetail = () => {
   const router = useRouter();
@@ -103,6 +105,8 @@ const PinDetail = () => {
     tokenId,
     price,
     auctionEnded,
+    properties,
+    history,
     category,
     image,
     postedBy,
@@ -122,6 +126,8 @@ const PinDetail = () => {
     category: "",
     image: "",
     auctionEnded: true,
+    properties: [],
+    history: [],
     postedBy: {},
   };
 
@@ -733,28 +739,58 @@ const PinDetail = () => {
             />
 
             <div className="w-full px-5 flex-1 xl:min-w-620">
-              <div className="flex gap-2 flex-wrap justify-center">
-                <button onClick={() => setTab("comments")}>
-                  <span className={buttonStyles}>
-                    {`Comments (${comments?.length})`}{" "}
-                  </span>
-                </button>
-                {highestBidShowCondition && (
-                  <button onClick={() => setTab("bids")}>
-                    <span className={buttonStyles}>
-                      {`Bids (${bids?.length})`}{" "}
-                    </span>
-                  </button>
-                )}
-                {/* <button onClick={() => setTab("history")}>
-                  <span className={buttonStyles}>{`History`} </span>
-                </button> */}
+              <div className="flex flex-wrap justify-evenly">
+                {[
+                  {
+                    name: "properties",
+                    text: `Properties${
+                      properties?.length ? ` (${properties?.length})` : ``
+                    }`,
+                    condition: true,
+                    func: () => setTab("properties"),
+                  },
+                  {
+                    name: "comments",
+                    text: `Comments${
+                      comments?.length ? ` (${comments?.length})` : ``
+                    }`,
+                    condition: true,
+                    func: () => setTab("comments"),
+                  },
+                  {
+                    name: "bids",
+                    text: `Bids${bids?.length ? ` (${bids?.length})` : ``}`,
+                    condition: highestBidShowCondition,
+                    func: () => setTab("bids"),
+                  },
+                  {
+                    name: "history",
+                    text: `History`,
+                    condition: true,
+                    func: () => setTab("history"),
+                  },
+                ].map((item, index) => {
+                  if (item?.condition)
+                    return (
+                      <button key={index} onClick={() => item?.func()}>
+                        <span
+                          className={`${tabButtonStyles} ${
+                            item?.name === tab ? `` : ``
+                          }`}
+                        >
+                          {item?.text}
+                        </span>
+                      </button>
+                    );
+                })}
               </div>
-              {!comments?.length && (
-                <h2 className="mt-0 text-xl font-bold">{`No Comments Yet`}</h2>
-              )}
-              <div className="max-h-370 overflow-y-scroll">
-                {tab === "comments" &&
+
+              <div className="max-h-370 h-370 overflow-y-scroll">
+                {tab === "properties" && (
+                  <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No Properties...`}</h2>
+                )}
+                {tab === "properties" &&
+                  false &&
                   comments?.map((item) => (
                     <div
                       key={`${item?._id}`}
@@ -783,7 +819,13 @@ const PinDetail = () => {
                       </div>
                     </div>
                   ))}
+
+                {tab === "bids" && !bids?.length && (
+                  <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No Bids Yet, Be the first one to make a Bid...`}</h2>
+                )}
+
                 {tab === "bids" &&
+                  bids?.length > 0 &&
                   bids?.map((item) => (
                     <div
                       key={`${item?._id}`}
@@ -812,7 +854,46 @@ const PinDetail = () => {
                       </div>
                     </div>
                   ))}
+                {tab === "comments" && !comments?.length && (
+                  <h2 className="flex justify-center items-center h-370 text-xl font-bold">{`No Comments Yet, Be the first one to comment...`}</h2>
+                )}
+                {tab === "comments" &&
+                  comments?.length > 0 &&
+                  comments?.map((item) => (
+                    <div
+                      key={`${item?._id}`}
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                    >
+                      {item?.user?._id && (
+                        <Link href={`/user-profile/${item?.user?._id}`}>
+                          <div>
+                            {item?.user?.image && (
+                              <Image
+                                height={45}
+                                width={45}
+                                src={item?.user?.image}
+                                className="w-12 h-12 rounded-full cursor-pointer"
+                                alt="user-profile"
+                              />
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      <div className="flex flex-col">
+                        <p className="font-bold">
+                          {getUserName(item?.user?.userName)}
+                        </p>
+                        <p className="font-semibold">{item.comment}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                {tab === "history" && (
+                  <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No History...`}</h2>
+                )}
+
                 {tab === "history" &&
+                  false &&
                   bids?.map((item) => (
                     <div
                       key={`${item?._id}`}
@@ -836,7 +917,6 @@ const PinDetail = () => {
                       <div className="flex justify-between gap-2 md:gap-8">
                         <div className="flex flex-wrap">
                           <p className=" font-bold">
-                            
                             {`${getUserName(item?.user?.userName)}`}
                           </p>
                         </div>
@@ -862,7 +942,7 @@ const PinDetail = () => {
                             height={45}
                             width={45}
                             src={user?.image}
-                            className="w-14 h-14 rounded-full cursor-pointer p-2"
+                            className="w-14 h-14 rounded-full cursor-pointer pt-2"
                             alt="user-profile"
                           />
                         )}
@@ -888,19 +968,19 @@ const PinDetail = () => {
             </div>
           </div>
 
-          <div className="block lg:flex text-center items-center justify-center mb-5 w-full justify-evenly">
+          <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
             {postedBy?._id && (
               <Link href={`/user-profile/${postedBy?._id}`}>
-                <div className="cursor-pointer flex items-center justify-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 items-center transition transition duration-500 ease transform hover:-translate-y-1">
+                <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
                   <Image
                     alt={pinDetail.postedBy.userName}
-                    height={40}
-                    width={40}
+                    height={35}
+                    width={35}
                     className="align-middle rounded-full"
                     src={postedBy?.image}
                   />
 
-                  <p className="inline align-middle text-gray-700 ml-2 text-lg font-bold">
+                  <p className="inline align-middle text-sm ml-2 font-bold">
                     {getUserName(postedBy?.userName)}
                   </p>
                 </div>
@@ -908,7 +988,7 @@ const PinDetail = () => {
             )}
 
             {(priceShowCondition || highestBidShowCondition) && (
-              <div className="font-bold text-gray-700 mr-2">
+              <div className="font-bold text-sm mr-2 mb-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 inline mr-2 text-pink-500"
@@ -941,52 +1021,52 @@ const PinDetail = () => {
                 navigator.clipboard.writeText(`${nftContract}`);
                 toast.info(contractAddressCopiedMessage);
               }}
-              className="font-bold text-gray-700 mr-2 cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1"
+              className="font-bold text-sm mr-2 mb-1 cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1"
             >
-              <FaCopy className="inline mr-2" size={25} />
+              <FaCopy className="inline mr-2" size={20} />
               <span className="align-middle">
                 {/* {moment(createdAt).format("MMM DD, YYYY")} */}
                 {`NFT Contract Address`}
               </span>
             </div>
 
-            <div className="font-bold text-gray-700 mr-2">
-              <FaDiceD20 className="inline mr-2" size={25} />
+            <div className="font-bold text-sm mr-2 mb-1">
+              <FaDiceD20 className="inline mr-2" size={20} />
               <span className="align-middle">{`Token ID: #${tokenId}`}</span>
             </div>
-            <div className="font-bold text-gray-700 mr-2">
+            <div className="font-bold text-sm mr-2">
               <a href={`${image}`} target="_blank">
-                <FaLink className="inline mr-2" size={25} />
+                <FaLink className="inline mr-2" size={20} />
                 <span className="align-middle">{`IPFS`}</span>
               </a>
             </div>
-            <div className="font-bold text-gray-700 mr-2">
+            <div className="font-bold text-sm mr-2 mb-1">
               <a
                 href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
                 target="_blank"
               >
-                <FaLink className="inline mr-2" size={25} />
+                <FaLink className="inline mr-2" size={20} />
                 <span className="align-middle">{`Etherscan`}</span>
               </a>
             </div>
           </div>
-          <h1 className="transition duration-700 text-center mb-5 cursor-pointer hover:text-pink-600 text-3xl font-semibold">
+          <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
             <p>{`#${tokenId} ${title}`}</p>
           </h1>
-          <p className="text-center text-lg text-gray-700 font-normal px-4 lg:px-20 mb-5">
+          <p className="text-center text-md text-gray-700 font-bold px-4 lg:px-20 mb-5">
             {about}
           </p>
-          <div className="p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
+          <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
             {buttonArray?.map((item, index) => {
               if (item?.condition) {
                 return (
                   <button key={index} onClick={item?.function}>
-                    <span className={buttonStyles}>{item?.text} </span>
+                    <span className={tabButtonStyles}>{item?.text} </span>
                   </button>
                 );
               }
             })}
-            <button className={buttonStyles}>
+            <button className={tabButtonStyles}>
               <div className="flex gap-2 items-center">
                 <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
                   {savedLength}
@@ -1013,11 +1093,8 @@ const PinDetail = () => {
                 )}
               </div>
             </button>
-            <button className={buttonStyles}>
+            <button className={tabButtonStyles}>
               <div className="flex gap-2 items-center">
-                {/* <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
-                  {savedLength}
-                </p> */}
                 <FaShareAlt
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1041,10 +1118,10 @@ const PinDetail = () => {
                       <div>
                         {user?.image && (
                           <Image
-                            height={40}
-                            width={40}
+                            height={45}
+                            width={45}
                             src={user?.image}
-                            className="w-10 h-10 rounded-full cursor-pointer hover:shadow-lg"
+                            className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
                             alt="user-profile"
                           />
                         )}
