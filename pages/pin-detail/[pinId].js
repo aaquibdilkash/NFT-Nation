@@ -61,10 +61,11 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { FaCopy, FaDiceD20, FaShareAlt } from "react-icons/fa";
+import { FaCopy, FaDiceD20, FaLink, FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import moment from "moment";
 
 const buttonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-semibold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
@@ -86,7 +87,7 @@ const PinDetail = () => {
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
   const [alreadySaved, setAlreadySaved] = useState(false);
   const [savedLength, setSavedLenth] = useState(0);
-
+  const [tab, setTab] = useState("comments");
 
   const {
     _id,
@@ -190,8 +191,10 @@ const PinDetail = () => {
       .get(`/api/pins/${pinId}`)
       .then((res) => {
         setPinDetail(res?.data?.pin);
-        setAlreadySaved(res?.data?.pin?.saved?.find((item) => item === user?._id))
-        setSavedLenth(res?.data?.pin?.saved?.length)
+        setAlreadySaved(
+          res?.data?.pin?.saved?.find((item) => item === user?._id)
+        );
+        setSavedLenth(res?.data?.pin?.saved?.length);
 
         router.push(
           {
@@ -212,8 +215,8 @@ const PinDetail = () => {
   };
 
   useEffect(() => {
-    user?._id && setAlreadySaved(saved?.find((item) => item === user?._id))
-  }, [user, pinDetail])
+    user?._id && setAlreadySaved(saved?.find((item) => item === user?._id));
+  }, [user, pinDetail]);
 
   useEffect(() => {
     pinId && fetchPinDetails();
@@ -613,7 +616,6 @@ const PinDetail = () => {
       });
   };
 
-  
   const savePin = () => {
     if (!user?._id) {
       toast.info(loginMessage);
@@ -724,79 +726,165 @@ const PinDetail = () => {
               placeholder="blur"
               blurDataURL="/favicon.png"
               alt={title}
-              className="shadow-lg rounded-t-lg lg:rounded-lg"
+              className="shadow-lg rounded-lg"
               height={500}
-              width={600}
+              width={480}
               src={image}
             />
 
-            <div className="w-full p-5 flex-1 xl:min-w-620">
-              <h2 className="mt-0 text-2xl font-bold">
-                {comments?.length
-                  ? `${comments?.length} Comments`
-                  : `No Comments Yet`}
-              </h2>
-              <div className="max-h-370 overflow-y-scroll">
-                {comments?.map((item) => (
-                  <div
-                    key={`${item?._id}`}
-                    className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
-                  >
-                    {item?.user?._id && (
-                      <Link href={`/user-profile/${item?.user?._id}`}>
-                        <div>
-                          {item?.user?.image && (
-                            <Image
-                              height={40}
-                              width={40}
-                              src={item?.user?.image}
-                              className="w-10 h-10 rounded-full cursor-pointer"
-                              alt="user-profile"
-                            />
-                          )}
-                        </div>
-                      </Link>
-                    )}
-                    <div className="flex flex-col">
-                      <p className="font-bold">
-                        {getUserName(item?.user?.userName)}
-                      </p>
-                      <p>{item.comment}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap mt-6 gap-3">
-                {user?._id && (
-                  <Link href={`/user-profile/${user?._id}`}>
-                    <div>
-                      {user?.image && (
-                        <Image
-                          height={40}
-                          width={40}
-                          src={user?.image}
-                          className="w-10 h-10 rounded-full cursor-pointer"
-                          alt="user-profile"
-                        />
-                      )}
-                    </div>
-                  </Link>
-                )}
-                <input
-                  className=" flex-1 border-gray-100 outline-none border-2 p-2 mb- rounded-2xl focus:border-gray-300"
-                  type="text"
-                  placeholder="Add a comment"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                  onClick={addComment}
-                >
-                  {addingComment ? "Doing..." : "Done"}
+            <div className="w-full px-5 flex-1 xl:min-w-620">
+              <div className="flex gap-2 flex-wrap justify-center">
+                <button onClick={() => setTab("comments")}>
+                  <span className={buttonStyles}>
+                    {`Comments (${comments?.length})`}{" "}
+                  </span>
                 </button>
+                {highestBidShowCondition && (
+                  <button onClick={() => setTab("bids")}>
+                    <span className={buttonStyles}>
+                      {`Bids (${bids?.length})`}{" "}
+                    </span>
+                  </button>
+                )}
+                {/* <button onClick={() => setTab("history")}>
+                  <span className={buttonStyles}>{`History`} </span>
+                </button> */}
               </div>
+              {!comments?.length && (
+                <h2 className="mt-0 text-xl font-bold">{`No Comments Yet`}</h2>
+              )}
+              <div className="max-h-370 overflow-y-scroll">
+                {tab === "comments" &&
+                  comments?.map((item) => (
+                    <div
+                      key={`${item?._id}`}
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                    >
+                      {item?.user?._id && (
+                        <Link href={`/user-profile/${item?.user?._id}`}>
+                          <div>
+                            {item?.user?.image && (
+                              <Image
+                                height={40}
+                                width={40}
+                                src={item?.user?.image}
+                                className="w-10 h-10 rounded-full cursor-pointer"
+                                alt="user-profile"
+                              />
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      <div className="flex flex-col">
+                        <p className="font-bold">
+                          {getUserName(item?.user?.userName)}
+                        </p>
+                        <p className="font-semibold">{item.comment}</p>
+                      </div>
+                    </div>
+                  ))}
+                {tab === "bids" &&
+                  bids?.map((item) => (
+                    <div
+                      key={`${item?._id}`}
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                    >
+                      {item?.user?._id && (
+                        <Link href={`/user-profile/${item?.user?._id}`}>
+                          <div>
+                            {item?.user?.image && (
+                              <Image
+                                height={45}
+                                width={45}
+                                src={item?.user?.image}
+                                className="w-12 h-12 rounded-full cursor-pointer"
+                                alt="user-profile"
+                              />
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      <div className="flex flex-col">
+                        <p className="font-bold">
+                          {getUserName(item?.user?.userName)}
+                        </p>
+                        <p className="font-bold">{`${item.bid} Matic`}</p>
+                      </div>
+                    </div>
+                  ))}
+                {tab === "history" &&
+                  bids?.map((item) => (
+                    <div
+                      key={`${item?._id}`}
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg overflow-x-scroll md:overflow-x-hidden"
+                    >
+                      {item?.user?._id && (
+                        <Link href={`/user-profile/${item?.user?._id}`}>
+                          <div>
+                            {item?.user?.image && (
+                              <Image
+                                height={40}
+                                width={40}
+                                src={item?.user?.image}
+                                className="w-10 h-10 rounded-full cursor-pointer"
+                                alt="user-profile"
+                              />
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      <div className="flex justify-between gap-2 md:gap-8">
+                        <div className="flex flex-wrap">
+                          <p className=" font-bold">
+                            
+                            {`${getUserName(item?.user?.userName)}`}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap">
+                          <p className="font-semibold">{`owner till: ${moment(
+                            new Date()
+                          ).format("MMM DD, YYYY")}`}</p>
+                        </div>
+                        <div className="flex flex-wrap">
+                          <p className="font-semibold">{`sold for: 1 Matic`}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              {tab === "comments" && (
+                <div className="flex flex-wrap mt-6 gap-3">
+                  {user?._id && (
+                    <Link href={`/user-profile/${user?._id}`}>
+                      <div>
+                        {user?.image && (
+                          <Image
+                            height={45}
+                            width={45}
+                            src={user?.image}
+                            className="w-14 h-14 rounded-full cursor-pointer p-2"
+                            alt="user-profile"
+                          />
+                        )}
+                      </div>
+                    </Link>
+                  )}
+                  <input
+                    className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
+                    type="text"
+                    placeholder="Add a comment"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                    onClick={addComment}
+                  >
+                    {addingComment ? "Doing..." : "Done"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -864,17 +952,22 @@ const PinDetail = () => {
 
             <div className="font-bold text-gray-700 mr-2">
               <FaDiceD20 className="inline mr-2" size={25} />
-              <span className="align-middle">
-                {/* {moment(createdAt).format("MMM DD, YYYY")} */}
-                {`Token ID: #${tokenId}`}
-              </span>
+              <span className="align-middle">{`Token ID: #${tokenId}`}</span>
             </div>
             <div className="font-bold text-gray-700 mr-2">
-              <FaDiceD20 className="inline mr-2" size={25} />
-              <span className="align-middle">
-                {/* {moment(createdAt).format("MMM DD, YYYY")} */}
-                {`Item ID: #${itemId}`}
-              </span>
+              <a href={`${image}`} target="_blank">
+                <FaLink className="inline mr-2" size={25} />
+                <span className="align-middle">{`IPFS`}</span>
+              </a>
+            </div>
+            <div className="font-bold text-gray-700 mr-2">
+              <a
+                href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
+                target="_blank"
+              >
+                <FaLink className="inline mr-2" size={25} />
+                <span className="align-middle">{`Etherscan`}</span>
+              </a>
             </div>
           </div>
           <h1 className="transition duration-700 text-center mb-5 cursor-pointer hover:text-pink-600 text-3xl font-semibold">
@@ -925,17 +1018,17 @@ const PinDetail = () => {
                 {/* <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
                   {savedLength}
                 </p> */}
-                  <FaShareAlt
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigator.clipboard.writeText(
-                        `https:nft-nation.vercel.app/pin-detail/${pinId}`
-                      );
-                      toast.info(shareInfoMessage);
-                    }}
-                    className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
+                <FaShareAlt
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(
+                      `https:nft-nation.vercel.app/pin-detail/${pinId}`
+                    );
+                    toast.info(shareInfoMessage);
+                  }}
+                  className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                  size={25}
+                />
               </div>
             </button>
           </div>

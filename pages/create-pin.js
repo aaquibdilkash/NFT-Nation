@@ -4,17 +4,11 @@ import Market from "../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import React, { useEffect, useState } from "react";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import { create as ipfsHttpClient } from "ipfs-http-client";
+// import { create } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import {
-  getEventData,
-  getUserName,
-  isValidAmount,
-} from "../utils/data";
-import {
-  sidebarCategories,
-} from "../utils/sidebarCategories";
+import { getEventData, getUserName, isValidAmount, pinFileToIPFS } from "../utils/data";
+import { sidebarCategories } from "../utils/sidebarCategories";
 import {
   approvalLoadingMessage,
   confirmLoadingMessage,
@@ -47,7 +41,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
+// const projectId = process.env.INFURA_PROJECT_ID
+// const projectSecret = process.env.INFURA_PROJECT_SECRET
+
+// const auth =
+// 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64')
+// console.log(projectId, projectSecret, auth)
+
+// const ipfsClient = create({
+//   url: 'https://ipfs.infura.io:5001/api/v0',
+//   // host: 'ipfs.infura.io',
+//   // port: 5001,
+//   // path: 'api/v0',
+//   // protocol: 'https',
+//   headers: {
+//     authorization: auth
+//   }
+// })
+
 
 const CreatePin = () => {
   const { user } = useSelector((state) => state.userReducer);
@@ -80,14 +91,24 @@ const CreatePin = () => {
       setWrongImageType(false);
       setImageLoading(true);
       try {
-        const added = await ipfsClient.add(selectedFile, {
-          progress: (prog) => setProgress(parseInt((prog/selectedFile.size)*100)),
-        });
-        const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-        setFileUrl(url);
-        setImageLoading(false);
+        // const added = await ipfsClient.add(selectedFile, {
+        //   progress: (prog) => setProgress(parseInt((prog/selectedFile.size)*100)),
+        // });
+
+        pinFileToIPFS(
+          selectedFile,
+          setProgress,
+          (url) => {
+            setFileUrl(url);
+            setImageLoading(false);
+          },
+          (error) => {
+            toast.error(fileUploadErrorMessage);
+            setImageLoading(false);
+          }
+        );
       } catch (error) {
-        toast.error(fileUploadErrorMessage)
+        toast.error(fileUploadErrorMessage);
         setImageLoading(false);
       }
     } else {
@@ -97,6 +118,18 @@ const CreatePin = () => {
   };
 
   const submitHandler = async () => {
+    console.log(
+      "title",
+      title,
+      "about",
+      about,
+      "fileUrl",
+      fileUrl,
+      "category",
+      category,
+      "sellOrAuct",
+      sellOrAuct
+    );
     if (!user?._id) {
       toast.info(loginMessage);
       return;
@@ -122,27 +155,40 @@ const CreatePin = () => {
       toast.info(validAmountErrorMessage);
       return;
     }
-    const data = JSON.stringify({
+    const data = {
       name: title,
       description: about,
       image: fileUrl,
       external_url: destination,
+    };
+
+    const metadata = new Blob([JSON.stringify(data)], {
+      type: "application/json",
+      name: "metadata.json",
     });
     try {
-      const added = await ipfsClient.add(data);
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-      /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
-      if (sellOrAuct === "Only Mint NFT") {
-        createMarketItem(url);
-      } else if (sellOrAuct === "Mint NFT and Put on Sale") {
-        createMarketItemForSale(url);
-      } else if (sellOrAuct === "Mint NFT and Put on Auction") {
-        createMarketItemForAuction(url);
-      } else {
-        toast.info("Please Select Your Choice...");
-      }
+      pinFileToIPFS(
+        metadata,
+        setProgress,
+        (url) => {
+          /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
+          if (sellOrAuct === "Only Mint NFT") {
+            createMarketItem(url);
+          } else if (sellOrAuct === "Mint NFT and Put on Sale") {
+            createMarketItemForSale(url);
+          } else if (sellOrAuct === "Mint NFT and Put on Auction") {
+            createMarketItemForAuction(url);
+          } else {
+            toast.info("Please Select Your Choice...");
+          }
+        },
+        (error) => {
+          toast.error(fileUploadErrorMessage);
+        }
+      );
     } catch (error) {
-      toast.error(fileUploadErrorMessage)
+      console.log(error);
+      toast.error(fileUploadErrorMessage);
     }
   };
 
@@ -166,7 +212,7 @@ const CreatePin = () => {
     } catch (e) {
       toast.error(tokenMintErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     // approving NFT to marketplace
@@ -179,7 +225,7 @@ const CreatePin = () => {
     } catch (e) {
       toast.error(tokenApproveErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     /* then list the item for sale on the marketplace */
@@ -201,7 +247,7 @@ const CreatePin = () => {
     } catch (e) {
       toast.error(tokenSaleErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     savePin({
@@ -235,7 +281,7 @@ const CreatePin = () => {
     } catch (e) {
       toast.error(tokenMintErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     // approving NFT to marketplace
@@ -248,7 +294,7 @@ const CreatePin = () => {
     } catch (e) {
       toast.error(tokenApproveErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     /* then list the item for sale on the marketplace */
@@ -268,7 +314,7 @@ const CreatePin = () => {
     } catch (e) {
       toast.error(tokenAuctionErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     savePin({
@@ -294,6 +340,7 @@ const CreatePin = () => {
     /* next, create the item */
     try {
       var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+      console.log(url, "DDDDDDDDDDDDDDD");
       var transaction = await contract.createToken(url);
       setLoadingMessage(mintLoadingMessage);
       var tx = await transaction.wait();
@@ -301,10 +348,10 @@ const CreatePin = () => {
       var event = tx.events[0];
       var tokenId = event.args[2].toNumber();
     } catch (e) {
-      console.log(e)
+      console.log(e);
       toast.error(tokenMintErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     /* then list the item for sale on the marketplace */
@@ -315,14 +362,14 @@ const CreatePin = () => {
       setLoadingMessage(createItemLoadingMessage);
       tx = await transaction.wait();
       toast.success(MarketItemSuccessMessage);
-      console.log(tx, 'DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD')
+      console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
       event = tx.events[0];
       console.log(getEventData(event));
       var eventData = getEventData(event);
     } catch (e) {
       toast.error(marketItemErrorMessage);
       setLoading(false);
-      return
+      return;
     }
 
     savePin({
@@ -388,7 +435,9 @@ const CreatePin = () => {
         <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
           <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-full">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
-              {imageLoading && <Spinner title="Uploading..." message={`${progress}%`}/>}
+              {imageLoading && (
+                <Spinner title="Uploading..." message={`${progress}%`} />
+              )}
               {wrongImageType && <p>It&apos;s wrong file type.</p>}
               {!fileUrl && !imageLoading && (
                 // eslint-disable-next-line jsx-a11y/label-has-associated-control
@@ -413,7 +462,7 @@ const CreatePin = () => {
                     className="w-0 h-0"
                   />
                 </label>
-              ) } 
+              )}
               {fileUrl && !imageLoading && (
                 <div className="relative h-full">
                   <img
@@ -425,8 +474,8 @@ const CreatePin = () => {
                     type="button"
                     className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                     onClick={() => {
-                      setFileUrl(null)
-                      setProgress(0)
+                      setFileUrl(null);
+                      setProgress(0);
                     }}
                   >
                     <MdDelete />

@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import axios from "axios"
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
@@ -58,14 +59,6 @@ export const getEventData = (event) => {
   };
 };
 
-// export const isSubset = (obj1, obj2) => {
-//   for (var key in obj2){
-//      if (JSON.stringify(obj2[key]) === JSON.stringify(obj1[key]))
-//         return true;
-//   }
-//   return false;
-// }
-
 export const isSubset = (superObj, subObj) => {
   return Object.keys(subObj)?.every(ele => {
       if (typeof subObj[ele] == 'object') {
@@ -73,4 +66,41 @@ export const isSubset = (superObj, subObj) => {
       }
       return subObj[ele] === superObj[ele]
   });
+};
+
+export const pinFileToIPFS = async (
+  selectedFile,
+  setProgress = () => {},
+  success = () => {},
+  failure = () => {}
+) => {
+  const pinataUrl = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
+
+  //we gather a local file for this example, but any valid readStream source will work here.
+  let data = new FormData();
+  data.append("file", selectedFile);
+
+  axios
+    .post(pinataUrl, data, {
+      onUploadProgress: function (progressEvent) {
+        var percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        setProgress(percentCompleted);
+      },
+      maxContentLength: "Infinity", //this is needed to prevent axios from erroring out with large files
+      headers: {
+        "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+        // "Content-Type": `${selectedFile?.type}; boundary=${data._boundary}`,
+        pinata_api_key: process.env.PINATA_API_KEY,
+        pinata_secret_api_key: process.env.PINATA_SECRET_KEY,
+      },
+    })
+    .then(({ data }) => {
+      const url = `https://gateway.pinata.cloud/ipfs/${data?.IpfsHash}`;
+      success(url);
+    })
+    .catch((error) => {
+      failure(error);
+    });
 };

@@ -152,7 +152,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
             type="text"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
-            maxLength={42}
+            maxLength={15}
             placeholder="Type your username"
             className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
           />

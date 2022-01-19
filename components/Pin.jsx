@@ -86,8 +86,8 @@ const Pin = ({ pin }) => {
           <Image
             placeholder="blur"
             blurDataURL="/favicon.png"
-            height={100}
-            width={100}
+            height={200}
+            width={180}
             layout="responsive"
             className="rounded-lg w-full"
             src={image}
@@ -103,10 +103,6 @@ const Pin = ({ pin }) => {
               <button
                 type="button"
                 className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
-                onClick={(e) => {
-                  // e.stopPropagation();
-                  // savePin(_id);
-                }}
               >
                 {priceShowCondition ? `On Sale` : `On Auction`}{" "}
               </button>
