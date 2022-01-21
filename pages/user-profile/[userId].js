@@ -52,7 +52,7 @@ const UserProfilePage = () => {
       .then((res) => {
         const { followers, followings, address } = res?.data?.user;
         setUserProfile(res?.data?.user);
-        setAlreadyFollowed(followers?.find((item) => item === user?._id))
+        setAlreadyFollowed(followers?.find((item) => item === user?._id));
         setFollowersLength(followers?.length);
         setFollowingsLength(followings?.length);
 
@@ -106,7 +106,10 @@ const UserProfilePage = () => {
   }, [userId]);
 
   useEffect(() => {
-    user?._id && setAlreadyFollowed(userProfile?.followers?.find((item) => item === user?._id))
+    user?._id &&
+      setAlreadyFollowed(
+        userProfile?.followers?.find((item) => item === user?._id)
+      );
   }, [user, userProfile]);
 
   if (!userProfile) return <Spinner message="Loading profile..." />;
@@ -215,12 +218,12 @@ const UserProfilePage = () => {
     "On Auction",
     "Bids",
     "Saved",
-    "Commented"
+    "Commented",
   ].includes(activeBtn);
   const showCollectionFeedCondition = [
     "Created Collection",
     "Saved Collection",
-    "Commented Collection"
+    "Commented Collection",
   ].includes(activeBtn);
   const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn);
 
@@ -294,7 +297,7 @@ const UserProfilePage = () => {
                   className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
                   onClick={() => {
                     setEditing((editing) => !editing);
-                    setCollectionEditing(false)
+                    setCollectionEditing(false);
                   }}
                 >
                   <AiOutlineEdit color="themeColor" fontSize={21} />
@@ -437,16 +440,18 @@ const UserProfilePage = () => {
                 </button>
               );
             })}
-            <button
-                  type="button"
-                  onClick={(e) => {
-                    setCollectionEditing(prev => !prev)
-                    setEditing(false)
-                  }}
-                  className={`${activeBtnStyles}`}
-                >
-                  <MdAdd color="themeColor" className="" fontSize={25} />
-                </button>
+            {user?._id === userId && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  setCollectionEditing((prev) => !prev);
+                  setEditing(false);
+                }}
+                className={`${activeBtnStyles}`}
+              >
+                <MdAdd color="themeColor" className="" fontSize={25} />
+              </button>
+            )}
           </div>
 
           <div className="px-2">
@@ -454,9 +459,7 @@ const UserProfilePage = () => {
             {showUserFeedCondition && (
               <UserFeed setFollowingsLength={setFollowingsLength} />
             )}
-            {showCollectionFeedCondition && (
-              <CollectionFeed />
-            )}
+            {showCollectionFeedCondition && <CollectionFeed />}
           </div>
         </div>
       </div>
