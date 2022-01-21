@@ -366,11 +366,9 @@ const UserProfilePage = () => {
                 onClick={(e) => {
                   followUser();
                 }}
-                className={`${
-                  alreadyFollowed ? activeBtnStyles : notActiveBtnStyles
-                }`}
+                className={`${activeBtnStyles}`}
               >
-                {alreadyFollowed ? `Followed` : `Unfollow`}
+                {alreadyFollowed ? `Unfollow` : `Follow`}
               </button>
             )}
           </div>

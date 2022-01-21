@@ -313,7 +313,7 @@ const CollectionDetail = () => {
                   {
                     name: "edit",
                     text: `Edit`,
-                    condition: true,
+                    condition: user?._id === createdBy?._id,
                     func: () => setCollectionEditing((prev) => !prev),
                   },
                 ].map((item, index) => {

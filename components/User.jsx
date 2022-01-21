@@ -137,11 +137,9 @@ const User = ({ userProfile, setFollowingsLength }) => {
                   e.stopPropagation();
                   followUser();
                 }}
-                className={`${
-                  alreadyFollowed ? activeBtnStyles : notActiveBtnStyles
-                }`}
+                className={`${activeBtnStyles}`}
               >
-                {alreadyFollowed ? `Followed` : `Follow`}
+                {alreadyFollowed ? `Unfollow` : `Follow`}
               </button>
               )
           }
