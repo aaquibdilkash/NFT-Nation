@@ -363,7 +363,7 @@ const UserProfilePage = () => {
                 </button>
               );
             })}
-            {_id !== user?._id && (
+            {user?._id && userId !== user?._id && (
               <button
                 type="button"
                 onClick={(e) => {

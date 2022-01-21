@@ -130,7 +130,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
             </p>
           </div>
           {
-              _id !== user?._id && (
+              user?._id && _id !== user?._id && (
                 <button
                 type="button"
                 onClick={(e) => {
