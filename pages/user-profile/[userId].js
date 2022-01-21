@@ -152,6 +152,12 @@ const UserProfilePage = () => {
         saved: userId,
       },
     },
+    {
+      name: "Commented",
+      query: {
+        commented: userId,
+      },
+    },
   ];
 
   const userButtonArray = [
@@ -177,6 +183,7 @@ const UserProfilePage = () => {
     "On Auction",
     "Bids",
     "Saved",
+    "Commented"
   ].includes(activeBtn);
   const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn);
 

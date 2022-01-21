@@ -17,28 +17,22 @@ const Feed = () => {
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
-  const { query } = router;
-  const {
-    page,
-    keyword,
-    category,
-    owner,
-    seller,
-    bids,
-    saved,
-    auctionEnded,
-    feed,
-    pinId,
-    sort,
-    commented,
-  } = query;
+  const {query} = router
+  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
 
-  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${keyword ? `&keyword=${keyword}` : ``
-    }${feed ? `&feed=${user?._id}` : ``}${category ? `&category=${category}` : ``
-    }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${bids ? `&bids=${bids}` : ``
-    }${commented ? `&commented=${commented}` : ``}${saved ? `&saved=${saved}` : ``
-    }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${pinId ? `&ne=${pinId}` : ``
-    }${sort ? `&sort=${sort}` : ``}`;
+  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${
+    keyword ? `&keyword=${keyword}` : ``
+  }${
+    feed ? `&feed=${user?._id}` : ``
+  }${category ? `&category=${category}` : ``}${owner ? `&owner=${owner}` : ``}${
+    seller ? `&seller=${seller}` : ``
+  }${bids ? `&bids=${bids}` : ``}${saved ? `&saved=${saved}` : ``}${
+    auctionEnded ? `&auctionEnded=${auctionEnded}` : ``
+  }${
+    pinId ? `&ne=${pinId}` : ``
+  }${
+    sort ? `&sort=${sort}` : ``
+  }`;
 
   const fetchPins = () => {
     setLoading(!page || page == 1);
@@ -53,14 +47,11 @@ const Feed = () => {
       })
       .then((res) => {
         const { pins, resultPerPage, filteredPinsCount } = res.data;
-        (page ? parseInt(page) === 1 : true)
-          ? setPins(pins)
-          : setPins((prev) => [...prev, ...pins]);
+        (page ? parseInt(page) === 1 : true) ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
         setLoading(false);
         dispatch({
           type: HAS_MORE,
-          payload:
-            (page ? parseInt(page) : 1) * resultPerPage < filteredPinsCount,
+          payload: (page ? parseInt(page) : 1) * resultPerPage < filteredPinsCount,
         });
         dispatch({
           type: CHANGE_PAGE,
@@ -97,11 +88,7 @@ const Feed = () => {
     <>
       <div className="">
         {pins?.length > 0 && <MasonryLayout comp={pins} type="pin" />}
-        {hasMore && (
-          <Spinner
-            message={`We are adding more ${ideaName} pins to your feed!`}
-          />
-        )}
+        {hasMore && <Spinner message={`We are adding more ${ideaName} pins to your feed!`} />}
       </div>
     </>
   );

@@ -15,12 +15,13 @@ const allPins = catchAsyncErrors(async (req, res) => {
     .filter()
     .saved()
     .bids()
+    .commented()
     .notin()
-    .sorted()
+    .sorted();
 
-  if(req.query.feed) {
-    const user = await User.findById(req.query.feed)
-    searchPagination.feed(user?.followings)
+  if (req.query.feed) {
+    const user = await User.findById(req.query.feed);
+    searchPagination.feed(user?.followings);
   }
 
   let pins = await searchPagination.query;
@@ -41,10 +42,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
 });
 
 const getPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id)
-    .populate("postedBy")
-    .populate("comments.user")
-    .populate("bids.user");
+  const pin = await Pin.findById(req.query.id).populate("postedBy").populate("bids.user");
 
   if (!pin) {
     return res.status(404).json({
@@ -122,6 +120,7 @@ const savePin = catchAsyncErrors(async (req, res) => {
     pin.saved.unshift(req.body.user);
   }
 
+  pin.savedCount = pin.saved.length;
   await pin.save({ validateBeforeSave: false });
 
   res.status(200).json({
@@ -129,9 +128,25 @@ const savePin = catchAsyncErrors(async (req, res) => {
   });
 });
 
+const getCommentsPin = catchAsyncErrors(async (req, res) => {
+  const pin = await Pin.findById(req.query.id)
+    .select("comments")
+    .populate("comments.user");
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+  res.status(200).json({
+    success: true,
+    comments: pin.comments,
+  });
+});
 
 const commentPin = catchAsyncErrors(async (req, res, next) => {
-  console.log("in comment pin", req.body)
+  console.log("in comment pin", req.body);
   const { user, comment } = req.body;
 
   const newComment = {
@@ -139,9 +154,7 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
     comment,
   };
 
-  console.log(user, comment, newComment, "DDDDDDDDDDDDDDDDDDD")
-
-  let pin = await Pin.findById(req.query.id);
+  let pin = await Pin.findById(req.query.id).select("comments");
 
   if (!pin) {
     return res.status(404).json({
@@ -150,7 +163,11 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
+  console.log(newComment, "DDDDDDDD")
+  console.log(pin.comments, "DDDDDDDD")
+
   pin.comments.unshift(newComment);
+  pin.commentsCount = pin.comments.length;
 
   await pin.save({ validateBeforeSave: false });
 
@@ -186,6 +203,8 @@ const deletePinComment = catchAsyncErrors(async (req, res, next) => {
     (com) =>
       com?.user?.toString() !== user && com?._id?.toString() !== commentId
   );
+
+  pin.commentsCount = pin.comments.length;
 
   pin = await pin.save({ validateBeforeSave: false });
 
@@ -252,6 +271,7 @@ export {
   updatePin,
   deletePin,
   savePin,
+  getCommentsPin,
   commentPin,
   updatePinComment,
   deletePinComment,

@@ -79,7 +79,6 @@ const PinDetail = () => {
   const { user, marketContract } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [pinDetail, setPinDetail] = useState();
-  const [pinComments, setPinComments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
@@ -88,7 +87,6 @@ const PinDetail = () => {
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
-  const [sideLoading, setSideLoading] = useState(true)
   const [alreadySaved, setAlreadySaved] = useState(false);
   const [savedLength, setSavedLenth] = useState(0);
   const [tab, setTab] = useState("comments");
@@ -101,7 +99,7 @@ const PinDetail = () => {
     owner,
     bids,
     saved,
-    commentsCount,
+    comments,
     nftContract,
     itemId,
     tokenId,
@@ -120,7 +118,7 @@ const PinDetail = () => {
     owner: "",
     bids: [],
     saved: [],
-    commentsCount: 0,
+    comments: [],
     nftContract: "",
     itemId: "",
     tokenId: "",
@@ -194,23 +192,7 @@ const PinDetail = () => {
       });
   }, []);
 
-  const fetchPinComments = () => {
-    setSideLoading(true)
-    axios
-      .get(`/api/pins/comments/${pinId}`)
-      .then((res) => {
-        setPinComments(res?.data?.comments);
-        setSideLoading(false)
-      })
-      .catch((e) => {
-        toast.error(errorMessage);
-        setSideLoading(false)
-        // console.log(e);
-      });
-  }
-
   const fetchPinDetails = () => {
-    setPinDetail(null)
     axios
       .get(`/api/pins/${pinId}`)
       .then((res) => {
@@ -244,30 +226,23 @@ const PinDetail = () => {
 
   useEffect(() => {
     pinId && fetchPinDetails();
-    // pinId && fetchPinComments();
   }, [pinId, refresh]);
-
-  useEffect(() => {
-    if(tab === "comments") {
-      pinId && fetchPinComments();
-    }
-  }, [tab]);
 
   const updatePin = (body) => {
     axios
       .put(`/api/pins/${_id}`, body)
       .then((res) => {
+        setLoading(false);
         setAddingSellPrice(false);
         setInputPrice("");
         setRefresh((prev) => !prev);
-        setLoading(false);
         toast.success(finalSuccessMessage);
       })
       .catch((e) => {
         toast.error(finalErrorMessage);
+        setLoading(false);
         setAddingSellPrice(false);
         setInputPrice("");
-        setLoading(false);
       });
   };
 
@@ -609,7 +584,7 @@ const PinDetail = () => {
         .then(() => {
           setAddingComment(false);
           setComment("");
-          fetchPinComments()
+          setRefresh((prev) => !prev);
           toast.success(commentAddSuccessMessage);
         })
         .catch((e) => {
@@ -624,8 +599,8 @@ const PinDetail = () => {
       .then(() => {
         setAddingBidPrice(false);
         setInputPrice("");
-        setRefresh((prev) => !prev);
         setLoading(false);
+        setRefresh((prev) => !prev);
         toast.success(finalSuccessMessage);
       })
       .catch((e) => {
@@ -637,8 +612,8 @@ const PinDetail = () => {
     axios
       .put(`/api/pins/bids/${pinId}`, body)
       .then(() => {
-        setRefresh((prev) => !prev);
         setLoading(false);
+        setRefresh((prev) => !prev);
         toast.success(finalSuccessMessage);
       })
       .catch((e) => {
@@ -658,10 +633,10 @@ const PinDetail = () => {
         user: user?._id,
       })
       .then((res) => {
+        setSavingPost(false);
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
         setSavedLenth((prev) => (alreadySaved ? prev - 1 : prev + 1));
         setAlreadySaved((prev) => !prev);
-        setSavingPost(false);
       })
       .catch((e) => {
         console.log(e);
@@ -777,7 +752,7 @@ const PinDetail = () => {
                   {
                     name: "comments",
                     text: `Comments${
-                      commentsCount ? ` (${commentsCount})` : ``
+                      comments?.length ? ` (${comments?.length})` : ``
                     }`,
                     condition: true,
                     func: () => setTab("comments"),
@@ -816,7 +791,7 @@ const PinDetail = () => {
                 )}
                 {tab === "properties" &&
                   false &&
-                  pinComments?.map((item) => (
+                  comments?.map((item) => (
                     <div
                       key={`${item?._id}`}
                       className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
@@ -879,18 +854,12 @@ const PinDetail = () => {
                       </div>
                     </div>
                   ))}
-                {tab === "comments" && !pinComments?.length && !sideLoading && (
+                {tab === "comments" && !comments?.length && (
                   <h2 className="flex justify-center items-center h-370 text-xl font-bold">{`No Comments Yet, Be the first one to comment...`}</h2>
                 )}
-                {tab === "comments" && !pinComments?.length && sideLoading && (
-                  <Spinner
-                  title={loadingMessage}
-                  // message={`Please Do Not Leave This Page...`}
-                />
-                )}
                 {tab === "comments" &&
-                  pinComments.length > 0 &&
-                  pinComments?.map((item) => (
+                  comments?.length > 0 &&
+                  comments?.map((item) => (
                     <div
                       key={`${item?._id}`}
                       className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"

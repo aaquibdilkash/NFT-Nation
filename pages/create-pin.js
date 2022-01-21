@@ -379,6 +379,7 @@ const CreatePin = () => {
       category,
       image: fileUrl,
       postedBy: user?._id,
+      createdBy: user?._id,
       destination: "https://nft-nation.vercel.app",
     });
   };

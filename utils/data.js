@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import axios from "axios"
+import axios from "axios";
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
@@ -60,11 +60,11 @@ export const getEventData = (event) => {
 };
 
 export const isSubset = (superObj, subObj) => {
-  return Object.keys(subObj)?.every(ele => {
-      if (typeof subObj[ele] == 'object') {
-          return isSubset(superObj[ele], subObj[ele]);
-      }
-      return subObj[ele] === superObj[ele]
+  return Object.keys(subObj)?.every((ele) => {
+    if (typeof subObj[ele] == "object") {
+      return isSubset(superObj[ele], subObj[ele]);
+    }
+    return subObj[ele] === superObj[ele];
   });
 };
 
@@ -97,10 +97,36 @@ export const pinFileToIPFS = async (
       },
     })
     .then(({ data }) => {
+      // const url= `https://ipfs.io/ipfs/${data?.IpfsHash}`
       const url = `https://gateway.pinata.cloud/ipfs/${data?.IpfsHash}`;
       success(url);
     })
     .catch((error) => {
       failure(error);
+    });
+};
+
+export const removePinFromIPFS = async (
+  hashToUnpin,
+  success = () => {},
+  failure = () => {}
+) => {
+  const pinataUrl = `https://api.pinata.cloud/pinning/unpin/${hashToUnpin}`;
+  axios
+    .delete(pinataUrl, {
+      headers: {
+        // "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+        // "Content-Type": `${selectedFile?.type}; boundary=${data._boundary}`,
+        pinata_api_key: process.env.PINATA_API_KEY,
+        pinata_secret_api_key: process.env.PINATA_SECRET_KEY,
+      },
+    })
+    .then(function (response) {
+      success()
+      //handle response here
+    })
+    .catch(function (error) {
+      failure()
+      //handle error here
     });
 };

@@ -25,7 +25,7 @@ class SearchPagination {
     const queryCopy = { ...this.queryStr };
 
     // removing some fields for category
-    const removedFields = ["keyword", "page", "saved", "bids", "feed", "sort", "ne", "followers", "followings"];
+    const removedFields = ["keyword", "page", "saved", "bids", "feed", "sort", "ne", "followers", "followings", "commented"];
 
     removedFields.forEach((key) => {
       delete queryCopy[key];
@@ -61,7 +61,16 @@ class SearchPagination {
   }
 
   bids() {
-    const keyword = this.queryStr.bids ? { "bids.user": this.queryStr.bids } : {};
+    // const keyword = this.queryStr.bids ? { "bids.user": this.queryStr.bids } : {};
+    const keyword = this.queryStr.bids ? {bids: {$elemMatch: {user: this.queryStr.bids}}} : {};
+
+    this.query = this.query.find({ ...keyword });
+    return this;
+  }
+
+  commented() {
+    // const keyword = this.queryStr.commented ? { "comments.user": this.queryStr.commented } : {};
+    const keyword = this.queryStr.commented ? {comments: {$elemMatch: {user: this.queryStr.commented}}} : {};
 
     this.query = this.query.find({ ...keyword });
     return this;

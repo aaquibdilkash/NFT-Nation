@@ -93,7 +93,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
         </p>
       )}
       <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-auto  w-full">
-        <div className="rounded-lg bg-gradient-to-r from-themeColor to-secondTheme bg-secondaryColor p-3 flex flex-0.7 w-4/5">
+        <div className="rounded-lg bg-secondaryColor p-3 flex flex-0.7 w-4/5">
           <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
           {imageLoading && (
             <div className="flex flex-col items-center justify-center h-full w-full px-16 mx-16">
@@ -109,10 +109,10 @@ const ProfileEdit = ({ userId, setEditing }) => {
                       <p className="font-bold text-2xl">
                         <AiOutlineCloudUpload />
                       </p>
-                      <p className="text-lg">Click to upload</p>
+                      <p className="text-lg font-bold">Click to upload</p>
                     </div>
 
-                    <p className="mt-32 text-gray-400">
+                    <p className="mt-32 text-center font-bold text-wrap">
                       Recommendation: Use high-quality JPG, JPEG, SVG, PNG, GIF
                       or TIFF less than 20MB
                     </p>
@@ -130,7 +130,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
                   <img
                     src={fileUrl}
                     alt="uploaded-pic"
-                    className="h-full w-full"
+                    className="h-full w-full rounded-lg drop-shadow-lg"
                   />
                   <button
                     type="button"
@@ -154,7 +154,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
             onChange={(e) => setUserName(e.target.value)}
             maxLength={15}
             placeholder="Type your username"
-            className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
+            className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
           />
 
           <textarea
@@ -163,7 +163,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
             maxLength={80}
             onChange={(e) => setAbout(e.target.value)}
             placeholder="Tell everyone about you"
-            className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2 rounded-lg focus:drop-shadow-lg"
+            className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
           />
           {user?._id && (
             <Link href={`/user-profile/${user?._id}`} >

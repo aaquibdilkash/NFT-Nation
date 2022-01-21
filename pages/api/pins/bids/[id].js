@@ -1,6 +1,6 @@
 import dbConnect from "../../../../config/dbConnect"
 import nc from "next-connect"
-import { makeAuctionBid, withdrawAuctionBid } from "../../../../controllers/pinsController"
+import { getBidsPin, makeAuctionBid, withdrawAuctionBid } from "../../../../controllers/pinsController"
 
 dbConnect()
 

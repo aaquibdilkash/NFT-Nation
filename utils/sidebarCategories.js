@@ -138,7 +138,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         icon: <AiFillDollarCircle className="" size={28} />,
       },
       {
-        name: "Highest Bid",
+        name: "Current Bid",
         link: "/",
         array: [
           {
@@ -163,13 +163,13 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
           {
             icon: <IoMdArrowDropdownCircle className="" size={25} />,
             query: {
-              sort: "-comments"
+              sort: "-commentsCount"
             }
           },
           {
             icon: <IoMdArrowDropupCircle className="" size={25} />,
             query: {
-              sort: "comments"
+              sort: "commentsCount"
             }
           },
         ],
@@ -182,13 +182,13 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
           {
             icon: <IoMdArrowDropdownCircle className="" size={25} />,
             query: {
-              sort: "-saved"
+              sort: "-savedCount"
             }
           },
           {
             icon: <IoMdArrowDropupCircle className="" size={25} />,
             query: {
-              sort: "saved"
+              sort: "savedCount"
             }
           },
         ],
@@ -205,7 +205,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
     //     icon: <FaMoneyBill className="" size={25} />,
     //   },
     //   {
-    //     name: "Highest Bid (High)",
+    //     name: "Current Bid (High)",
     //     link: "/",
     //     query: {
     //       sort: "bids"
@@ -221,7 +221,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
     //     icon: <FaMoneyBill className="" size={25} />,
     //   },
     //   {
-    //     name: "Highest Bid (Low)",
+    //     name: "Current Bid (Low)",
     //     link: "/",
     //     query: {
     //       sort: "-bids"

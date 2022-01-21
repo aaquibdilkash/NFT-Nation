@@ -25,7 +25,7 @@ const HomeLayout = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pathname, query } = router;
-  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
+  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented } = query;
   const { user, marketContract, refresh, hasMore, changePage } = useSelector(
     (state) => state.userReducer
   );
@@ -223,7 +223,7 @@ const HomeLayout = ({ children }) => {
       undefined,
       { shallow: true }
     );
-  }, [category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort]);
+  }, [category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented]);
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
@@ -294,7 +294,7 @@ const HomeLayout = ({ children }) => {
             <Navbar connectToMetamask={connectToMetamask} />
           </div>
           <div className="h-full">{children}</div>
-          {/* <div className="transparent sticky fixed bottom-0 z-50">
+          {/* <div className="sticky transparent w-auto bottom-0">
             <Footer />
           </div> */}
         </div>

@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+const commentSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const pinSchema = new mongoose.Schema({
   itemId: {
     type: String,
@@ -27,7 +43,7 @@ const pinSchema = new mongoose.Schema({
   about: {
     type: String,
     required: true,
-    maxlength: [80, "about field cannot exceeds 128 characters"],
+    maxlength: [128, "about field cannot exceeds 128 characters"],
   },
   destination: {
     type: String,
@@ -55,6 +71,11 @@ const pinSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
   saved: [
     {
       type: mongoose.Schema.ObjectId,
@@ -62,48 +83,38 @@ const pinSchema = new mongoose.Schema({
       required: true,
     },
   ],
+  savedCount: {
+    type: Number,
+    default: 0
+  },
   auctionEnded: {
     type: Boolean,
-    default: true
+    default: true,
   },
-  bids: [
-    {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      bid: {
-        type: String,
-        required: true,
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      }
+  bids: [{
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true,
     },
-  ],
-  comments: [
-    {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      comment: {
-        type: String,
-        required: true,
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      }
+    bid: {
+      type: String,
+      required: true,
     },
-  ],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
+  comments: { type: [commentSchema], select:false},
+  commentsCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 export default mongoose.models.Pin || mongoose.model("Pin", pinSchema);
