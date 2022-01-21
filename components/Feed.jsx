@@ -13,7 +13,7 @@ const Feed = () => {
   const router = useRouter();
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user, hasMore } = useSelector((state) => state.userReducer);
+  const { user, hasMore, refresh } = useSelector((state) => state.userReducer);
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
@@ -29,16 +29,26 @@ const Feed = () => {
     auctionEnded,
     feed,
     pinId,
+    collection,
+    collectionId,
     sort,
     commented,
+    postedBy,
   } = query;
 
-  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${keyword ? `&keyword=${keyword}` : ``
-    }${feed ? `&feed=${user?._id}` : ``}${category ? `&category=${category}` : ``
-    }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${bids ? `&bids=${bids}` : ``
-    }${commented ? `&commented=${commented}` : ``}${saved ? `&saved=${saved}` : ``
-    }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${pinId ? `&ne=${pinId}` : ``
-    }${sort ? `&sort=${sort}` : ``}`;
+  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${
+    keyword ? `&keyword=${keyword}` : ``
+  }${feed ? `&feed=${user?._id}` : ``}${
+    category ? `&category=${category}` : ``
+  }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${
+    bids ? `&bids=${bids}` : ``
+  }${commented ? `&commented=${commented}` : ``}${
+    saved ? `&saved=${saved}` : ``
+  }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${
+    pinId ? `&ne=${pinId}` : ``
+  }${collection ? `&collection=${collectionId}` : ``}${
+    postedBy ? `&postedBy=${user?._id}` : ``
+  }${sort ? `&sort=${sort}` : ``}`;
 
   const fetchPins = () => {
     setLoading(!page || page == 1);
@@ -80,7 +90,7 @@ const Feed = () => {
     fetchPins();
 
     return () => source.cancel("Operation canceled by the user.");
-  }, [router]);
+  }, [router, refresh]);
 
   const ideaName = category || "new";
   if (loading && (!page || page == 1)) {

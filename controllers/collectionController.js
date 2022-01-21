@@ -8,7 +8,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
   const collectionsCount = await Collection.countDocuments();
 
   const searchPagination = new SearchPagination(
-    Collection.find().populate("postedBy"),
+    Collection.find().populate("createdBy"),
     req.query
   )
     .search()
@@ -17,6 +17,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
     .bids()
     .notin()
     .sorted()
+    .commented()
 
   if(req.query.feed) {
     const user = await User.findById(req.query.feed)
@@ -42,8 +43,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
 
 const getCollection = catchAsyncErrors(async (req, res) => {
   const collection = await Collection.findById(req.query.id)
-    .populate("creator")
-    .populate("comments.user")
+    .populate("createdBy")
 
   if (!collection) {
     return res.status(404).json({
@@ -146,6 +146,8 @@ const saveCollection = catchAsyncErrors(async (req, res) => {
     collection.saved.unshift(req.body.user);
   }
 
+  collection.savedCount = collection.saved.length
+
   await collection.save({ validateBeforeSave: false });
 
   res.status(200).json({
@@ -153,6 +155,22 @@ const saveCollection = catchAsyncErrors(async (req, res) => {
   });
 });
 
+const getCommentsCollection = catchAsyncErrors(async (req, res) => {
+  const collection = await Collection.findById(req.query.id)
+    .select("comments")
+    .populate("comments.user");
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+  res.status(200).json({
+    success: true,
+    comments: collection.comments,
+  });
+});
 
 const commentCollection = catchAsyncErrors(async (req, res, next) => {
   const { user, comment } = req.body;
@@ -162,7 +180,7 @@ const commentCollection = catchAsyncErrors(async (req, res, next) => {
     comment,
   };
 
-  let collection = await Collection.findById(req.query.id);
+  let collection = await Collection.findById(req.query.id).select("comments");
 
   if (!collection) {
     return res.status(404).json({
@@ -171,7 +189,9 @@ const commentCollection = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
-  Collection.comments.unshift(newComment);
+  collection.comments.unshift(newComment);
+
+  collection.commentsCount = collection.comments.length
 
   await collection.save({ validateBeforeSave: false });
 
@@ -183,7 +203,7 @@ const commentCollection = catchAsyncErrors(async (req, res, next) => {
 const updateCollectionComment = catchAsyncErrors(async (req, res, next) => {
   const { commentId, user, comment } = req.body;
 
-  let collection = await Collection.findById(req.query.id);
+  let collection = await Collection.findById(req.query.id).select("comments");
 
   collection.comments.forEach((com) => {
     if (com.user.toString() === user && com._id.toString() === commentId) {
@@ -201,12 +221,14 @@ const updateCollectionComment = catchAsyncErrors(async (req, res, next) => {
 const deleteCollectionComment = catchAsyncErrors(async (req, res, next) => {
   const { commentId, user } = req.body;
 
-  let collection = await Collection.findById(req.query.id);
+  let collection = await Collection.findById(req.query.id).select("comments");
 
   collection.comments = collection.comments.filter(
     (com) =>
       com?.user?.toString() !== user && com?._id?.toString() !== commentId
   );
+
+  collection.commentsCount = collection.comments.length
 
   collection = await collection.save({ validateBeforeSave: false });
 
@@ -223,6 +245,7 @@ export {
   deleteCollection,
   addPinToCollection,
   saveCollection,
+  getCommentsCollection,
   commentCollection,
   updateCollectionComment,
   deleteCollectionComment,

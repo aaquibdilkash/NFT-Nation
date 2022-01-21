@@ -7,6 +7,8 @@ export const CHANGE_PAGE = "CHANGE_PAGE"
 
 export const REFRESH_SET = "REFRESH_SET"
 
+export const COLLECTION_SET = "COLLECTION_SET"
+
 export const MARKET_CONTRACT = "MARKET_CONTRACT"
 
 export const CLEAR_ERRORS = "CLEAR_ERRORS"

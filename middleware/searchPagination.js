@@ -82,6 +82,12 @@ class SearchPagination {
     this.query = this.query.find({ ...keyword });
     return this;
   }
+
+  collection(pins) {
+    const keyword = this.queryStr.collection ? {"_id": {$in: pins}} : {};
+    this.query = this.query.find({ ...keyword });
+    return this;
+  }
   
   follow(type, array) {
     const keyword = this.queryStr[`${type}`] ? {"_id": {$in: array}} : {};

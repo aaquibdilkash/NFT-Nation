@@ -1,5 +1,21 @@
 import mongoose from "mongoose";
 
+const commentSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const collectionSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -30,13 +46,6 @@ const collectionSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  saved: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  ],
   pins: [
     {
       type: mongoose.Schema.ObjectId,
@@ -44,23 +53,26 @@ const collectionSchema = new mongoose.Schema({
       required: true,
     },
   ],
-  comments: [
+  pinsCount: {
+    type: Number,
+    default: 0
+  },
+  saved: [
     {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      comment: {
-        type: String,
-        required: true,
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      }
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: true,
     },
   ],
+  savedCount: {
+    type: Number,
+    default: 0
+  },
+  comments: { type: [commentSchema], select:false},
+  commentsCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

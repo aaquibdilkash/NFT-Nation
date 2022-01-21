@@ -8,33 +8,27 @@ import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
-const Feed = () => {
+const CollectionFeed = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [pins, setPins] = useState([]);
+  const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, hasMore } = useSelector((state) => state.userReducer);
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
-  const {query} = router
-  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort } = query;
+  const { query } = router;
+  const { page, keyword, category, saved, commented, sort, createdBy } = query;
 
-  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${
+  const link = `/api/collections?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${
-    feed ? `&feed=${user?._id}` : ``
-  }${category ? `&category=${category}` : ``}${owner ? `&owner=${owner}` : ``}${
-    seller ? `&seller=${seller}` : ``
-  }${bids ? `&bids=${bids}` : ``}${saved ? `&saved=${saved}` : ``}${
-    auctionEnded ? `&auctionEnded=${auctionEnded}` : ``
-  }${
-    pinId ? `&ne=${pinId}` : ``
-  }${
-    sort ? `&sort=${sort}` : ``
-  }`;
+  }${category ? `&category=${category}` : ``}${
+    commented ? `&commented=${commented}` : ``
+  }${saved ? `&saved=${saved}` : ``}${
+    createdBy ? `&createdBy=${createdBy}` : ``
+  }${sort ? `&sort=${sort}` : ``}`;
 
-  const fetchPins = () => {
+  const fetchCollections = () => {
     setLoading(!page || page == 1);
     dispatch({
       type: CHANGE_PAGE,
@@ -46,12 +40,17 @@ const Feed = () => {
         cancelToken: source.token,
       })
       .then((res) => {
-        const { pins, resultPerPage, filteredPinsCount } = res.data;
-        (page ? parseInt(page) === 1 : true) ? setPins(pins) : setPins((prev) => [...prev, ...pins]);
+        const { collections, resultPerPage, filteredCollectionsCount } =
+          res.data;
+        (page ? parseInt(page) === 1 : true)
+          ? setCollections(collections)
+          : setCollections((prev) => [...prev, ...collections]);
         setLoading(false);
         dispatch({
           type: HAS_MORE,
-          payload: (page ? parseInt(page) : 1) * resultPerPage < filteredPinsCount,
+          payload:
+            (page ? parseInt(page) : 1) * resultPerPage <
+            filteredCollectionsCount,
         });
         dispatch({
           type: CHANGE_PAGE,
@@ -68,30 +67,42 @@ const Feed = () => {
   };
 
   useEffect(() => {
-    fetchPins();
+    fetchCollections();
 
     return () => source.cancel("Operation canceled by the user.");
   }, [router]);
 
   const ideaName = category || "new";
   if (loading && (!page || page == 1)) {
-    return <Spinner message={`We are adding ${ideaName} pins to your feed!`} />;
+    return (
+      <Spinner
+        message={`We are adding ${ideaName} collections to your feed!`}
+      />
+    );
   }
 
-  if (!loading && pins?.length === 0) {
+  if (!loading && collections?.length === 0) {
     return (
-      <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
+      <div className="mt-10 text-center text-xl font-bold">
+        No Collections Found!
+      </div>
     );
   }
 
   return (
     <>
       <div className="">
-        {pins?.length > 0 && <MasonryLayout comp={pins} type="pin" />}
-        {hasMore && <Spinner message={`We are adding more ${ideaName} pins to your feed!`} />}
+        {collections?.length > 0 && (
+          <MasonryLayout comp={collections} type="collection" />
+        )}
+        {hasMore && (
+          <Spinner
+            message={`We are adding more ${ideaName} collections to your feed!`}
+          />
+        )}
       </div>
     </>
   );
 };
 
-export default Feed;
+export default CollectionFeed;

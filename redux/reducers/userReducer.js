@@ -6,6 +6,7 @@ import {
   HAS_MORE,
   CHANGE_PAGE,
   MARKET_CONTRACT,
+  COLLECTION_SET,
 } from "../constants/UserTypes";
 
 const initialState = {
@@ -13,7 +14,8 @@ const initialState = {
   refresh: false,
   hasMore: false,
   changePage: false,
-  marketContract: {}
+  marketContract: {},
+  collection: {}
 };
 
 export const userReducer = (state = initialState, action) => {
@@ -46,6 +48,12 @@ export const userReducer = (state = initialState, action) => {
       return {
         ...state,
         refresh: action.payload,
+      };
+
+    case COLLECTION_SET:
+      return {
+        ...state,
+        collection: action.payload,
       };
 
     case MARKET_CONTRACT:

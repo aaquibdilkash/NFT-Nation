@@ -27,6 +27,7 @@ export const finalErrorMessage = `Something went wrong while saving your Token, 
 export const finalProcessingErrorMessage = `Something went wrong while finalizing Your Request, Please Contact Support!`;
 export const commentAddErrorMessage = `Your Comment Could Not Be Submitted, Please Try Again Later!`;
 export const saveErrorMessage = `This Token Could Not Be Saved, Please Try Again Later!`;
+export const saveCollectionErrorMessage = `This Collection Could Not Be Saved, Please Try Again Later!`;
 export const unSaveErrorMessage = `This Token Could Not Be Unsaved, Please Try Again Later!`;
 export const followErrorMessage = `User Could Not Be Followed, Please Try Again Later!`;
 export const unFollowErrorMessage = `User Could Not Be Unfollowed, Please Try Again Later!`;

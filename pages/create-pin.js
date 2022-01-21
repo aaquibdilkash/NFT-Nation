@@ -67,8 +67,8 @@ const CreatePin = () => {
   const [price, setPrice] = useState("0");
   const [imageLoading, setImageLoading] = useState(false);
   const [destination, setDestination] = useState();
-  const [fields, setFields] = useState();
   const [category, setCategory] = useState();
+  const [fields, setFields] = useState();
   const [fileUrl, setFileUrl] = useState("");
   const [sellOrAuct, setSellOrAuct] = useState("");
   const [wrongImageType, setWrongImageType] = useState(false);

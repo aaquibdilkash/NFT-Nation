@@ -1,5 +1,6 @@
 import React from "react";
 import Masonry from "react-masonry-css";
+import Collection from "./Collection";
 import Pin from "./Pin";
 import User from "./User";
 
@@ -25,6 +26,9 @@ const MasonryLayout = ({ comp, type="pin", setFollowingsLength= () => {} }) => {
         })}
         {type === "user" && comp?.map((user, index) => {
           return <User setFollowingsLength={setFollowingsLength} key={index} userProfile={user} className="w-max" />;
+        })}
+        {type === "collection" && comp?.map((collection, index) => {
+          return <Collection key={index} collection={collection} className="w-max" />;
         })}
       </Masonry>
     </>

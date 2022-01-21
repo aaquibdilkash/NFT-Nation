@@ -18,16 +18,18 @@ import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
 import { toast } from "react-toastify";
-import { FaShareAlt, FaSignInAlt } from "react-icons/fa";
+import { FaAddressBook, FaShareAlt, FaSignInAlt } from "react-icons/fa";
 import moment from "moment";
 import { Feed } from "../../components";
-import { MdFollowTheSigns } from "react-icons/md";
+import { MdAdd, MdFollowTheSigns } from "react-icons/md";
 import UserFeed from "../../components/UserFeed";
+import CollectionEdit from "../../components/CollectionEdit";
+import CollectionFeed from "../../components/CollectionFeed";
 
 const activeBtnStyles =
-  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 px-3 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 px-2 text-sm rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 const notActiveBtnStyles =
-  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 px-3 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 px-2 text-sm rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const UserProfilePage = () => {
   const router = useRouter();
@@ -36,6 +38,7 @@ const UserProfilePage = () => {
   const { userId } = router.query;
   const [userProfile, setUserProfile] = useState();
   const [editing, setEditing] = useState(false);
+  const [collectionEditing, setCollectionEditing] = useState(false);
   const [activeBtn, setActiveBtn] = useState("Owned");
 
   const [following, setFollowing] = useState(false);
@@ -121,6 +124,12 @@ const UserProfilePage = () => {
 
   const pinsButtonArray = [
     {
+      name: "Minted",
+      query: {
+        createdBy: _id,
+      },
+    },
+    {
       name: "Owned",
       query: {
         owner: address,
@@ -149,13 +158,13 @@ const UserProfilePage = () => {
     {
       name: "Saved",
       query: {
-        saved: userId,
+        saved: _id,
       },
     },
     {
       name: "Commented",
       query: {
-        commented: userId,
+        commented: _id,
       },
     },
   ];
@@ -177,13 +186,41 @@ const UserProfilePage = () => {
     },
   ];
 
+  const collectionButtonArray = [
+    {
+      name: `Created Collection`,
+      text: `Created Collection`,
+      query: {
+        createdBy: _id,
+      },
+    },
+    {
+      name: "Saved Collection",
+      query: {
+        saved: _id,
+      },
+    },
+    {
+      name: "Commented Collection",
+      query: {
+        commented: _id,
+      },
+    },
+  ];
+
   const showFeedCondition = [
+    "Minted",
     "Owned",
     "On Sale",
     "On Auction",
     "Bids",
     "Saved",
     "Commented"
+  ].includes(activeBtn);
+  const showCollectionFeedCondition = [
+    "Created Collection",
+    "Saved Collection",
+    "Commented Collection"
   ].includes(activeBtn);
   const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn);
 
@@ -208,7 +245,7 @@ const UserProfilePage = () => {
         <div className="flex flex-col pb-5">
           <div className="relative flex flex-col mb-7 ">
             <div className="flex flex-col justify-center items-center">
-              {!editing && (
+              {!editing && !collectionEditing && (
                 <img
                   className=" w-full h-370 2xl:h-300 shadow-lg object-cover rounded-lg"
                   src="https://source.unsplash.com/1600x900/?nature,photography,technology"
@@ -217,6 +254,9 @@ const UserProfilePage = () => {
               )}
               {editing && (
                 <ProfileEdit userId={userId} setEditing={setEditing} />
+              )}
+              {collectionEditing && (
+                <CollectionEdit setCollectionEditing={setCollectionEditing} />
               )}
               <img
                 className="rounded-full w-20 h-20 -mt-10 shadow-xl object-cover"
@@ -231,7 +271,7 @@ const UserProfilePage = () => {
               {`Joined On: ${moment(createdAt).format("MMM DD, YYYY")}`}
             </p>
             <p className="font-bold text-center mt-1">{about}</p>
-            {!editing && (
+            {!editing && !collectionEditing && (
               <div className="absolute top-0 z-1 left-0 p-2">
                 <button
                   type="button"
@@ -247,19 +287,33 @@ const UserProfilePage = () => {
                 </button>
               </div>
             )}
-            {user?._id === _id && (
+            {user?._id === _id && !collectionEditing && (
               <div className="absolute top-0 z-1 right-0 p-2">
                 <button
                   type="button"
                   className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
                   onClick={() => {
                     setEditing((editing) => !editing);
+                    setCollectionEditing(false)
                   }}
                 >
                   <AiOutlineEdit color="themeColor" fontSize={21} />
                 </button>
               </div>
             )}
+            {/* {user?._id === _id && !editing && (
+              <div className="absolute bottom-0 z-1 right-0 p-2">
+                <button
+                  type="button"
+                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
+                  onClick={() => {
+                    setCollectionEditing((editing) => !editing);
+                  }}
+                >
+                  <MdAdd color="themeColor" fontSize={21} />
+                </button>
+              </div>
+            )} */}
             {/* {user?._id !== _id && (
               <div className="absolute top-0 z-1 right-0 p-2">
                 <button
@@ -316,12 +370,12 @@ const UserProfilePage = () => {
                   alreadyFollowed ? activeBtnStyles : notActiveBtnStyles
                 }`}
               >
-                {alreadyFollowed ? `Followed` : `Follow`}
+                {alreadyFollowed ? `Followed` : `Unfollow`}
               </button>
             )}
           </div>
 
-          <div className="text-center mb-7">
+          <div className="text-center mb-2">
             {pinsButtonArray.map((item, index) => {
               return (
                 <button
@@ -354,10 +408,56 @@ const UserProfilePage = () => {
             })}
           </div>
 
+          <div className="text-center mb-7">
+            {collectionButtonArray.map((item, index) => {
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={(e) => {
+                    setActiveBtn(item.name);
+
+                    router.push(
+                      {
+                        pathname: pathname,
+                        query: {
+                          userId,
+                          ...item?.query,
+                        },
+                      },
+                      undefined,
+                      { shallow: true }
+                    );
+                  }}
+                  className={`${
+                    activeBtn === item?.name
+                      ? activeBtnStyles
+                      : notActiveBtnStyles
+                  }`}
+                >
+                  {item?.name}
+                </button>
+              );
+            })}
+            <button
+                  type="button"
+                  onClick={(e) => {
+                    setCollectionEditing(prev => !prev)
+                    setEditing(false)
+                  }}
+                  className={`${activeBtnStyles}`}
+                >
+                  <MdAdd color="themeColor" className="" fontSize={25} />
+                </button>
+          </div>
+
           <div className="px-2">
             {showFeedCondition && <Feed />}
             {showUserFeedCondition && (
               <UserFeed setFollowingsLength={setFollowingsLength} />
+            )}
+            {showCollectionFeedCondition && (
+              <CollectionFeed />
             )}
           </div>
         </div>

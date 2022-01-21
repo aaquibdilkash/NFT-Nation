@@ -13,35 +13,22 @@ import { FaHeart } from "react-icons/fa";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 
-const Pin = ({ pin }) => {
+const buttonStyle = "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+
+const Collection = ({ collection }) => {
   const [savingPost, setSavingPost] = useState(false);
   const dispatch = useDispatch();
 
   const {
-    postedBy,
+    createdBy,
     image,
     _id,
     category,
+    pins,
     destination,
-    itemId,
-    tokenId,
-    price,
-    seller,
     saved,
-    owner,
-    bids,
-    auctionEnded,
-  } = pin;
+  } = collection;
 
-  const priceShowCondition =
-    price !== "0.0" &&
-    owner === etherAddress &&
-    auctionEnded;
-
-  const highestBidShowCondition =
-    price === "0.0" &&
-    owner === etherAddress &&
-    !auctionEnded;
 
   const router = useRouter();
 
@@ -50,14 +37,14 @@ const Pin = ({ pin }) => {
   const [alreadySaved, setAlreadySaved] = useState(saved?.find((item) => item === user?._id));
   const [savedLength, setSavedLenth] = useState(saved?.length);
 
-  const savePin = () => {
+  const saveCollection = () => {
     if (!user?._id) {
       toast.info(loginMessage);
       return;
     }
     setSavingPost(true);
     axios
-      .put(`/api/pins/save/${_id}`, {
+      .put(`/api/collections/save/${_id}`, {
         user: user?._id,
       })
       .then((res) => {
@@ -79,7 +66,7 @@ const Pin = ({ pin }) => {
   return (
     <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
       <div
-        onClick={() => router.push(`/pin-detail/${_id}?category=${category}`)}
+        onClick={() => router.push(`/collection-detail/${_id}`)}
         className=" relative cursor-pointer w-25 shadow-lg hover:drop-shadow-lg rounded-lg overflow-hidden transition-all duration-500 ease-in-out"
       >
         {image && (
@@ -99,18 +86,15 @@ const Pin = ({ pin }) => {
           style={{ height: "100%" }}
         >
           <div className="flex items-center justify-between">
-            {(priceShowCondition || highestBidShowCondition) && (
               <button
                 type="button"
-                className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+                className={buttonStyle}
               >
-                {priceShowCondition ? `On Sale` : `On Auction`}{" "}
+                {`Pins: ${pins?.length}`}
               </button>
-            )}
             
           </div>
-          <div className=" flex justify-between items-center gap-2 w-full">
-            {(priceShowCondition || highestBidShowCondition) && (
+          {/* <div className=" flex justify-between items-center gap-2 w-full">
               <button
                 type="button"
                 className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
@@ -123,12 +107,11 @@ const Pin = ({ pin }) => {
                         : `No Bids Yet`
                     }`}{" "}
               </button>
-            )}
-          </div>
+          </div> */}
         </div>
       </div>
       <Link
-        href={`/user-profile/${postedBy?._id}`}
+        href={`/user-profile/${createdBy?._id}`}
       >
         <div className="transition transition duration-500 ease transform hover:-translate-y-1 inline-block flex gap-2 mt-2 items-center justify-between">
           <div className="flex gap-2 items-center">
@@ -136,11 +119,11 @@ const Pin = ({ pin }) => {
             height={35}
             width={35}
             className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
-            src={postedBy?.image}
+            src={createdBy?.image}
             alt="user-profile"
           />
           <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
-            {getUserName(postedBy?.userName)}
+            {getUserName(createdBy?.userName)}
           </p>
           </div>
           <div className="flex gap-2 items-center">
@@ -150,13 +133,13 @@ const Pin = ({ pin }) => {
           {
             !alreadySaved && <AiOutlineHeart onClick={(e) => {
               e.stopPropagation();
-              savePin();
+              saveCollection();
             }} className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer" size={25}/>
           }
           {
             alreadySaved && <AiFillHeart onClick={(e) => {
               e.stopPropagation();
-              savePin();
+              saveCollection();
             }} className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer" size={25}/>
           }
           </div>
@@ -166,4 +149,4 @@ const Pin = ({ pin }) => {
   );
 };
 
-export default Pin;
+export default Collection;

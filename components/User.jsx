@@ -20,10 +20,12 @@ import { FaHeart } from "react-icons/fa";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 
+const buttonStyle = "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+
 const activeBtnStyles =
-  "bg-themeColor mr-4 mt-0 text-secondTheme font-semibold p-1 px-3 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-themeColor mr-4 mt-0 text-secondTheme font-semibold text-sm p-1 px-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 const notActiveBtnStyles =
-  "bg-primary mr-4 mt-0 text-textColor font-semibold p-1 px-3 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
+  "bg-primary mr-4 mt-0 text-textColor font-semibold text-sm p-1 px-2 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const User = ({ userProfile, setFollowingsLength }) => {
   const [following, setFollowing] = useState(false);
@@ -98,7 +100,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
           <div className="flex items-center justify-between">
             <button
               type="button"
-              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+              className={buttonStyle}
             >
               {`${followers?.length} Followers`}{" "}
             </button>
@@ -106,7 +108,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
           <div className=" flex justify-between items-center gap-2 w-full">
             <button
               type="button"
-              className="transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-bold px-5 py-1 text-base rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+              className={buttonStyle}
             >
               {`${followings.length} Followings`}{" "}
             </button>

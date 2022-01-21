@@ -2,6 +2,7 @@ import Pin from "../models/pin";
 import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
+import Collection from "../models/collection";
 
 const allPins = catchAsyncErrors(async (req, res) => {
   const resultPerPage = 8;
@@ -22,6 +23,11 @@ const allPins = catchAsyncErrors(async (req, res) => {
   if (req.query.feed) {
     const user = await User.findById(req.query.feed);
     searchPagination.feed(user?.followings);
+  }
+
+  if (req.query.collection) {
+    const collection = await Collection.findById(req.query.collection);
+    searchPagination.collection(collection?.pins);
   }
 
   let pins = await searchPagination.query;
@@ -163,8 +169,6 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
-  console.log(newComment, "DDDDDDDD")
-  console.log(pin.comments, "DDDDDDDD")
 
   pin.comments.unshift(newComment);
   pin.commentsCount = pin.comments.length;
