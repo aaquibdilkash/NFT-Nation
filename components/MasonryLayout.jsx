@@ -13,7 +13,7 @@ const breakpointColumnsObj = {
   600: 1,
 };
 
-const MasonryLayout = ({ comp, type="pin", setFollowingsLength= () => {} }) => {
+const MasonryLayout = ({ comp, type="pins" }) => {
 
   return (
     <>
@@ -21,13 +21,13 @@ const MasonryLayout = ({ comp, type="pin", setFollowingsLength= () => {} }) => {
         className="flex animate-slide-fwd"
         breakpointCols={breakpointColumnsObj}
       >
-        {type === "pin" && comp?.map((pin, index) => {
+        {type === "pins" && comp?.map((pin, index) => {
           return <Pin key={index} pin={pin} className="w-max" />;
         })}
-        {type === "user" && comp?.map((user, index) => {
-          return <User setFollowingsLength={setFollowingsLength} key={index} userProfile={user} className="w-max" />;
+        {type === "users" && comp?.map((user, index) => {
+          return <User key={index} userProfile={user} className="w-max" />;
         })}
-        {type === "collection" && comp?.map((collection, index) => {
+        {type === "collections" && comp?.map((collection, index) => {
           return <Collection key={index} collection={collection} className="w-max" />;
         })}
       </Masonry>

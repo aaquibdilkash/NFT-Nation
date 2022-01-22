@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { nftaddress, nftmarketaddress } from "./../../config";
 import NFT from "./../../artifacts/contracts/NFT.sol/NFT.json";
 import Market from "./../../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   etherAddress,
   getEventData,
@@ -34,7 +33,6 @@ import {
   loginMessage,
   makeBidLoadingMessage,
   saveErrorMessage,
-  saveSuccessMessage,
   shareInfoMessage,
   tokenApproveErrorMessage,
   tokenApproveSuccessMessage,
@@ -52,8 +50,6 @@ import {
   tokenSaleCancelSuccessMessage,
   tokenSaleErrorMessage,
   tokenSaleSuccessMessage,
-  unSaveErrorMessage,
-  unsaveSuccessMessage,
   validAmountErrorMessage,
   withrawBidLoadingMessage,
 } from "../../utils/messages";
@@ -67,8 +63,6 @@ import { Feed } from "../../components";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import moment from "moment";
 
-const buttonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-semibold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
 const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
 
@@ -225,6 +219,7 @@ const PinDetail = () => {
             pathname: pathname,
             query: {
               pinId,
+              type: "pins",
               category: res.data.pin.category,
             },
           },
@@ -244,14 +239,14 @@ const PinDetail = () => {
 
   useEffect(() => {
     pinId && fetchPinDetails();
-    // pinId && fetchPinComments();
+    pinId && fetchPinComments();
   }, [pinId, refresh]);
 
-  useEffect(() => {
-    if(tab === "comments") {
-      pinId && fetchPinComments();
-    }
-  }, [tab]);
+  // useEffect(() => {
+  //   if(tab === "comments") {
+  //     pinId && fetchPinComments();
+  //   }
+  // }, [tab]);
 
   const updatePin = (body) => {
     axios
@@ -1186,7 +1181,6 @@ const PinDetail = () => {
         <h2 className="text-center font-bold text-2xl mt-8 mb-4">
           More like this
         </h2>
-        {/* <MasonryLayout pins={pins} /> */}
         <Feed />
       </>
     </>

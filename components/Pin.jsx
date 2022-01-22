@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -9,13 +8,10 @@ import {
   loginMessage,
   saveCollectionErrorMessage,
   saveErrorMessage,
-  saveSuccessMessage,
-  unsaveSuccessMessage,
 } from "../utils/messages";
 import axios from "axios";
-import { COLLECTION_SET, REFRESH_SET } from "../redux/constants/UserTypes";
+import { COLLECTION_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
-import { FaHeart } from "react-icons/fa";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 
@@ -111,10 +107,6 @@ const Pin = ({ pin }) => {
           }
         })
 
-        // dispatch({
-        //   type: REFRESH_SET,
-        //   payload: !refresh
-        // })
         setAddedLenth((prev) => (alreadyAdded ? prev - 1 : prev + 1));
         setAlreadyAdded((prev) => !prev);
       })
@@ -128,7 +120,7 @@ const Pin = ({ pin }) => {
   return (
     <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
       <div
-        onClick={() => router.push(`/pin-detail/${_id}?category=${category}`)}
+        onClick={() => router.push(`/pin-detail/${_id}?type=pins&category=${category}`)}
         className=" relative cursor-pointer w-25 shadow-lg hover:drop-shadow-lg rounded-lg overflow-hidden transition-all duration-500 ease-in-out"
       >
         {image && (

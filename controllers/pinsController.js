@@ -12,7 +12,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
     Pin.find().populate("postedBy"),
     req.query
   )
-    .search()
+    .search("pins")
     .filter()
     .saved()
     .bids()

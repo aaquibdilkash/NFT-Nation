@@ -11,13 +11,13 @@ const allCollections = catchAsyncErrors(async (req, res) => {
     Collection.find().populate("createdBy"),
     req.query
   )
-    .search()
+    .search("collections")
     .filter()
     .saved()
     .bids()
+    .commented()
     .notin()
     .sorted()
-    .commented()
 
   if(req.query.feed) {
     const user = await User.findById(req.query.feed)

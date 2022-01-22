@@ -10,8 +10,8 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     User.find(),
     req.query
   )
-    // .search()
-    // .filter()
+    .search("user")
+    .filter()
     // .saved()
     // .bids();
 

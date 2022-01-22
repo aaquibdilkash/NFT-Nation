@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { etherAddress, getMaxBid, getUserName } from "../utils/data";
-import { loginMessage, saveErrorMessage, saveSuccessMessage, unsaveSuccessMessage } from "../utils/messages";
+import { getUserName } from "../utils/data";
+import { loginMessage, saveErrorMessage } from "../utils/messages";
 import axios from "axios";
-import { REFRESH_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
-import { FaHeart } from "react-icons/fa";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 
@@ -17,7 +14,7 @@ const buttonStyle = "transition transition duration-500 ease transform hover:-tr
 
 const Collection = ({ collection }) => {
   const [savingPost, setSavingPost] = useState(false);
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const {
     createdBy,
@@ -32,7 +29,7 @@ const Collection = ({ collection }) => {
 
   const router = useRouter();
 
-  const { user, refresh } = useSelector((state) => state.userReducer);
+  const { user } = useSelector((state) => state.userReducer);
 
   const [alreadySaved, setAlreadySaved] = useState(saved?.find((item) => item === user?._id));
   const [savedLength, setSavedLenth] = useState(saved?.length);

@@ -1,77 +1,29 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { nftaddress, nftmarketaddress } from "../../config";
-import NFT from "../../artifacts/contracts/NFT.sol/NFT.json";
-import Market from "../../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
-import Web3Modal from "web3modal";
-import { ethers } from "ethers";
-import MasonryLayout from "../../components/MasonryLayout";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  etherAddress,
-  getEventData,
-  getMaxBid,
-  getUserBid,
   getUserName,
-  isValidAmount,
 } from "../../utils/data";
 import {
-  approvalLoadingMessage,
-  buyLoadingMessage,
-  cancelAuctionLoadingMessage,
-  cancelSaleLoadingMessage,
   commentAddErrorMessage,
   commentAddSuccessMessage,
-  confirmLoadingMessage,
-  contractAddressCopiedMessage,
-  createAuctionLoadingMessage,
-  createSaleLoadingMessage,
   errorMessage,
-  finalErrorMessage,
-  finalProcessingErrorMessage,
-  finalSuccessMessage,
   loginMessage,
-  makeBidLoadingMessage,
   saveErrorMessage,
-  saveSuccessMessage,
   shareInfoMessage,
-  tokenApproveErrorMessage,
-  tokenApproveSuccessMessage,
-  tokenAuctionEndErrorMessage,
-  tokenAuctionEndSuccessMessage,
-  tokenAuctionErrorMessage,
-  tokenAuctionSuccessMessage,
-  tokenBidErrorMessage,
-  tokenBidSuccessMessage,
-  tokenBidWithdrawErrorMessage,
-  tokenBidWithdrawSuccessMessage,
-  tokenBuyErrorMessage,
-  tokenBuySuccessMessage,
-  tokenSaleCancelErrorMessage,
-  tokenSaleCancelSuccessMessage,
-  tokenSaleErrorMessage,
-  tokenSaleSuccessMessage,
-  unSaveErrorMessage,
-  unsaveSuccessMessage,
-  validAmountErrorMessage,
-  withrawBidLoadingMessage,
 } from "../../utils/messages";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { FaCopy, FaDiceD20, FaLink, FaShareAlt } from "react-icons/fa";
+import { FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import { AiFillHeart, AiOutlineEdit, AiOutlineHeart } from "react-icons/ai";
-import moment from "moment";
-import CollectionFeed from "../../components/CollectionFeed";
 import { COLLECTION_SET } from "../../redux/constants/UserTypes";
 import CollectionEdit from "../../components/CollectionEdit";
 
-const buttonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-lg font-semibold rounded-full text-secondTheme px-8 py-3 cursor-pointer";
 const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
 
@@ -170,24 +122,6 @@ const CollectionDetail = () => {
     collectionId && fetchCollectionDetails();
     collectionId && fetchCollectionComments();
   }, [collectionId, refresh]);
-
-  const updatePin = (body) => {
-    axios
-      .put(`/api/pins/${_id}`, body)
-      .then((res) => {
-        setLoading(false);
-        setAddingSellPrice(false);
-        setInputPrice("");
-        setRefresh((prev) => !prev);
-        toast.success(finalSuccessMessage);
-      })
-      .catch((e) => {
-        toast.error(finalErrorMessage);
-        setLoading(false);
-        setAddingSellPrice(false);
-        setInputPrice("");
-      });
-  };
 
   const addComment = () => {
     if (!user?._id) {
@@ -555,6 +489,7 @@ const CollectionDetail = () => {
               name: `Items`,
               text: `Items (${collection?.pins?.length})`,
               query: {
+                type: "pins",
                 collection: _id,
               },
               condition: true,
@@ -563,6 +498,7 @@ const CollectionDetail = () => {
               name: "Customize",
               text: "Customize Collection",
               query: {
+                type: "pins",
                 postedBy: true,
               },
               condition: user?._id === createdBy?._id,
@@ -593,23 +529,12 @@ const CollectionDetail = () => {
                       : notActiveBtnStyles
                   }`}
                 >
-                  {/* <span
-                    className={`${tabButtonStyles} ${
-                      item?.name === tab ? `` : ``
-                    }`}
-                  > */}
                   {item?.text}
-                  {/* </span> */}
                 </button>
               );
           })}
         </div>
-        {/* <h2 className="text-center font-bold text-2xl mt-8 mb-4">
-          {`Collection Items ${pins?.length}`}
-        </h2> */}
-        {/* <MasonryLayout pins={pins} /> */}
         <Feed />
-        {/* <CollectionFeed /> */}
       </>
     </>
   );

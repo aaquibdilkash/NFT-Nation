@@ -1,4 +1,3 @@
-import React from "react";
 import { FaArtstation } from "react-icons/fa";
 
 const Footer = () => {

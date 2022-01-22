@@ -16,20 +16,11 @@ import { useSelector } from "react-redux";
 import ProfileEdit from "../../components/ProfileEdit";
 import axios from "axios";
 import Head from "next/head";
-import Image from "next/image";
 import { toast } from "react-toastify";
-import { FaAddressBook, FaShareAlt, FaSignInAlt } from "react-icons/fa";
+import { FaShareAlt } from "react-icons/fa";
 import moment from "moment";
 import { Feed } from "../../components";
-import { MdAdd, MdFollowTheSigns } from "react-icons/md";
-import UserFeed from "../../components/UserFeed";
 import CollectionEdit from "../../components/CollectionEdit";
-import CollectionFeed from "../../components/CollectionFeed";
-
-const activeBtnStyles =
-  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 px-2 text-sm rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
-const notActiveBtnStyles =
-  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 px-2 text-sm rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const UserProfilePage = () => {
   const router = useRouter();
@@ -39,8 +30,8 @@ const UserProfilePage = () => {
   const [userProfile, setUserProfile] = useState();
   const [editing, setEditing] = useState(false);
   const [collectionEditing, setCollectionEditing] = useState(false);
-  const [activeBtn, setActiveBtn] = useState("Owned");
-
+  const [activeBtn, setActiveBtn] = useState("Owned NFTs");
+  const [dropdown, setDropdown] = useState(null);
   const [following, setFollowing] = useState(false);
   const [followingsLength, setFollowingsLength] = useState(0);
   const [followersLength, setFollowersLength] = useState(0);
@@ -85,23 +76,22 @@ const UserProfilePage = () => {
       })
       .then((res) => {
         setFollowing(false);
-        // setRefresh((prev) => !prev);
-        // toast.success(
-        //   alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
-        // );
+        toast.success(
+          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+        );
         setAlreadyFollowed((prev) => !prev);
       })
       .catch((e) => {
         console.log(e);
         setFollowing(false);
         toast.error(
-          alreadyFollowed ? followErrorMessage : unFollowErrorMessage
+          alreadyFollowed ? unFollowErrorMessage : followErrorMessage
         );
       });
   };
 
   useEffect(() => {
-    setActiveBtn("Owned");
+    setActiveBtn("Owned NFTs");
     userId && fetchUserDetails();
   }, [userId]);
 
@@ -125,107 +115,142 @@ const UserProfilePage = () => {
     followings,
   } = userProfile;
 
-  const pinsButtonArray = [
-    {
-      name: "Minted",
-      query: {
-        createdBy: _id,
-      },
+  const buttonsArray = {
+    Users: {
+      name: "Users",
+      type: "users",
+      buttons: [
+        {
+          name: `Followers`,
+          text: `Followers (${followersLength})`,
+          condition: true,
+          query: {
+            followers: _id,
+          },
+        },
+        {
+          name: `Followings`,
+          text: `Followings (${followingsLength})`,
+          condition: true,
+          query: {
+            followings: _id,
+          },
+        },
+        {
+          name: `${alreadyFollowed ? `Unfollow` : `Follow`}`,
+          text: `${alreadyFollowed ? `Unfollow` : `Follow`}`,
+          condition: user?._id !== userId,
+          func: () => {
+            followUser()
+          }
+        },
+      ],
     },
-    {
-      name: "Owned",
-      query: {
-        owner: address,
-      },
-    },
-    {
-      name: "On Sale",
-      query: {
-        seller: address,
-        auctionEnded: true,
-      },
-    },
-    {
-      name: "On Auction",
-      query: {
-        seller: address,
-        auctionEnded: false,
-      },
-    },
-    {
-      name: "Bids",
-      query: {
-        bids: _id,
-      },
-    },
-    {
-      name: "Saved",
-      query: {
-        saved: _id,
-      },
-    },
-    {
-      name: "Commented",
-      query: {
-        commented: _id,
-      },
-    },
-  ];
 
-  const userButtonArray = [
-    {
-      name: `Followers`,
-      text: `Followers (${followersLength})`,
-      query: {
-        followers: _id,
-      },
+    Pins: {
+      name: "NFTs",
+      type: "pins",
+      buttons: [
+        {
+          name: "Minted NFTs",
+          text: "Minted NFTs",
+          condition: true,
+          query: {
+            createdBy: _id,
+          },
+        },
+        {
+          name: "Owned NFTs",
+          text: "Owned NFTs",
+          condition: true,
+          query: {
+            owner: address,
+          },
+        },
+        {
+          name: "On Sale NFTs",
+          text: "On Sale NFTs",
+          condition: true,
+          query: {
+            seller: address,
+            auctionEnded: true,
+          },
+        },
+        {
+          name: "On Auction NFTs",
+          text: "On Auction NFTs",
+          condition: true,
+          query: {
+            seller: address,
+            auctionEnded: false,
+          },
+        },
+        {
+          name: "Bid NFTs",
+          text: "Bid NFTs",
+          condition: true,
+          query: {
+            bids: _id,
+          },
+        },
+        {
+          name: "Saved NFTs",
+          text: "Saved NFTs",
+          condition: true,
+          query: {
+            saved: _id,
+          },
+        },
+        {
+          name: "Commented NFTs",
+          text: "Commented NFTs",
+          condition: true,
+          query: {
+            commented: _id,
+          },
+        },
+      ],
     },
-    {
-      name: `Followings`,
-      text: `Followings (${followingsLength})`,
-      query: {
-        followings: _id,
-      },
-    },
-  ];
 
-  const collectionButtonArray = [
-    {
-      name: `Created Collection`,
-      text: `Created Collection`,
-      query: {
-        createdBy: _id,
-      },
+    Collections: {
+      name: "Collections",
+      type: "collections",
+      buttons: [
+        {
+          name: `Created Collection`,
+          text: `Created Collection`,
+          condition: true,
+          query: {
+            createdBy: _id,
+          },
+        },
+        {
+          name: "Saved Collection",
+          text: "Saved Collection",
+          condition: true,
+          query: {
+            saved: _id,
+          },
+        },
+        {
+          name: "Commented Collection",
+          text: "Commented Collection",
+          condition: true,
+          query: {
+            commented: _id,
+          },
+        },
+        {
+          name: "Create Collection",
+          text: "Create Collection",
+          condition: user?._id === userId,
+          func: () => {
+            setCollectionEditing(true)
+          }
+        },
+      ],
     },
-    {
-      name: "Saved Collection",
-      query: {
-        saved: _id,
-      },
-    },
-    {
-      name: "Commented Collection",
-      query: {
-        commented: _id,
-      },
-    },
-  ];
-
-  const showFeedCondition = [
-    "Minted",
-    "Owned",
-    "On Sale",
-    "On Auction",
-    "Bids",
-    "Saved",
-    "Commented",
-  ].includes(activeBtn);
-  const showCollectionFeedCondition = [
-    "Created Collection",
-    "Saved Collection",
-    "Commented Collection",
-  ].includes(activeBtn);
-  const showUserFeedCondition = ["Followers", "Followings"].includes(activeBtn);
+  };
 
   return (
     <>
@@ -304,162 +329,150 @@ const UserProfilePage = () => {
                 </button>
               </div>
             )}
-            {/* {user?._id === _id && !editing && (
-              <div className="absolute bottom-0 z-1 right-0 p-2">
-                <button
-                  type="button"
-                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
-                  onClick={() => {
-                    setCollectionEditing((editing) => !editing);
-                  }}
-                >
-                  <MdAdd color="themeColor" fontSize={21} />
-                </button>
-              </div>
-            )} */}
-            {/* {user?._id !== _id && (
-              <div className="absolute top-0 z-1 right-0 p-2">
-                <button
-                  type="button"
-                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
-                  onClick={() => {
-                    followUser()
-                  }}
-                >
-                  <FaSignInAlt color="themeColor" fontSize={21} />
-                </button>
-              </div>
-            )} */}
           </div>
 
-          <div className="text-center mb-2">
-            {userButtonArray.map((item, index) => {
+          <div className="flex flex-col sm:flex-row text-center items-start justify-evenly mb-2 gap-2">
+            {Object.keys(buttonsArray).map((item, index) => {
               return (
-                <button
+                <div
                   key={index}
-                  type="button"
-                  onClick={(e) => {
-                    setActiveBtn(item.name);
-
-                    router.push(
-                      {
-                        pathname: pathname,
-                        query: {
-                          userId,
-                          ...item?.query,
-                        },
-                      },
-                      undefined,
-                      { shallow: true }
-                    );
-                  }}
-                  className={`${
-                    activeBtn === item?.name
-                      ? activeBtnStyles
-                      : notActiveBtnStyles
-                  }`}
+                  className="w-full max-w-sm px-0 py-1 mx-0 font-bold text-sm"
                 >
-                  {item?.text}
-                </button>
+                  <div
+                    onMouseEnter={() => setDropdown(item)}
+                    onMouseLeave={() => setDropdown(null)}
+                    onClick={() => setDropdown(null)}
+                    className="max-w-sm mx-0 space-y-6"
+                  >
+                    <div className="dropdown-menu">
+                      <div
+                        className={`${
+                          buttonsArray[`${item}`].buttons.find(
+                            (item) => item.name === activeBtn
+                          )
+                            ? `bg-themeColor`
+                            : ``
+                        } rounded-lg shadow-xl flex items-center px-4 py-2 cursor-pointer`}
+                      >
+                        <input
+                          type="text"
+                          placeholder={`${
+                            buttonsArray[`${item}`].buttons.find(
+                              (item) => item.name === activeBtn
+                            )
+                              ? activeBtn
+                              : buttonsArray[`${item}`].name
+                          }`}
+                          readOnly
+                          className={`${
+                            buttonsArray[`${item}`].buttons.find(
+                              (item) => item.name === activeBtn
+                            )
+                              ? `bg-themeColor placeholder-[#ffffff]`
+                              : `bg-transparent placeholder-[#000000]`
+                          } pointer-events-none font-bold outline-none w-full h-full flex-1`}
+                        />
+                        <svg
+                          width="20"
+                          height="10"
+                          viewBox="0 0 20 10"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <line
+                            x1="0"
+                            y1="0"
+                            x2="10"
+                            y2="10"
+                            stroke={`${
+                              buttonsArray[`${item}`].buttons.find(
+                                (item) => item.name === activeBtn
+                              )
+                                ? `#ffffff`
+                                : `#000000`
+                            }`}
+                            strokeWidth="2"
+                          />
+                          <line
+                            x1="20"
+                            y1="0"
+                            x2="10"
+                            y2="10"
+                            stroke={`${
+                              buttonsArray[`${item}`].buttons.find(
+                                (item) => item.name === activeBtn
+                              )
+                                ? `#ffffff`
+                                : `#000000`
+                            }`}
+                            strokeWidth="2"
+                          />
+                        </svg>
+                      </div>
+
+                      {dropdown === item && (
+                        <>
+                          <div className="animation-slide-in bg-white rounded-lg shadow-xl px-2 py-2 relative mt-8 z-10">
+                            <svg
+                              className="absolute bottom-full right-4"
+                              width="30"
+                              height="20"
+                              viewBox="0 0 30 20"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <polygon
+                                points="15, 0 30, 20 0, 20"
+                                fill="transparent"
+                              />
+                            </svg>
+
+                            {buttonsArray[`${item}`].buttons.map(
+                              (ele, index) => {
+                                if(ele?.condition) return (
+                                  <div
+                                    key={index}
+                                    onClick={(e) => {
+                                      if(!ele?.query) {
+                                        ele.func()
+                                        return
+                                      }
+                                      setActiveBtn(ele.name);
+                                      setDropdown(null);
+
+                                      router.push(
+                                        {
+                                          pathname: pathname,
+                                          query: {
+                                            userId,
+                                            type: buttonsArray[`${item}`]?.type,
+                                            ...ele?.query,
+                                          },
+                                        },
+                                        undefined,
+                                        { shallow: true }
+                                      );
+                                    }}
+                                    className="py-2 rounded-lg flex items-center w-full hover:bg-themeColor hover:text-[#ffffff]"
+                                  >
+                                    <a href="#" className="flex-1">
+                                      <div className="text-gray-400">
+                                        {ele?.text}
+                                      </div>
+                                    </a>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
             })}
-            {user?._id && userId !== user?._id && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  followUser();
-                }}
-                className={`${activeBtnStyles}`}
-              >
-                {alreadyFollowed ? `Unfollow` : `Follow`}
-              </button>
-            )}
           </div>
-
-          <div className="text-center mb-2">
-            {pinsButtonArray.map((item, index) => {
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={(e) => {
-                    setActiveBtn(item.name);
-
-                    router.push(
-                      {
-                        pathname: pathname,
-                        query: {
-                          userId,
-                          ...item?.query,
-                        },
-                      },
-                      undefined,
-                      { shallow: true }
-                    );
-                  }}
-                  className={`${
-                    activeBtn === item?.name
-                      ? activeBtnStyles
-                      : notActiveBtnStyles
-                  }`}
-                >
-                  {item?.name}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="text-center mb-7">
-            {collectionButtonArray.map((item, index) => {
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={(e) => {
-                    setActiveBtn(item.name);
-
-                    router.push(
-                      {
-                        pathname: pathname,
-                        query: {
-                          userId,
-                          ...item?.query,
-                        },
-                      },
-                      undefined,
-                      { shallow: true }
-                    );
-                  }}
-                  className={`${
-                    activeBtn === item?.name
-                      ? activeBtnStyles
-                      : notActiveBtnStyles
-                  }`}
-                >
-                  {item?.name}
-                </button>
-              );
-            })}
-            {user?._id === userId && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  setCollectionEditing((prev) => !prev);
-                  setEditing(false);
-                }}
-                className={`${activeBtnStyles}`}
-              >
-                <MdAdd color="themeColor" className="" fontSize={25} />
-              </button>
-            )}
-          </div>
-
           <div className="px-2">
-            {showFeedCondition && <Feed />}
-            {showUserFeedCondition && (
-              <UserFeed setFollowingsLength={setFollowingsLength} />
-            )}
-            {showCollectionFeedCondition && <CollectionFeed />}
+            <Feed />
           </div>
         </div>
       </div>

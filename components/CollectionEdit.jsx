@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
@@ -7,7 +7,6 @@ import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -74,14 +73,6 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
 
       return;
     }
-    const obj = {
-      title,
-      about,
-      image: fileUrl,
-      category,
-      destination,
-      createdBy: userId,
-    };
 
     if (collectionId) {
       const obj = {
@@ -140,7 +131,6 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
             )}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
             {!fileUrl && !imageLoading && (
-              // eslint-disable-next-line jsx-a11y/label-has-associated-control
               <label>
                 <div className="flex flex-col items-center justify-center h-full">
                   <div className="flex flex-col justify-center items-center">

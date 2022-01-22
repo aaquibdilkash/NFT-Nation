@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
@@ -102,7 +102,6 @@ const ProfileEdit = ({ userId, setEditing }) => {
             )}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
             {!fileUrl && !imageLoading && (
-              // eslint-disable-next-line jsx-a11y/label-has-associated-control
               <div className="relative h-full">
                 <label>
                   <div className="flex flex-col items-center justify-center h-full">

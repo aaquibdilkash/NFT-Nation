@@ -1,4 +1,3 @@
-import React from "react";
 import Link from "next/link";
 import { FaArtstation, FaHome, FaUserCircle } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
@@ -21,7 +20,6 @@ const isActiveArrowStyle =
 const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   const router = useRouter();
   const { query, asPath, pathname } = router;
-  const { category } = query;
   const handleCloseSidebar = () => {
     setToggleSidebar(false);
   };
@@ -30,17 +28,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
     <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
       <div className="flex flex-col">
         <div
-          // onClick={() => {
-          //   router.push(
-          //     {
-          //       pathname: "/",
-          //       query: {},
-          //     },
-          //     undefined,
-          //     { shallow: true }
-          //   );
-          //   handleCloseSidebar();
-          // }}
+
           className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer"
         >
           <Link

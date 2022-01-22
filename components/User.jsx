@@ -1,35 +1,27 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { etherAddress, getMaxBid, getUserName } from "../utils/data";
+import { getUserName } from "../utils/data";
 import {
   followErrorMessage,
+  followSuccessMessage,
   loginMessage,
-  saveErrorMessage,
-  saveSuccessMessage,
   unFollowErrorMessage,
-  unsaveSuccessMessage,
+  unFollowSuccessMessage,
 } from "../utils/messages";
 import axios from "axios";
-import { REFRESH_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
-import { FaHeart } from "react-icons/fa";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 
 const buttonStyle = "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
 
 const activeBtnStyles =
   "bg-themeColor mr-4 mt-0 text-secondTheme font-semibold text-sm p-1 px-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
-const notActiveBtnStyles =
-  "bg-primary mr-4 mt-0 text-textColor font-semibold text-sm p-1 px-2 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
-const User = ({ userProfile, setFollowingsLength }) => {
+
+const User = ({ userProfile, setFollowingsLength = () => {} }) => {
   const [following, setFollowing] = useState(false);
-  const dispatch = useDispatch();
 
   const {
     _id,
@@ -44,7 +36,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
 
   const router = useRouter();
 
-  const { user, refresh } = useSelector((state) => state.userReducer);
+  const { user } = useSelector((state) => state.userReducer);
 
   const [alreadyFollowed, setAlreadyFollowed] = useState(
     followers?.find((item) => item === user?._id)
@@ -62,7 +54,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
       })
       .then((res) => {
         setFollowing(false);
-        // toast.success(alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage);
+        toast.success(alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage);
         setFollowingsLength((prev) => (alreadyFollowed ? prev - 1 : prev + 1));
         setAlreadyFollowed((prev) => !prev);
       })
@@ -70,7 +62,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
         console.log(e);
         setFollowing(false);
         toast.error(
-          alreadyFollowed ? followErrorMessage : unFollowErrorMessage
+          alreadyFollowed ? unFollowErrorMessage : followErrorMessage
         );
       });
   };
@@ -130,7 +122,7 @@ const User = ({ userProfile, setFollowingsLength }) => {
             </p>
           </div>
           {
-              user?._id && _id !== user?._id && (
+              _id !== user?._id && (
                 <button
                 type="button"
                 onClick={(e) => {

@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import Link from "next/link";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useRouter } from "next/router";
@@ -10,7 +9,7 @@ const Navbar = ({ connectToMetamask }) => {
   const { user } = useSelector((state) => state.userReducer);
   const router = useRouter();
   const { pathname, query } = router;
-  const { keyword } = query;
+  const { keyword, type } = query;
 
   return (
     <div className="flex gap-2 md:gap-5 w-full mt-5 pb-7">
@@ -31,11 +30,50 @@ const Navbar = ({ connectToMetamask }) => {
               { shallow: true }
             );
           }}
-          placeholder="Search NFTs By Name, Description or Owner's Address..."
+          placeholder="Search NFTs, Collections or Users..."
           value={keyword}
           onFocus={() => pathname !== "/" && router.push("/")}
-          className="p-2 w-full bg-secondTheme outline-none"
+          className="text-sm font-bold p-2 w-full bg-secondTheme outline-none"
         />
+        <div className="ms:flex items-center px-0 rounded-lg space-x-4 mx-auto">
+						<select readOnly value={type || "pins"} id="Com" className="text-sm font-bold text-gray-800 outline-none border-0 px-2 py-2 rounded-lg bg-transparent">
+              {
+                [
+                  {
+                    name: "NFTs",
+                    value: "pins"
+                  },
+                  {
+                    name: "Collections",
+                    value: "collections"
+                  },
+                  {
+                    name: "Users",
+                    value: "users"
+                  },
+                ].map((item, index) => {
+                  return (
+                    <option
+                    key={index}
+                    onClick={() => {
+                      router.push(
+                        {
+                          pathname: "/",
+                          query: {
+                            // ...query,
+                            keyword,
+                            type: item?.value,
+                          },
+                        },
+                        undefined,
+                        { shallow: true }
+                      );
+                    }} value={item?.value}>{item?.name}</option>
+                  )
+                })
+              }
+          </select>
+					</div>
       </div>
       <div className="flex gap-3 ">
         {user?._id && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import MasonryLayout from "./MasonryLayout";
 import Spinner from "./Spinner";
 import axios from "axios";
@@ -12,6 +12,8 @@ const Feed = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [pins, setPins] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, hasMore, refresh } = useSelector((state) => state.userReducer);
   const CancelToken = axios.CancelToken;
@@ -19,6 +21,7 @@ const Feed = () => {
 
   const { query } = router;
   const {
+    type,
     page,
     keyword,
     category,
@@ -29,14 +32,18 @@ const Feed = () => {
     auctionEnded,
     feed,
     pinId,
+    userId,
+    followers,
+    followings,
     collection,
     collectionId,
+    createdBy,
     sort,
     commented,
     postedBy,
   } = query;
 
-  const link = `/api/pins?${page ? `page=${page}` : `page=1`}${
+  const pinLink = `/api/pins?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
   }${feed ? `&feed=${user?._id}` : ``}${
     category ? `&category=${category}` : ``
@@ -50,7 +57,23 @@ const Feed = () => {
     postedBy ? `&postedBy=${user?._id}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
+  const collectionLink = `/api/collections?${page ? `page=${page}` : `page=1`}${
+    keyword ? `&keyword=${keyword}` : ``
+  }${category ? `&category=${category}` : ``}${
+    commented ? `&commented=${commented}` : ``
+  }${saved ? `&saved=${saved}` : ``}${
+    createdBy ? `&createdBy=${createdBy}` : ``
+  }${sort ? `&sort=${sort}` : ``}`;
+
+  const userLink = `/api/users?${page ? `page=${page}` : `page=1`}${
+    keyword ? `&keyword=${keyword}` : ``
+  }${followers ? `&followers=${userId}` : ``}${
+    followings ? `&followings=${userId}` : ``
+  }`;
+
   const fetchPins = () => {
+    setCollections([])
+    setUsers([])
     setLoading(!page || page == 1);
     dispatch({
       type: CHANGE_PAGE,
@@ -58,7 +81,7 @@ const Feed = () => {
     });
 
     axios
-      .get(link, {
+      .get(pinLink, {
         cancelToken: source.token,
       })
       .then((res) => {
@@ -86,30 +109,142 @@ const Feed = () => {
       });
   };
 
+  const fetchCollections = () => {
+    setPins([])
+    setUsers([])
+    setLoading(!page || page == 1);
+    dispatch({
+      type: CHANGE_PAGE,
+      payload: false,
+    });
+
+    axios
+      .get(collectionLink, {
+        cancelToken: source.token,
+      })
+      .then((res) => {
+        const { collections, resultPerPage, filteredCollectionsCount } =
+          res.data;
+        (page ? parseInt(page) === 1 : true)
+          ? setCollections(collections)
+          : setCollections((prev) => [...prev, ...collections]);
+        setLoading(false);
+        dispatch({
+          type: HAS_MORE,
+          payload:
+            (page ? parseInt(page) : 1) * resultPerPage <
+            filteredCollectionsCount,
+        });
+        dispatch({
+          type: CHANGE_PAGE,
+          payload: true,
+        });
+      })
+      .catch((e) => {
+        if (axios.isCancel(e)) {
+        } else {
+          setLoading(false);
+          toast.error("Something went wrong!");
+        }
+      });
+  };
+
+  const fetchUsers = () => {
+    setPins([])
+    setCollections([])
+    setLoading(!page || page == 1);
+    dispatch({
+      type: CHANGE_PAGE,
+      payload: false,
+    });
+
+    axios
+      .get(userLink, {
+        cancelToken: source.token,
+      })
+      .then((res) => {
+        const { users, resultPerPage, filteredUsersCount } = res.data;
+        (page ? parseInt(page) === 1 : true)
+          ? setUsers(users)
+          : setUsers((prev) => [...prev, ...users]);
+        setLoading(false);
+        dispatch({
+          type: HAS_MORE,
+          payload:
+            (page ? parseInt(page) : 1) * resultPerPage < filteredUsersCount,
+        });
+        dispatch({
+          type: CHANGE_PAGE,
+          payload: true,
+        });
+      })
+      .catch((e) => {
+        if (axios.isCancel(e)) {
+        } else {
+          setLoading(false);
+          toast.error("Something went wrong!");
+        }
+      });
+  };
+
   useEffect(() => {
-    fetchPins();
+    if (!type || type === "pins") {
+      fetchPins();
+    } else if (type === "collections") {
+      fetchCollections();
+    } else if (type === "users") {
+      fetchUsers();
+    }
 
     return () => source.cancel("Operation canceled by the user.");
   }, [router, refresh]);
 
   const ideaName = category || "new";
+
+  const showType = type || "pins";
   if (loading && (!page || page == 1)) {
-    return <Spinner message={`We are adding ${ideaName} pins to your feed!`} />;
+    return (
+      <Spinner message={`We are adding ${ideaName} ${showType} to your feed!`} />
+    );
   }
 
-  if (!loading && pins?.length === 0) {
+  if (!loading && (!pins.length && !collections.length && !users.length)) {
     return (
-      <div className="mt-10 text-center text-xl font-bold">No Pins Found!</div>
+      <>
+        {(!type || type === "pins") && pins.length === 0 && (
+          <div className="mt-10 text-center text-xl font-bold">
+            No Pins Found!
+          </div>
+        )}
+        {type === "collections" && collections.length === 0 && (
+          <div className="mt-10 text-center text-xl font-bold">
+            No Collections Found!
+          </div>
+        )}
+        {type === "users" && users.length === 0 && (
+          <div className="mt-10 text-center text-xl font-bold">
+            No Users Found!
+          </div>
+        )}
+      </>
     );
   }
 
   return (
     <>
       <div className="">
-        {pins?.length > 0 && <MasonryLayout comp={pins} type="pin" />}
+        {(!type || type === "pins") && pins?.length > 0 && (
+          <MasonryLayout comp={pins} type="pins" />
+        )}
+        {type === "collections" && collections?.length > 0 && (
+          <MasonryLayout comp={collections} type="collections" />
+        )}
+        {type === "users" && users?.length > 0 && (
+          <MasonryLayout comp={users} type="users" />
+        )}
         {hasMore && (
           <Spinner
-            message={`We are adding more ${ideaName} pins to your feed!`}
+            message={`We are adding more ${ideaName} ${type} to your feed!`}
           />
         )}
       </div>
