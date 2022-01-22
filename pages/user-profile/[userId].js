@@ -341,7 +341,7 @@ const UserProfilePage = () => {
                   <div
                     onMouseEnter={() => setDropdown(item)}
                     onMouseLeave={() => setDropdown(null)}
-                    onClick={() => setDropdown(prev => !prev ? item : prev === item ? null : item)}
+                    onClick={() => setDropdown(prev => prev === item ? null : item)}
                     className="max-w-sm mx-0 space-y-6"
                   >
                     <div className="dropdown-menu">
