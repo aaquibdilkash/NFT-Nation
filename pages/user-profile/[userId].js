@@ -341,7 +341,7 @@ const UserProfilePage = () => {
                   <div
                     onMouseEnter={() => setDropdown(item)}
                     onMouseLeave={() => setDropdown(null)}
-                    onClick={() => setDropdown(null)}
+                    onClick={() => setDropdown(prev => !prev ? item : prev === item ? null : item)}
                     className="max-w-sm mx-0 space-y-6"
                   >
                     <div className="dropdown-menu">
@@ -431,12 +431,12 @@ const UserProfilePage = () => {
                                   <div
                                     key={index}
                                     onClick={(e) => {
+                                      setDropdown(null);
                                       if(!ele?.query) {
                                         ele.func()
                                         return
                                       }
                                       setActiveBtn(ele.name);
-                                      setDropdown(null);
 
                                       router.push(
                                         {

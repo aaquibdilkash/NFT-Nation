@@ -14,7 +14,7 @@ const Navbar = ({ connectToMetamask }) => {
   return (
     <div className="flex gap-2 md:gap-5 w-full mt-5 pb-7">
       <div className="flex justify-start items-center w-full px-2 rounded-md bg-secondTheme border-none outline-none shadow-lg hover:drop-shadow-lg focus-within:drop-shadow-lg">
-        <IoMdSearch fontSize={21} className="ml-1 " />
+        <IoMdSearch fontSize={25} className="ml-1 " />
         <input
           type="text"
           onChange={(e) => {
@@ -35,7 +35,7 @@ const Navbar = ({ connectToMetamask }) => {
           onFocus={() => pathname !== "/" && router.push("/")}
           className="text-sm font-bold p-2 w-full bg-secondTheme outline-none"
         />
-        <div className="ms:flex items-center px-0 rounded-lg space-x-4 mx-auto">
+        <div className="ms:flex hidden sm:block items-center px-0 rounded-lg space-x-4 mx-auto">
 						<select readOnly value={type || "pins"} id="Com" className="text-sm font-bold text-gray-800 outline-none border-0 px-2 py-2 rounded-lg bg-transparent">
               {
                 [
