@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
       required: true,
     },
   ],
+  followersCount: {
+    type: Number,
+    default: 0
+  },
   followings: [
     {
       type: mongoose.Schema.ObjectId,
@@ -34,6 +38,26 @@ const userSchema = new mongoose.Schema({
       required: true,
     },
   ],
+  followingsCount: {
+    type: Number,
+    default: 0
+  },
+  // nftMinted: {
+  //   type: Number,
+  //   default: 0
+  // },
+  // nftBought: {
+  //   type: Number,
+  //   default: 0
+  // },
+  // nftSold: {
+  //   type: Number,
+  //   default: 0
+  // },
+  // nftCollected: {
+  //   type: Number,
+  //   default: 0
+  // },
   createdAt: {
     type: Date,
     default: Date.now

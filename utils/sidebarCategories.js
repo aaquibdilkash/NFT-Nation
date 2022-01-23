@@ -1,5 +1,8 @@
 import { AiFillDollarCircle, AiFillLike, AiOutlineDollarCircle } from "react-icons/ai";
 import {
+  FaArrowAltCircleDown,
+  FaArrowAltCircleLeft,
+  FaArrowAltCircleRight,
   FaBaseballBall,
     FaCat,
     FaClock,
@@ -101,6 +104,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
     "Sort By": [
       {
         name: "Recent",
+        type: ["pins", "collections", "users", undefined, ""],
         link: "/",
         array: [
           {
@@ -120,6 +124,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
       },
       {
         name: "Sale Price",
+        type: ["pins", undefined, ""],
         link: "/",
         array: [
           {
@@ -139,6 +144,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
       },
       {
         name: "Auction Bid",
+        type: ["pins", undefined, ""],
         link: "/",
         array: [
           {
@@ -158,6 +164,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
       },
       {
         name: "Commented",
+        type: ["pins", "collections", undefined, ""],
         link: "/",
         array: [
           {
@@ -177,6 +184,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
       },
       {
         name: "Saved",
+        type: ["pins", "collections", undefined, ""],
         link: "/",
         array: [
           {
@@ -194,41 +202,47 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         ],
         icon: <AiFillLike className="" size={25} />,
       },
+      {
+        name: "Followers",
+        type: ["users"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-followersCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "followersCount"
+            }
+          },
+        ],
+        icon: <FaArrowAltCircleRight className="" size={25} />,
+      },
+      {
+        name: "Following",
+        type: ["users"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-followingsCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "followingsCount"
+            }
+          },
+        ],
+        icon: <FaArrowAltCircleLeft className="" size={25} />,
+      },
     ],
-    // "Sort By": [
-    //   {
-    //     name: "Highest Price",
-    //     link: "/",
-    //     query: {
-    //       sort: "price"
-    //     },
-    //     icon: <FaMoneyBill className="" size={25} />,
-    //   },
-    //   {
-    //     name: "Current Bid (High)",
-    //     link: "/",
-    //     query: {
-    //       sort: "bids"
-    //     },
-    //     icon: <FaDollarSign className="" size={25} />,
-    //   },
-    //   {
-    //     name: "Lowest Price",
-    //     link: "/",
-    //     query: {
-    //       sort: "-price"
-    //     },
-    //     icon: <FaMoneyBill className="" size={25} />,
-    //   },
-    //   {
-    //     name: "Current Bid (Low)",
-    //     link: "/",
-    //     query: {
-    //       sort: "-bids"
-    //     },
-    //     icon: <FaDollarSign className="" size={25} />,
-    //   },
-    // ],
 
     // "My Dashboard": [
     //   {

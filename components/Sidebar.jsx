@@ -24,19 +24,19 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
     setToggleSidebar(false);
   };
 
+  const pathArray = [
+    "/",
+    "/pin-detail/[pinId]",
+    "/collection-detail/[collectionId]",
+    "/user-profile/[userId]",
+  ];
+
   return (
     <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
       <div className="flex flex-col">
-        <div
-
-          className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer"
-        >
-          <Link
-            href="/"
-          >
-            <div
-              className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center"
-            >
+        <div className="flex px-5 gap-2 my-6 pt-1 w-190 items-center hover:cursor-pointer">
+          <Link href="/">
+            <div className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg flex gap-2 items-center">
               <FaArtstation className="" size={25} />{" "}
               <p className="font-bold text-lg">NFT Nation</p>
             </div>
@@ -105,18 +105,30 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                 <div
                   key={index}
                   onClick={() => {
+                    handleCloseSidebar();
+
                     router.push(
                       {
-                        pathname: pathname,
+                        // pathname: pathname,
+                        pathname:
+                          (pathname === "/user-profile/[userId]" &&
+                            query.type === "users") ||
+                          !pathArray.includes(pathname)
+                            ? "/"
+                            : pathname,
                         query: {
-                          ...query,
+                          // ...query,
+                          ...(pathname === "/user-profile/[userId]" &&
+                          query.type === "users"
+                            ? {}
+                            : query),
+                          type: query.type === "users" ? "pins" : query?.type,
                           ...cat.query,
                         },
                       },
                       undefined,
                       { shallow: true }
                     );
-                    handleCloseSidebar();
                   }}
                   className={
                     isSubset(query, cat?.query)
@@ -136,68 +148,69 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
               Sort By
             </h3>
             {sidebarCategories[`Sort By`].map((cat, index) => {
-              const { link, name, icon, array } = cat;
+              const { link, name, icon, array, type } = cat;
               const [query1, query2] = array;
-              return (
-                <div
-                  key={index}
-                  onClick={() => {
-                    router.push(
-                      {
-                        pathname: pathname,
-                        query: {
-                          ...query,
-                          ...query1.query,
+              if (type.includes(query?.type))
+                return (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      router.push(
+                        {
+                          pathname: pathname,
+                          query: {
+                            ...query,
+                            ...query1.query,
+                          },
                         },
-                      },
-                      undefined,
-                      { shallow: true }
-                    );
-                    handleCloseSidebar();
-                  }}
-                  className={
-                    // isSubset(query, cat?.query)
-                    query?.sort?.includes(array[1].query.sort)
-                      ? isActiveStyle
-                      : isNotActiveStyle
-                  }
-                >
-                  {icon}
-                  {name}
-                  <div className="flex inline-block justify-between ml-auto gap-2">
-                    {array.map((item, index) => {
-                      return (
-                        <div
-                          key={index}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(
-                              {
-                                pathname: pathname,
-                                query: {
-                                  ...query,
-                                  ...item.query,
-                                },
-                              },
-                              undefined,
-                              { shallow: true }
-                            );
-                            handleCloseSidebar();
-                          }}
-                          className={
-                            // isSubset(query, cat?.query)
-                            query?.sort == item.query.sort
-                              ? isActiveArrowStyle
-                              : isNotActiveArrowStyle
-                          }
-                        >
-                          {item.icon}
-                        </div>
+                        undefined,
+                        { shallow: true }
                       );
-                    })}
+                      handleCloseSidebar();
+                    }}
+                    className={
+                      // isSubset(query, cat?.query)
+                      query?.sort?.includes(array[1].query.sort)
+                        ? isActiveStyle
+                        : isNotActiveStyle
+                    }
+                  >
+                    {icon}
+                    {name}
+                    <div className="flex inline-block justify-between ml-auto gap-2">
+                      {array.map((item, index) => {
+                        return (
+                          <div
+                            key={index}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(
+                                {
+                                  pathname: pathname,
+                                  query: {
+                                    ...query,
+                                    ...item.query,
+                                  },
+                                },
+                                undefined,
+                                { shallow: true }
+                              );
+                              handleCloseSidebar();
+                            }}
+                            className={
+                              // isSubset(query, cat?.query)
+                              query?.sort == item.query.sort
+                                ? isActiveArrowStyle
+                                : isNotActiveArrowStyle
+                            }
+                          >
+                            {item.icon}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
+                );
             })}
           </div>
         </div>

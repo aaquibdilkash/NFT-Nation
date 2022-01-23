@@ -24,14 +24,15 @@ import CollectionEdit from "../../components/CollectionEdit";
 
 const UserProfilePage = () => {
   const router = useRouter();
-  const { pathname } = router;
+  const { pathname, query } = router;
   const { user } = useSelector((state) => state.userReducer);
-  const { userId } = router.query;
+  const { userId, type } = query;
   const [userProfile, setUserProfile] = useState();
   const [editing, setEditing] = useState(false);
   const [collectionEditing, setCollectionEditing] = useState(false);
   const [activeBtn, setActiveBtn] = useState("Owned NFTs");
   const [dropdown, setDropdown] = useState(null);
+  const [dropdownChange, setDropdownChange] = useState(true);
   const [following, setFollowing] = useState(false);
   const [followingsLength, setFollowingsLength] = useState(0);
   const [followersLength, setFollowersLength] = useState(0);
@@ -125,7 +126,7 @@ const UserProfilePage = () => {
           text: `Followers (${followersLength})`,
           condition: true,
           query: {
-            followers: _id,
+            followers: true,
           },
         },
         {
@@ -133,7 +134,7 @@ const UserProfilePage = () => {
           text: `Followings (${followingsLength})`,
           condition: true,
           query: {
-            followings: _id,
+            followings: true,
           },
         },
         {
@@ -156,7 +157,7 @@ const UserProfilePage = () => {
           text: "Minted NFTs",
           condition: true,
           query: {
-            createdBy: _id,
+            createdBy: true,
           },
         },
         {
@@ -190,7 +191,7 @@ const UserProfilePage = () => {
           text: "Bid NFTs",
           condition: true,
           query: {
-            bids: _id,
+            bids: true,
           },
         },
         {
@@ -198,7 +199,7 @@ const UserProfilePage = () => {
           text: "Saved NFTs",
           condition: true,
           query: {
-            saved: _id,
+            saved: true,
           },
         },
         {
@@ -206,7 +207,7 @@ const UserProfilePage = () => {
           text: "Commented NFTs",
           condition: true,
           query: {
-            commented: _id,
+            commented: true,
           },
         },
       ],
@@ -221,7 +222,7 @@ const UserProfilePage = () => {
           text: `Created Collection`,
           condition: true,
           query: {
-            createdBy: _id,
+            createdBy: true,
           },
         },
         {
@@ -229,7 +230,7 @@ const UserProfilePage = () => {
           text: "Saved Collection",
           condition: true,
           query: {
-            saved: _id,
+            saved: true,
           },
         },
         {
@@ -237,7 +238,7 @@ const UserProfilePage = () => {
           text: "Commented Collection",
           condition: true,
           query: {
-            commented: _id,
+            commented: true,
           },
         },
         {
@@ -339,8 +340,8 @@ const UserProfilePage = () => {
                   className="w-full max-w-sm px-0 py-1 mx-0 font-bold text-sm"
                 >
                   <div
-                    onMouseEnter={() => setDropdown(item)}
-                    onMouseLeave={() => setDropdown(null)}
+                    // onMouseEnter={() => setDropdown(item)}
+                    // onMouseLeave={() => setDropdown(null)}
                     onClick={() => setDropdown(prev => prev === item ? null : item)}
                     className="max-w-sm mx-0 space-y-6"
                   >
@@ -409,7 +410,7 @@ const UserProfilePage = () => {
                         </svg>
                       </div>
 
-                      {dropdown === item && (
+                      {dropdownChange && dropdown === item && (
                         <>
                           <div className="animation-slide-in bg-white rounded-lg shadow-xl px-2 py-2 relative mt-8 z-10">
                             <svg
@@ -431,7 +432,9 @@ const UserProfilePage = () => {
                                   <div
                                     key={index}
                                     onClick={(e) => {
-                                      setDropdown(null);
+                                      setDropdownChange(false)
+                                      // setDropdown(null);
+                                      setDropdownChange(true)
                                       if(!ele?.query) {
                                         ele.func()
                                         return

@@ -102,7 +102,7 @@ const User = ({ userProfile, setFollowingsLength = () => {} }) => {
               type="button"
               className={buttonStyle}
             >
-              {`${followings.length} Followings`}{" "}
+              {`${followings.length} Following`}{" "}
             </button>
           </div>
         </div>

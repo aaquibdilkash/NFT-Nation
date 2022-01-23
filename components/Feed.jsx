@@ -48,28 +48,30 @@ const Feed = () => {
   }${(feed && user?._id) ? `&feed=${user?._id}` : ``}${
     category ? `&category=${category}` : ``
   }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${
-    bids ? `&bids=${bids}` : ``
-  }${commented ? `&commented=${commented}` : ``}${
-    saved ? `&saved=${saved}` : ``
+    bids ? `&bids=${userId}` : ``
+  }${commented ? `&commented=${userId}` : ``}${
+    saved ? `&saved=${userId}` : ``
   }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${
     pinId ? `&ne=${pinId}` : ``
   }${collection ? `&collection=${collectionId}` : ``}${
-    postedBy ? `&postedBy=${user?._id}` : ``
+    postedBy ? `&postedBy=${userId}` : ``
+  }${
+    createdBy ? `&createdBy=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
   const collectionLink = `/api/collections?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
   }${category ? `&category=${category}` : ``}${
-    commented ? `&commented=${commented}` : ``
-  }${saved ? `&saved=${saved}` : ``}${
-    createdBy ? `&createdBy=${createdBy}` : ``
+    commented ? `&commented=${userId}` : ``
+  }${saved ? `&saved=${userId}` : ``}${
+    createdBy ? `&createdBy=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
   const userLink = `/api/users?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
   }${followers ? `&followers=${userId}` : ``}${
     followings ? `&followings=${userId}` : ``
-  }`;
+  }${sort ? `&sort=${sort}` : ``}`;
 
   const fetchPins = () => {
     setCollections([])
