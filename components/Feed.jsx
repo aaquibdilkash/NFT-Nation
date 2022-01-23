@@ -199,7 +199,7 @@ const Feed = () => {
     }
 
     return () => source.cancel("Operation canceled by the user.");
-  }, [router, refresh, user]);
+  }, [router, refresh]);
 
   const ideaName = category || "new";
 
