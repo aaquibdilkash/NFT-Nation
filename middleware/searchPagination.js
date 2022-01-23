@@ -9,7 +9,7 @@ class SearchPagination {
       ? (
         type === "pins" ? {
           $or: [
-            { _id: this.queryStr.keyword },
+            // { _id: this.queryStr.keyword },
             { title: { $regex: this.queryStr.keyword, $options: "i" } },
             { about: { $regex: this.queryStr.keyword, $options: "i" } },
             { seller: { $regex: this.queryStr.keyword, $options: "i" } },
@@ -18,7 +18,7 @@ class SearchPagination {
           ],
         } : type === "collections" ? {
           $or: [
-            { _id: this.queryStr.keyword },
+            // { _id: this.queryStr.keyword },
             { title: { $regex: this.queryStr.keyword, $options: "i" } },
             { about: { $regex: this.queryStr.keyword, $options: "i" } },
             { pins: this.queryStr.keyword },
@@ -26,7 +26,7 @@ class SearchPagination {
           ],
         } : {
           $or: [
-            { _id: this.queryStr.keyword },
+            // { _id: this.queryStr.keyword },
             { userName: { $regex: this.queryStr.keyword, $options: "i" } },
             { about: { $regex: this.queryStr.keyword, $options: "i" } },
             { address: { $regex: this.queryStr.keyword, $options: "i" } },
@@ -94,8 +94,10 @@ class SearchPagination {
     return this;
   }
 
-  feed(followings) {
-    const keyword = this.queryStr.feed ? {"postedBy": {$in: followings}} : {};
+  feed(followings, type="pins") {
+    const keyword = this.queryStr.feed ? (
+      type === "pins" ? {"postedBy": {$in: followings}} : type === "collections" ? {"createdBy": {$in: followings}} : {}
+    ) : {};
 
     this.query = this.query.find({ ...keyword });
     return this;

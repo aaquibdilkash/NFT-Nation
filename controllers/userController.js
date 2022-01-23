@@ -25,6 +25,11 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     }
   }
 
+  // if(req.query.feed, "users") {
+  //   const user = await User.findById(req.query.feed)
+  //   searchPagination.feed(user?.followings)
+  // }
+
   let users = await searchPagination.query;
 
   let filteredUsersCount = users.length;

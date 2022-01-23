@@ -119,7 +119,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         icon: <FaClock className="" size={25} />,
       },
       {
-        name: "Price",
+        name: "Sale Price",
         link: "/",
         array: [
           {
@@ -138,7 +138,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         icon: <AiFillDollarCircle className="" size={28} />,
       },
       {
-        name: "Current Bid",
+        name: "Auction Bid",
         link: "/",
         array: [
           {

@@ -45,7 +45,7 @@ const Feed = () => {
 
   const pinLink = `/api/pins?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${feed ? `&feed=${user?._id}` : ``}${
+  }${(feed && user?._id) ? `&feed=${user?._id}` : ``}${
     category ? `&category=${category}` : ``
   }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${
     bids ? `&bids=${bids}` : ``
@@ -197,7 +197,7 @@ const Feed = () => {
     }
 
     return () => source.cancel("Operation canceled by the user.");
-  }, [router, refresh]);
+  }, [router, refresh, user]);
 
   const ideaName = category || "new";
 
@@ -244,7 +244,7 @@ const Feed = () => {
         )}
         {hasMore && (
           <Spinner
-            message={`We are adding more ${ideaName} ${type} to your feed!`}
+            message={`We are adding more ${ideaName} ${showType} to your feed!`}
           />
         )}
       </div>

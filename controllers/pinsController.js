@@ -20,7 +20,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
     .notin()
     .sorted();
 
-  if (req.query.feed) {
+  if (req.query.feed, "pins") {
     const user = await User.findById(req.query.feed);
     searchPagination.feed(user?.followings);
   }
