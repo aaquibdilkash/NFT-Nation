@@ -201,6 +201,10 @@ const Feed = () => {
     return () => source.cancel("Operation canceled by the user.");
   }, [router, refresh]);
 
+  // useEffect(() => {
+
+  // }, [user])
+
   const ideaName = category || "new";
 
   const showType = type || "pins";

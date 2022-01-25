@@ -1,22 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { getUserName } from "../utils/data";
-import { loginMessage, saveErrorMessage } from "../utils/messages";
+import {
+  followErrorMessage,
+  followSuccessMessage,
+  loginMessage,
+  saveErrorMessage,
+  unFollowErrorMessage,
+  unFollowSuccessMessage,
+} from "../utils/messages";
 import axios from "axios";
 import Image from "next/image";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 import moment from "moment";
+import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 
 const buttonStyle =
   "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none";
 
 const Collection = ({ collection }) => {
   const [savingPost, setSavingPost] = useState(false);
-  // const dispatch = useDispatch();
 
   const {
     title,
@@ -33,6 +40,7 @@ const Collection = ({ collection }) => {
   } = collection;
 
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.userReducer);
 
@@ -40,6 +48,57 @@ const Collection = ({ collection }) => {
     saved?.find((item) => item === user?._id)
   );
   const [savedLength, setSavedLenth] = useState(saved?.length);
+
+  const [following, setFollowing] = useState(false);
+  const [alreadyFollowed, setAlreadyFollowed] = useState(
+    user?.followings?.find((item) => item === createdBy?._id)
+  );
+
+  useEffect(() => {
+    setAlreadyFollowed(user?.followings?.find((item) => item === createdBy?._id))
+  }, [user])
+
+  const followUser = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+    setFollowing(true);
+    axios
+      .put(`/api/users/follow/${createdBy?._id}`, {
+        user: user?._id,
+      })
+      .then((res) => {
+        setFollowing(false);
+        toast.success(
+          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+        );
+        
+        const filteredFollowings = alreadyFollowed
+        ? user?.followings.filter((item, index) => item !== createdBy?._id)
+        : [...user?.followings, createdBy?._id];
+
+        dispatch({
+          type: USER_GET_SUCCESS,
+          payload: {
+            ...user,
+            followings: filteredFollowings,
+            followingsCount: filteredFollowings.length
+          },
+        });
+
+        
+        // setAlreadyFollowed((prev) => !prev);
+        // setFollowingsLength((prev) => (alreadyFollowed ? prev - 1 : prev + 1));
+      })
+      .catch((e) => {
+        console.log(e);
+        setFollowing(false);
+        toast.error(
+          alreadyFollowed ? unFollowErrorMessage : followErrorMessage
+        );
+      });
+  };
 
   const saveCollection = () => {
     if (!user?._id) {
@@ -65,7 +124,7 @@ const Collection = ({ collection }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
+    <div className="bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl transform transition-all ease duration-500 m-4">
       <div
         onClick={() => router.push(`/collection-detail/${_id}`)}
         className="relative cursor-pointer w-25"
@@ -89,7 +148,7 @@ const Collection = ({ collection }) => {
               <h1 className="text-sm font-bold text-gray-800 cursor-pointer">
                 {getUserName(createdBy?.userName)}
               </h1>
-              <p className="text-sm text-gray-800">
+              <p className="text-sm font-semibold text-gray-800">
                 Created {moment(createdAt).fromNow()}
               </p>
             </div>
@@ -110,15 +169,18 @@ const Collection = ({ collection }) => {
                 d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
               />
             </svg> */}
-            {/* <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // addPinToCollection();
-                  }}
-                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
-                >
-                  {alreadyAdded ? `Follow` : `UnFollow`}
-                </span> */}
+            {user?._id !== createdBy?._id && (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // addPinToCollection();
+                  followUser();
+                }}
+                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
+              >
+                {alreadyFollowed ? `UnFollow` : `Follow`}
+              </span>
+            )}
           </div>
         </div>
         {image && (

@@ -7,15 +7,17 @@ import {
   CHANGE_PAGE,
   MARKET_CONTRACT,
   COLLECTION_SET,
+  CURRENT_PROFILE_SET,
 } from "../constants/UserTypes";
 
 const initialState = {
   user: {},
+  currentProfile: {},
   refresh: false,
   hasMore: false,
   changePage: false,
   marketContract: {},
-  collection: {}
+  collection: {},
 };
 
 export const userReducer = (state = initialState, action) => {
@@ -30,6 +32,13 @@ export const userReducer = (state = initialState, action) => {
       return {
         ...state,
         error: action.payload,
+      };
+
+    case CURRENT_PROFILE_SET:
+      console.log(action.payload, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDdd")
+      return {
+        ...state,
+        currentProfile: action.payload,
       };
 
     case HAS_MORE:
@@ -61,7 +70,7 @@ export const userReducer = (state = initialState, action) => {
         ...state,
         marketContract: action.payload,
       };
-      
+
     case CLEAR_ERRORS:
       return {
         ...state,

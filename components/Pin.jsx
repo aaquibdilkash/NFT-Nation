@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { etherAddress, getMaxBid, getUserName } from "../utils/data";
 import {
+  followErrorMessage,
+  followSuccessMessage,
   loginMessage,
   saveCollectionErrorMessage,
   saveErrorMessage,
+  unFollowErrorMessage,
+  unFollowSuccessMessage,
 } from "../utils/messages";
 import axios from "axios";
-import { COLLECTION_SET } from "../redux/constants/UserTypes";
+import { COLLECTION_SET, CURRENT_PROFILE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
@@ -53,7 +57,7 @@ const Pin = ({ pin }) => {
   const { query } = router;
   const { collectionId } = query;
 
-  const { user, collection, refresh } = useSelector(
+  const { user, collection } = useSelector(
     (state) => state.userReducer
   );
 
@@ -89,8 +93,59 @@ const Pin = ({ pin }) => {
   const [alreadyAdded, setAlreadyAdded] = useState(
     collection?.pins?.find((item) => item === _id)
   );
+
   const [addedLength, setAddedLenth] = useState(collection?.pins?.length);
   const [addingPost, setAddingPost] = useState(false);
+
+  const [following, setFollowing] = useState(false);
+  const [alreadyFollowed, setAlreadyFollowed] = useState(
+    user?.followings?.find((item) => item === postedBy?._id)
+  );
+
+  useEffect(() => {
+    setAlreadyFollowed(user?.followings?.find((item) => item === postedBy?._id))
+  }, [user])
+
+  const followUser = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+    setFollowing(true);
+    axios
+      .put(`/api/users/follow/${postedBy?._id}`, {
+        user: user?._id,
+      })
+      .then((res) => {
+        setFollowing(false);
+        toast.success(
+          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+        );
+        // setFollowingsLength((prev) => (alreadyFollowed ? prev - 1 : prev + 1));
+
+        const filteredFollowings = alreadyFollowed
+          ? user?.followings.filter((item, index) => item !== postedBy?._id)
+          : [...user?.followings, postedBy?._id];
+
+        dispatch({
+          type: USER_GET_SUCCESS,
+          payload: {
+            ...user,
+            followings: filteredFollowings,
+            followingsCount: filteredFollowings.length
+          },
+        });
+
+        // setAlreadyFollowed((prev) => !prev);
+      })
+      .catch((e) => {
+        console.log(e);
+        setFollowing(false);
+        toast.error(
+          alreadyFollowed ? unFollowErrorMessage : followErrorMessage
+        );
+      });
+  };
 
   const addPinToCollection = () => {
     if (!user?._id) {
@@ -131,7 +186,7 @@ const Pin = ({ pin }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
+    <div className="bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
       <div
         onClick={() =>
           router.push(`/pin-detail/${_id}?type=pins&category=${category}`)
@@ -157,7 +212,7 @@ const Pin = ({ pin }) => {
               <h1 className="text-sm font-bold text-gray-800 cursor-pointer">
                 {getUserName(postedBy?.userName)}
               </h1>
-              <p className="text-sm text-gray-800">
+              <p className="text-sm font-semibold text-gray-800">
                 Minted {moment(createdAt).fromNow()}
               </p>
             </div>
@@ -178,15 +233,18 @@ const Pin = ({ pin }) => {
                 d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
               />
             </svg> */}
-                {/* <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // addPinToCollection();
-                  }}
-                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
-                >
-                  {alreadyAdded ? `Follow` : `UnFollow`}
-                </span> */}
+            {user?._id !== postedBy?._id && (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // addPinToCollection();
+                  followUser();
+                }}
+                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
+              >
+                {alreadyFollowed ? `UnFollow` : `Follow`}
+              </span>
+            )}
           </div>
         </div>
         {image && (

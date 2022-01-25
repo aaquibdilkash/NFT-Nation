@@ -124,7 +124,6 @@ const followUser = catchAsyncErrors(async (req, res) => {
   const alreadyFollowed = followee?.followers?.find(
     (item) => item?.toString() === req.body.user
   );
-  console.log(alreadyFollowed);
 
   if (alreadyFollowed) {
     followee.followers = followee?.followers?.filter(

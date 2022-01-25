@@ -1,6 +1,8 @@
 export const USER_GET_SUCCESS = "USER_GET_SUCCESS"
 export const USER_GET_FAIL = "USER_GET_FAIL"
 
+export const CURRENT_PROFILE_SET = "URRENT_PROFILE_SET"
+
 export const HAS_MORE = "HAS_MORE"
 
 export const CHANGE_PAGE = "CHANGE_PAGE"

@@ -11,13 +11,13 @@ module.exports = {
       transparent: 'transparent',
       current: 'currentColor',
       themeColor: "#56229f",
-      // themeColor: "#333333",
-      // themeColor: "#202020",
-      // themeColor: "#51b7b7",
-      // themeColor: "#b97be3",
-      // themeColor: "#19bfb0",
-      // themeColor: "#37dccd",
-      // themeColor: "#191970",
+      // themeColor: "#333333", //quite good
+      // themeColor: "#202020", //this too
+      // themeColor: "#51b7b7", //too light
+      // themeColor: "#b97be3", //too light
+      // themeColor: "#19bfb0", //too light
+      // themeColor: "#37dccd", //too light
+      // themeColor: "#191970", //too dark
       secondTheme: "#ffffff",
       textColor: "#000000"
 
