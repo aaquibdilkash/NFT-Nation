@@ -8,7 +8,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
   const collectionsCount = await Collection.countDocuments();
 
   const searchPagination = new SearchPagination(
-    Collection.find().populate("createdBy"),
+    Collection.find().populate("createdBy").select("-pins"),
     req.query
   )
     .search("collections")
@@ -120,6 +120,8 @@ const addPinToCollection = catchAsyncErrors(async (req, res) => {
   } else {
     collection.pins.unshift(req.body.pinId);
   }
+
+  collection.pinsCount = collection.pins.length
 
   await collection.save({ validateBeforeSave: false });
 

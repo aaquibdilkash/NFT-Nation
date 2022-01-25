@@ -14,8 +14,11 @@ import { COLLECTION_SET } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
+import { FaComment } from "react-icons/fa";
+import moment from "moment";
 
-const buttonStyle = "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none"
+const buttonStyle =
+  "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none";
 
 const Pin = ({ pin }) => {
   const dispatch = useDispatch();
@@ -24,14 +27,18 @@ const Pin = ({ pin }) => {
     postedBy,
     image,
     _id,
+    title,
+    about,
     category,
     destination,
+    createdAt,
     itemId,
     tokenId,
     price,
     seller,
     saved,
     owner,
+    commentsCount,
     bids,
     auctionEnded,
   } = pin;
@@ -43,10 +50,12 @@ const Pin = ({ pin }) => {
     price === "0.0" && owner === etherAddress && !auctionEnded;
 
   const router = useRouter();
-  const {query} = router
-  const {collectionId} = query
+  const { query } = router;
+  const { collectionId } = query;
 
-  const { user, collection, refresh } = useSelector((state) => state.userReducer);
+  const { user, collection, refresh } = useSelector(
+    (state) => state.userReducer
+  );
 
   const [alreadySaved, setAlreadySaved] = useState(
     saved?.find((item) => item === user?._id)
@@ -96,16 +105,20 @@ const Pin = ({ pin }) => {
       .then((res) => {
         setAddingPost(false);
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
-        const filteredCollectionPins = alreadyAdded ? collection.pins.filter((item, index) => item !== _id) : [...collection.pins, _id]
-        const filteredCollectionPinsCount = alreadyAdded ? collection.pinsCount - 1 : collection.pinsCount + 1
+        const filteredCollectionPins = alreadyAdded
+          ? collection.pins.filter((item, index) => item !== _id)
+          : [...collection.pins, _id];
+        const filteredCollectionPinsCount = alreadyAdded
+          ? collection.pinsCount - 1
+          : collection.pinsCount + 1;
         dispatch({
           type: COLLECTION_SET,
           payload: {
             ...collection,
             pins: filteredCollectionPins,
-            pinsCount: filteredCollectionPinsCount
-          }
-        })
+            pinsCount: filteredCollectionPinsCount,
+          },
+        });
 
         setAddedLenth((prev) => (alreadyAdded ? prev - 1 : prev + 1));
         setAlreadyAdded((prev) => !prev);
@@ -118,11 +131,64 @@ const Pin = ({ pin }) => {
   };
 
   return (
-    <div className="transition transition duration-500 ease transform hover:-translate-y-1 m-2">
+    <div className="bg-white rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
       <div
-        onClick={() => router.push(`/pin-detail/${_id}?type=pins&category=${category}`)}
-        className=" relative cursor-pointer w-25 shadow-lg hover:drop-shadow-lg rounded-lg overflow-hidden transition-all duration-500 ease-in-out"
+        onClick={() =>
+          router.push(`/pin-detail/${_id}?type=pins&category=${category}`)
+        }
+        className="relative cursor-pointer w-25"
       >
+        <div className="flex items-center justify-between px-4">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/user-profile/${postedBy?._id}`);
+            }}
+            className="flex justify-between items-center py-4 transition transition duration-500 ease transform hover:scale-1.5"
+          >
+            <Image
+              height={45}
+              width={45}
+              className="w-12 rounded-full"
+              src={postedBy?.image}
+              alt={`${getUserName(postedBy?.userName)}`}
+            />
+            <div className="ml-3">
+              <h1 className="text-sm font-bold text-gray-800 cursor-pointer">
+                {getUserName(postedBy?.userName)}
+              </h1>
+              <p className="text-sm text-gray-800">
+                Minted {moment(createdAt).fromNow()}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            {/* <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-7 w-7 cursor-pointer"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+              />
+            </svg> */}
+                {/* <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // addPinToCollection();
+                  }}
+                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
+                >
+                  {alreadyAdded ? `Follow` : `UnFollow`}
+                </span> */}
+          </div>
+        </div>
         {image && (
           <Image
             placeholder="blur"
@@ -132,96 +198,93 @@ const Pin = ({ pin }) => {
             layout="responsive"
             className="rounded-lg w-full"
             src={image}
-            alt="user-post"
+            alt={`${title}`}
           />
         )}
-        <div
-          className="absolute top-0 w-full h-full flex flex-col justify-between p-1 pr-2 pt-2 pb-2 z-50"
-          style={{ height: "100%" }}
-        >
-          <div className="flex items-center justify-between">
-            {(priceShowCondition || highestBidShowCondition) && (
-              <button
-                type="button"
-                className={buttonStyle}
-              >
-                {priceShowCondition ? `On Sale` : `On Auction`}{" "}
-              </button>
-            )}
-
-            {collectionId && collection?.createdBy?._id === user?._id && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addPinToCollection()
-                }}
-                type="button"
-                className={buttonStyle}
-              >
-                {alreadyAdded ? `Remove` : `Add`}
-              </button>
-            )}
-          </div>
-
-          <div className=" flex justify-between items-center gap-2 w-full">
-            {(priceShowCondition || highestBidShowCondition) && (
-              <button
-                type="button"
-                className={buttonStyle}
-              >
-                {priceShowCondition
-                  ? `${price} MATIC`
-                  : `Current Bid: ${
-                      bids?.length
-                        ? `${getMaxBid(bids)?.bid} Matic`
-                        : `No Bids Yet`
-                    }`}{" "}
-              </button>
-            )}
+        <div className="p-6 pb-0">
+          <h2 className="text-sm text-gray-800 font-semibold">{`#${tokenId} ${title}`}</h2>
+          <p className="text-sm font-semibold">{about}</p>
+        </div>
+        <div className="flex flex-row px-2 pb-1">
+          {(priceShowCondition || highestBidShowCondition) && (
+            <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
+              {priceShowCondition ? `On Sale` : `On Auction`}
+            </span>
+          )}
+          {(priceShowCondition || highestBidShowCondition) && (
+            <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
+              {priceShowCondition
+                ? `${price} MATIC`
+                : `Current Bid: ${
+                    bids?.length
+                      ? `${getMaxBid(bids)?.bid} Matic`
+                      : `No Bids Yet`
+                  }`}
+            </span>
+          )}
+        </div>
+        <div className="p-6 pt-2">
+          <div className="flex space-x-4">
+            <div className="flex space-x-1 items-center">
+              <span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-7 w-7 text-gray-600 cursor-pointer"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </span>
+              <span>{commentsCount}</span>
+            </div>
+            <div className="flex space-x-1 items-center">
+              <span>
+                {!alreadySaved && (
+                  <AiOutlineHeart
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      savePin();
+                    }}
+                    className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                    size={25}
+                  />
+                )}
+                {alreadySaved && (
+                  <AiFillHeart
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      savePin();
+                    }}
+                    className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                    size={25}
+                  />
+                )}
+              </span>
+              <span>{savedLength}</span>
+            </div>
+            <div className="flex space-x-1 items-center">
+              {collectionId && collection?.createdBy?._id === user?._id && (
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addPinToCollection();
+                  }}
+                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
+                >
+                  {alreadyAdded ? `Remove` : `Add`}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      <Link href={`/user-profile/${postedBy?._id}`}>
-        <div className="transition transition duration-500 ease transform hover:-translate-y-1 inline-block flex gap-2 mt-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <Image
-              height={35}
-              width={35}
-              className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
-              src={postedBy?.image}
-              alt="user-profile"
-            />
-            <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
-              {getUserName(postedBy?.userName)}
-            </p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
-              {savedLength}
-            </p>
-            {!alreadySaved && (
-              <AiOutlineHeart
-                onClick={(e) => {
-                  e.stopPropagation();
-                  savePin();
-                }}
-                className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                size={25}
-              />
-            )}
-            {alreadySaved && (
-              <AiFillHeart
-                onClick={(e) => {
-                  e.stopPropagation();
-                  savePin();
-                }}
-                className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                size={25}
-              />
-            )}
-          </div>
-        </div>
-      </Link>
     </div>
   );
 };

@@ -755,6 +755,7 @@ const PinDetail = () => {
               className="shadow-lg rounded-lg"
               height={500}
               width={480}
+              objectFit="cover"
               src={image}
             />
 

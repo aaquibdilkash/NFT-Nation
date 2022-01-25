@@ -54,7 +54,7 @@ const Feed = () => {
   }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${
     pinId ? `&ne=${pinId}` : ``
   }${collection ? `&collection=${collectionId}` : ``}${
-    postedBy ? `&postedBy=${userId}` : ``
+    postedBy ? `&postedBy=${user?._id}` : ``
   }${
     createdBy ? `&createdBy=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
