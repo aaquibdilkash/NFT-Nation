@@ -9,7 +9,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
   const pinsCount = await Pin.countDocuments();
 
   const searchPagination = new SearchPagination(
-    Pin.find().populate("postedBy"),
+    Pin.find().populate("postedBy").populate("createdBy"),
     req.query
   )
     .search("pins")
@@ -48,7 +48,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
 });
 
 const getPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id).populate("postedBy").populate("bids.user");
+  const pin = await Pin.findById(req.query.id).populate("postedBy").populate("createdBy").populate("bids.user");
 
   if (!pin) {
     return res.status(404).json({

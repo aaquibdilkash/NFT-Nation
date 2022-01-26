@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 // import { create } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getEventData, getImage, getUserName, isValidAmount, pinFileToIPFS } from "../utils/data";
+import { getEventData, getImage, getIpfsImage, getUserName, isValidAmount, pinFileToIPFS } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import {
   approvalLoadingMessage,
@@ -161,7 +161,7 @@ const CreatePin = () => {
     const data = {
       name: title,
       description: about,
-      image: `https://ipfs.io/ipfs/${fileUrl}`,
+      image: getIpfsImage(fileUrl),
       external_url: destination,
     };
 

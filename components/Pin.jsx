@@ -3,7 +3,14 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { etherAddress, getImage, getMaxBid, getUserName } from "../utils/data";
+import {
+  buttonStyle,
+  etherAddress,
+  getImage,
+  getIpfsImage,
+  getMaxBid,
+  getUserName,
+} from "../utils/data";
 import {
   contractAddressCopiedMessage,
   followErrorMessage,
@@ -25,9 +32,6 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 import { FaComment } from "react-icons/fa";
 import moment from "moment";
-
-const buttonStyle =
-  "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none";
 
 const Pin = ({ pin }) => {
   const dispatch = useDispatch();
@@ -246,7 +250,7 @@ const Pin = ({ pin }) => {
                   // addPinToCollection();
                   followUser();
                 }}
-                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
+                className={buttonStyle}
               >
                 {alreadyFollowed ? `UnFollow` : `Follow`}
               </span>
@@ -271,12 +275,12 @@ const Pin = ({ pin }) => {
         </div>
         <div className="flex flex-row px-2 pb-1">
           {(priceShowCondition || highestBidShowCondition) && (
-            <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
+            <span className={buttonStyle}>
               {priceShowCondition ? `On Sale` : `On Auction`}
             </span>
           )}
           {(priceShowCondition || highestBidShowCondition) && (
-            <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
+            <span className={buttonStyle}>
               {priceShowCondition
                 ? `${price} MATIC`
                 : `Current Bid: ${
@@ -289,40 +293,36 @@ const Pin = ({ pin }) => {
         </div>
 
         <div className="flex flex-row px-2 pb-1">
-        <span
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(`${nftContract}`);
-                  toast.info(contractAddressCopiedMessage);
-                }}
-                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
-              >
-                {`Contract Address`}
-              </span>
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(`${nftContract}`);
+              toast.info(contractAddressCopiedMessage);
+            }}
+            className={buttonStyle}
+          >
+            {`Contract Address`}
+          </span>
 
-              <a onClick={(e) => {
-                  e.stopPropagation();
-                }} href={`https://ipfs.io/ipfs/${image}`} target="_blank">
-              <span
-                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
-              >
-                {`IPFS`}
-              </span>
-              </a>
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            href={getIpfsImage(image)}
+            target="_blank"
+          >
+            <span className={buttonStyle}>{`IPFS`}</span>
+          </a>
 
-              <a
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
-                target="_blank"
-              >
-                <span
-                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
-                >
-                  {`Etherscan`}
-                </span>
-              </a>
+          <a
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
+            target="_blank"
+          >
+            <span className={buttonStyle}>{`Etherscan`}</span>
+          </a>
         </div>
 
         <div className="p-6 pt-2">
@@ -378,12 +378,11 @@ const Pin = ({ pin }) => {
                     e.stopPropagation();
                     addPinToCollection();
                   }}
-                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
+                  className={buttonStyle}
                 >
                   {alreadyAdded ? `Remove` : `Add`}
                 </span>
               )}
-              
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { getImage, getUserName } from "../utils/data";
+import { buttonStyle, getImage, getUserName } from "../utils/data";
 import {
   followErrorMessage,
   followSuccessMessage,
@@ -18,9 +18,6 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
 import moment from "moment";
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
-
-const buttonStyle =
-  "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none";
 
 const Collection = ({ collection }) => {
   const [savingPost, setSavingPost] = useState(false);
@@ -87,9 +84,6 @@ const Collection = ({ collection }) => {
           },
         });
 
-        
-        // setAlreadyFollowed((prev) => !prev);
-        // setFollowingsLength((prev) => (alreadyFollowed ? prev - 1 : prev + 1));
       })
       .catch((e) => {
         console.log(e);
@@ -176,7 +170,7 @@ const Collection = ({ collection }) => {
                   // addPinToCollection();
                   followUser();
                 }}
-                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
+                className={buttonStyle}
               >
                 {alreadyFollowed ? `UnFollow` : `Follow`}
               </span>
@@ -200,7 +194,7 @@ const Collection = ({ collection }) => {
           <p className="text-sm font-semibold">{about}</p>
         </div>
         <div className="flex flex-row px-2 pb-1">
-          <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
+          <span className={buttonStyle}>
             {`NFTs: ${pinsCount}`}
           </span>
         </div>

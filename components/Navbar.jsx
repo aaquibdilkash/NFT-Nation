@@ -62,8 +62,9 @@ const Navbar = ({ connectToMetamask }) => {
                           pathname: "/",
                           query: {
                             // ...query,
-                            keyword,
-                            feed,
+                            // keyword,
+                            ...(keyword ? {keyword} : {}),
+                            ...(feed ? {feed} : {}),
                             type: item?.value,
                           },
                         },

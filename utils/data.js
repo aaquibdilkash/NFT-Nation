@@ -3,6 +3,8 @@ import axios from "axios";
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
+export const buttonStyle = "text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl";
+
 export const toHex = (num) => {
   return "0x" + num.toString(16);
 };
@@ -36,6 +38,14 @@ export const getImage = (hash) => {
   const ipfs = "https://ipfs.io/ipfs/"
   const pinata = "https://gateway.pinata.cloud/ipfs/"
   const ipfsGateway = "https://gateway.ipfs.io/ipfs/"
+
+  const url = hash?.length === 46 ? `${ipfs}${hash}` : hash
+
+  return url
+}
+
+export const getIpfsImage = (hash) => {
+  const ipfs = "https://ipfs.io/ipfs/"
 
   const url = hash?.length === 46 ? `${ipfs}${hash}` : hash
 

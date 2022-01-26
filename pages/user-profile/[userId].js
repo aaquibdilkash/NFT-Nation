@@ -297,7 +297,7 @@ const UserProfilePage = () => {
       </Head>
       <div className="bg-gradient-to-r from-secondTheme to-themeColor relative rounded-lg pb-2 h-full justify-center items-center">
         <div className="flex flex-col pb-5">
-          <div className="p-10">
+          <div className="lg:p-10">
             {editing && <ProfileEdit setEditing={setEditing} />}
             {collectionEditing && (
               <CollectionEdit setCollectionEditing={setCollectionEditing} />

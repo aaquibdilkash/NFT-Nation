@@ -14,15 +14,18 @@ class SearchPagination {
             { about: { $regex: this.queryStr.keyword, $options: "i" } },
             { seller: { $regex: this.queryStr.keyword, $options: "i" } },
             { owner: { $regex: this.queryStr.keyword, $options: "i" } },
-            { "postedBy._id": { $regex: this.queryStr.keyword, $options: "i" } },
+            { "postedBy.userName": { $regex: this.queryStr.keyword, $options: "i" } },
+            { "postedBy.address": { $regex: this.queryStr.keyword, $options: "i" } },
+            { "createdBy.address": { $regex: this.queryStr.keyword, $options: "i" } },
+            { "createdBy.userName": { $regex: this.queryStr.keyword, $options: "i" } },
           ],
         } : type === "collections" ? {
           $or: [
             // { _id: this.queryStr.keyword },
             { title: { $regex: this.queryStr.keyword, $options: "i" } },
             { about: { $regex: this.queryStr.keyword, $options: "i" } },
-            { pins: this.queryStr.keyword },
-            { "createdBy._id": { $regex: this.queryStr.keyword, $options: "i" } },
+            { "createdBy.userName": { $regex: this.queryStr.keyword, $options: "i" } },
+            { "createdBy.address": { $regex: this.queryStr.keyword, $options: "i" } },
           ],
         } : {
           $or: [

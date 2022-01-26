@@ -57,6 +57,21 @@ const getCollection = catchAsyncErrors(async (req, res) => {
   });
 });
 
+const getCollectionData = catchAsyncErrors(async (req, res) => {
+  const collection = await Collection.findById(req.query.id).populate("createdBy")
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
+  res.status(200).json({
+    success: true,
+    collection,
+  });
+});
+
 const createCollection = catchAsyncErrors(async (req, res) => {
   await Collection.create(req.body);
 
@@ -243,6 +258,7 @@ const deleteCollectionComment = catchAsyncErrors(async (req, res, next) => {
 export {
   allCollections,
   getCollection,
+  getCollectionData,
   createCollection,
   updateCollection,
   deleteCollection,

@@ -156,20 +156,18 @@ const User = ({ userProfile }) => {
           </div>
 
           <div>
-            {
-              user?._id !== _id && (
-                <span
-              onClick={(e) => {
-                e.stopPropagation();
-                // addPinToCollection();
-                followUser();
-              }}
-              className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl"
-            >
-              {alreadyFollowed ? `UnFollow` : `Follow`}
-            </span>
-              )
-            }
+            {user?._id !== _id && (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // addPinToCollection();
+                  followUser();
+                }}
+                className={buttonStyle}
+              >
+                {alreadyFollowed ? `UnFollow` : `Follow`}
+              </span>
+            )}
           </div>
         </div>
 
@@ -178,12 +176,10 @@ const User = ({ userProfile }) => {
         </div>
 
         <div className="flex flex-row justify-evenly px-2 pb-1">
-          <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
+          <span className={buttonStyle}>
             {`${currentProfile?.followersCount} Followers`}
           </span>
-          <span className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-4 ml-1 py-1.5 px-2 cursor-pointer">
-            {`${followingsCount} Followings`}
-          </span>
+          <span className={buttonStyle}>{`${followingsCount} Followings`}</span>
         </div>
         <div className="p-6 pt-2"></div>
       </div>

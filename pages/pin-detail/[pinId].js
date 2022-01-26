@@ -11,6 +11,7 @@ import {
   etherAddress,
   getEventData,
   getImage,
+  getIpfsImage,
   getMaxBid,
   getUserBid,
   getUserName,
@@ -1065,7 +1066,7 @@ const PinDetail = () => {
               <span className="align-middle">{`Token ID: #${tokenId}`}</span>
             </div>
             <div className="font-bold text-sm mr-2">
-              <a href={`${image}`} target="_blank">
+              <a href={getIpfsImage(image)} target="_blank">
                 <FaLink className="inline mr-2" size={20} />
                 <span className="align-middle">{`IPFS`}</span>
               </a>

@@ -3,9 +3,9 @@ const withPWA = require("next-pwa");
 module.exports = withPWA({
   images: {
     domains: [
-      "cf-ipfs.com",
-      "gateway.pinata.cloud",
       "ipfs.io",
+      "gateway.pinata.cloud",
+      "cf-ipfs.com",
       "ipfs.infura.io",
       "gateway.ipfs.io",
     ],
