@@ -33,6 +33,11 @@ const Collection = ({ collection }) => {
     destination,
     saved,
     commentsCount,
+    ownersCount,
+    onSaleCount,
+    onAuctionCount,
+    volume,
+    change,
     createdAt,
   } = collection;
 
@@ -189,15 +194,33 @@ const Collection = ({ collection }) => {
             alt={`${title}`}
           />
         )}
-        <div className="p-6 pb-0">
+        <div className="py-6 px-4 pb-0">
           <h2 className="text-sm text-gray-800 font-semibold">{`${title}`}</h2>
           <p className="text-sm font-semibold">{about}</p>
         </div>
-        <div className="flex flex-row px-2 pb-1">
+        <div className="flex flex-row px-2 py-2">
           <span className={buttonStyle}>
             {`NFTs: ${pinsCount}`}
           </span>
+          <span className={buttonStyle}>
+            {`Owners: ${ownersCount}`}
+          </span>
+          <span className={buttonStyle}>
+            {`on Auction: ${onAuctionCount}`}
+          </span>
         </div>
+        <div className="flex flex-row px-2 pb-1">
+        <span className={buttonStyle}>
+            {`On Sale: ${onSaleCount}`}
+          </span>
+          <span className={buttonStyle}>
+            {`Volume: ${volume}`}
+          </span>
+          <span className={buttonStyle}>
+            {`Change: ${change}%`}
+          </span>
+        </div>
+        
         <div className="p-6 pt-2">
           <div className="flex space-x-4">
             <div className="flex space-x-1 items-center">

@@ -3,6 +3,7 @@ import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import Collection from "../models/collection";
+import pin from "../models/pin";
 
 const allPins = catchAsyncErrors(async (req, res) => {
   const resultPerPage = 8;
@@ -20,7 +21,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
     .notin()
     .sorted();
 
-  if (req.query.feed, "pins") {
+  if ((req.query.feed, "pins")) {
     const user = await User.findById(req.query.feed);
     searchPagination.feed(user?.followings);
   }
@@ -48,7 +49,10 @@ const allPins = catchAsyncErrors(async (req, res) => {
 });
 
 const getPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id).populate("postedBy").populate("createdBy").populate("bids.user");
+  const pin = await Pin.findById(req.query.id)
+    .populate("postedBy")
+    .populate("createdBy")
+    .populate("bids.user");
 
   if (!pin) {
     return res.status(404).json({
@@ -169,7 +173,6 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
-
   pin.comments.unshift(newComment);
   pin.commentsCount = pin.comments.length;
 
@@ -214,6 +217,34 @@ const deletePinComment = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+  });
+});
+
+const saveHistoryPin = catchAsyncErrors(async (req, res, next) => {
+
+  let pin = await Pin.findById(req.query.id);
+
+  pin.history.unshift(req.body);
+
+  pin = await pin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const getHistoryPin = catchAsyncErrors(async (req, res) => {
+  const pin = await Pin.findById(req.query.id).select("history").populate("history.user");
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+  res.status(200).json({
+    success: true,
+    history: pin.history,
   });
 });
 
@@ -275,6 +306,8 @@ export {
   updatePin,
   deletePin,
   savePin,
+  saveHistoryPin,
+  getHistoryPin,
   getCommentsPin,
   commentPin,
   updatePinComment,

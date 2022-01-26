@@ -50,8 +50,36 @@ const CollectionDetail = () => {
   const [savedLength, setSavedLenth] = useState(0);
   const [tab, setTab] = useState("comments");
 
-  const { _id, title, about, category, saved, image, createdBy, pins } =
-    collection;
+  const {
+    _id,
+    title,
+    about,
+    category,
+    saved,
+    image,
+    createdBy,
+    pins,
+    ownersCount,
+    onSaleCount,
+    onAuctionCount,
+    volume,
+    change,
+    createdAt,
+  } = collection;
+
+  const fetchCollectionData = () => {
+    // setSideLoading(true);
+    axios
+      .get(`/api/collections/data/${collectionId}`)
+      .then((res) => {
+        // setSideLoading(false);
+      })
+      .catch((e) => {
+        // toast.error(errorMessage);
+        setSideLoading(false);
+        // console.log(e);
+      });
+  };
 
   const fetchCollectionComments = () => {
     setSideLoading(true);
@@ -69,7 +97,7 @@ const CollectionDetail = () => {
   };
 
   const fetchCollectionDetails = () => {
-    setLoading(true)
+    setLoading(true);
     axios
       .get(`/api/collections/${collectionId}`)
       .then((res) => {
@@ -83,7 +111,7 @@ const CollectionDetail = () => {
         setSavedLenth(res?.data?.collection?.saved?.length);
 
         setActiveBtn("Items");
-        setLoading(false)
+        setLoading(false);
 
         router.push(
           {
@@ -110,6 +138,7 @@ const CollectionDetail = () => {
   useEffect(() => {
     collectionId && fetchCollectionDetails();
     collectionId && fetchCollectionComments();
+    collectionId && fetchCollectionData();
   }, [collectionId, refresh]);
 
   const addComment = () => {

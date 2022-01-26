@@ -73,6 +73,26 @@ const collectionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  ownersCount: {
+    type: Number,
+    default: 0
+  },
+  onSaleCount: {
+    type: Number,
+    default: 0
+  },
+  onAuctionCount: {
+    type: Number,
+    default: 0
+  },
+  volume: {
+    type: Number,
+    default: 0
+  },
+  change: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -262,6 +262,11 @@ const CreatePin = () => {
       category,
       image: fileUrl,
       postedBy: user?._id,
+      createdBy: user?._id,
+      history: [{
+        user: user?._id,
+        price: "0.0"
+      }],
       destination: "https://nft-nation.vercel.app",
     });
   };
@@ -329,6 +334,11 @@ const CreatePin = () => {
       category,
       image: fileUrl,
       postedBy: user?._id,
+      createdBy: user?._id,
+      history: [{
+        user: user?._id,
+        price: "0.0"
+      }],
       destination: "https://nft-nation.vercel.app",
     });
   };
@@ -385,6 +395,10 @@ const CreatePin = () => {
       image: fileUrl,
       postedBy: user?._id,
       createdBy: user?._id,
+      history: [{
+        user: user?._id,
+        price: "0.0"
+      }],
       destination: "https://nft-nation.vercel.app",
     });
   };

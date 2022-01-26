@@ -76,6 +76,7 @@ const PinDetail = () => {
   const [refresh, setRefresh] = useState(false);
   const [pinDetail, setPinDetail] = useState();
   const [pinComments, setPinComments] = useState([]);
+  const [pinHistory, setPinHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
@@ -84,7 +85,7 @@ const PinDetail = () => {
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading...");
-  const [sideLoading, setSideLoading] = useState(true)
+  const [sideLoading, setSideLoading] = useState(true);
   const [alreadySaved, setAlreadySaved] = useState(false);
   const [savedLength, setSavedLenth] = useState(0);
   const [tab, setTab] = useState("comments");
@@ -190,23 +191,40 @@ const PinDetail = () => {
       });
   }, []);
 
+  const fetchPinHistory = () => {
+    setLoadingMessage("Fetching History...")
+    setSideLoading(true);
+    axios
+      .get(`/api/pins/history/${pinId}`)
+      .then((res) => {
+        setPinHistory(res?.data?.history);
+        setSideLoading(false);
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
+        setSideLoading(false);
+        // console.log(e);
+      });
+  };
+
   const fetchPinComments = () => {
-    setSideLoading(true)
+    setLoadingMessage("Fetching Comments...")
+    setSideLoading(true);
     axios
       .get(`/api/pins/comments/${pinId}`)
       .then((res) => {
         setPinComments(res?.data?.comments);
-        setSideLoading(false)
+        setSideLoading(false);
       })
       .catch((e) => {
         toast.error(errorMessage);
-        setSideLoading(false)
+        setSideLoading(false);
         // console.log(e);
       });
-  }
+  };
 
   const fetchPinDetails = () => {
-    setPinDetail(null)
+    setPinDetail(null);
     axios
       .get(`/api/pins/${pinId}`)
       .then((res) => {
@@ -242,6 +260,7 @@ const PinDetail = () => {
   useEffect(() => {
     pinId && fetchPinDetails();
     pinId && fetchPinComments();
+    pinId && fetchPinHistory();
   }, [pinId, refresh]);
 
   // useEffect(() => {
@@ -265,6 +284,17 @@ const PinDetail = () => {
         setAddingSellPrice(false);
         setInputPrice("");
         setLoading(false);
+      });
+  };
+
+  const transferPin = (body) => {
+    axios
+      .post(`/api/pins/history/${_id}`, body)
+      .then((res) => {
+        // toast.success("tranferred success");
+      })
+      .catch((e) => {
+        // toast.error("could not be transferred");
       });
   };
 
@@ -303,6 +333,13 @@ const PinDetail = () => {
       setLoading(false);
       return;
     }
+
+    // transfer asset
+    const transferObj = {
+      user: user?._id,
+      price,
+    };
+    transferPin(transferObj);
 
     // upadate pin in the database
     updatePin({
@@ -542,6 +579,16 @@ const PinDetail = () => {
       return;
     }
 
+    // transfer asset
+    if (bids?.length) {
+      const transferObj = {
+        user: newOwner?._id,
+        price,
+      };
+
+      transferPin(transferObj);
+    }
+
     updatePin({
       ...eventData,
       postedBy: newOwner?._id,
@@ -606,7 +653,7 @@ const PinDetail = () => {
         .then(() => {
           setAddingComment(false);
           setComment("");
-          fetchPinComments()
+          fetchPinComments();
           toast.success(commentAddSuccessMessage);
         })
         .catch((e) => {
@@ -631,7 +678,7 @@ const PinDetail = () => {
         toast.error(finalProcessingErrorMessage);
       });
   };
-  
+
   const withdrawAuctionBidRequest = (body) => {
     axios
       .put(`/api/pins/bids/${pinId}`, body)
@@ -879,15 +926,18 @@ const PinDetail = () => {
                       </div>
                     </div>
                   ))}
+
                 {tab === "comments" && !pinComments?.length && !sideLoading && (
                   <h2 className="flex justify-center items-center h-370 text-xl font-bold">{`No Comments Yet, Be the first one to comment...`}</h2>
                 )}
+
                 {tab === "comments" && !pinComments?.length && sideLoading && (
                   <Spinner
-                  title={`Fetching Comments...`}
-                  // message={`Please Do Not Leave This Page...`}
-                />
+                    title={loadingMessage}
+                    // message={`Please Do Not Leave This Page...`}
+                  />
                 )}
+
                 {tab === "comments" &&
                   pinComments.length > 0 &&
                   pinComments?.map((item) => (
@@ -919,16 +969,16 @@ const PinDetail = () => {
                     </div>
                   ))}
 
-                {tab === "history" && (
+                {tab === "history" && !pinHistory?.length && !sideLoading && (
                   <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No History...`}</h2>
                 )}
 
                 {tab === "history" &&
-                  false &&
-                  bids?.map((item) => (
+                  pinHistory?.length > 0 &&
+                  pinHistory?.map((item, index) => (
                     <div
                       key={`${item?._id}`}
-                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg overflow-x-scroll md:overflow-x-hidden"
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
@@ -938,7 +988,7 @@ const PinDetail = () => {
                                 height={40}
                                 width={40}
                                 src={getImage(item?.user?.image)}
-                                className="w-10 h-10 rounded-full cursor-pointer"
+                                className="w-12 h-12 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
                             )}
@@ -952,17 +1002,22 @@ const PinDetail = () => {
                           </p>
                         </div>
                         <div className="flex flex-wrap">
-                          <p className="font-semibold">{`owner till: ${moment(
-                            new Date()
+                          <p className="font-semibold">{`${index === pinHistory.length - 1 ? `Minted on`: `Transferred on`}: ${moment(
+                            new Date(item?.createdAt)
                           ).format("MMM DD, YYYY")}`}</p>
                         </div>
                         <div className="flex flex-wrap">
-                          <p className="font-semibold">{`sold for: 1 Matic`}</p>
+                          {
+                            index !== pinHistory.length - 1 && (
+                              <p className="font-semibold">{`For: ${item?.price} Matic`}</p>
+                            )
+                          }
                         </div>
                       </div>
                     </div>
                   ))}
               </div>
+
               {tab === "comments" && (
                 <div className="flex flex-wrap mt-6 gap-3">
                   {user?._id && (

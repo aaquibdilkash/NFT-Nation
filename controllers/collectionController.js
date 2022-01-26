@@ -58,7 +58,8 @@ const getCollection = catchAsyncErrors(async (req, res) => {
 });
 
 const getCollectionData = catchAsyncErrors(async (req, res) => {
-  const collection = await Collection.findById(req.query.id).populate("createdBy")
+  let collection = await Collection.findById(req.query.id).populate("createdBy").populate("pins")
+  console.log(collection.pins[0].history)
 
   if (!collection) {
     return res.status(404).json({
@@ -66,9 +67,35 @@ const getCollectionData = catchAsyncErrors(async (req, res) => {
       error: "Collection not found with this ID",
     });
   }
+
+  collection.ownersCount = new Set(collection.pins.map(item => item.postedBy._id.toString())).size
+  console.log(collection.ownersCount, "ownersCount good")
+
+  collection.onSaleCount = collection.pins.filter(item => item.price != "0.0").length
+  console.log(collection.onSaleCount, "onSaleCount good")
+
+  collection.onAuctionCount = collection.pins.filter(item => !item.auctionEnded).length
+  console.log(collection.onAuctionCount, "onAuctionCount good")
+
+  collection.volume = collection.pins.reduce((a, b) => ({price: parseFloat(a?.history[0]?.price ?? "0.0") + parseFloat(b?.history[0]?.price ?? "0.0")})).price;
+  console.log(collection.volume, "volume good")
+
+  const prevVolume = collection.pins.reduce((a, b) => ({price: parseFloat(a?.history[1]?.price ?? "0.0") + parseFloat(b?.history[1]?.price ?? "0.0")})).price;
+  console.log(prevVolume, "preVolume good")
+
+  collection.change = ((collection.volume - prevVolume)/prevVolume)*100
+  console.log(collection.change, "change good")
+  
+  collection = await collection.save({ validateBeforeSave: false })
+
+
   res.status(200).json({
     success: true,
-    collection,
+    ownersCount: collection.ownersCount,
+    onSaleCount: collection.onSaleCount,
+    onAuctionCount: collection.onAuctionCount,
+    volume: collection.volume,
+    change: collection.change
   });
 });
 

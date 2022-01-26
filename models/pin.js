@@ -16,6 +16,22 @@ const commentSchema = new mongoose.Schema({
   },
 });
 
+const historySchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  price: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const pinSchema = new mongoose.Schema({
   itemId: {
     type: String,
@@ -104,6 +120,24 @@ const pinSchema = new mongoose.Schema({
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+  }],
+  history: {
+    type: [historySchema],
+    select: false
+  },
+  attributes: [{
+    trait_type: {
+      type: String,
+      // required: true,
+    },
+    display_type: {
+      type: String,
+      // required: true,
+    },
+    value: {
+      type: String,
+      // required: true,
     },
   }],
   comments: { type: [commentSchema], select:false},

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { getImage, getUserName } from "../utils/data";
+import { buttonStyle, getImage, getUserName } from "../utils/data";
 import {
   followErrorMessage,
   followSuccessMessage,
@@ -19,12 +19,6 @@ import {
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
-
-const buttonStyle =
-  "transition transition duration-500 ease transform hover:-translate-y-1 bg-themeColor opacity-100 text-secondTheme font-semibold text-sm px-2 py-1 rounded-3xl shadow-lg hover:drop-shadow-lg outline-none";
-
-const activeBtnStyles =
-  "bg-themeColor mr-4 mt-0 text-secondTheme font-semibold text-sm p-1 px-2 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const User = ({ userProfile }) => {
   const {

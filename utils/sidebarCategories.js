@@ -1,10 +1,12 @@
-import { AiFillDollarCircle, AiFillLike, AiOutlineDollarCircle } from "react-icons/ai";
+import { AiFillDollarCircle, AiFillLike, AiFillPicture, AiOutlineDollarCircle } from "react-icons/ai";
 import {
   FaArrowAltCircleDown,
   FaArrowAltCircleLeft,
   FaArrowAltCircleRight,
   FaBaseballBall,
     FaCat,
+    FaChartBar,
+    FaChartLine,
     FaClock,
     FaComments,
     FaGamepad,
@@ -13,6 +15,7 @@ import {
     FaPaintBrush,
     FaRegComments,
     FaSmile,
+    FaUserAstronaut,
     FaVideo,
   } from "react-icons/fa";
 import { HiPhotograph } from "react-icons/hi";
@@ -241,6 +244,126 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
           },
         ],
         icon: <FaArrowAltCircleLeft className="" size={25} />,
+      },
+      {
+        name: "NFTs",
+        type: ["collections"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-pinsCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "pinsCount"
+            }
+          },
+        ],
+        icon: <AiFillPicture className="" size={25} />,
+      },
+      {
+        name: "Owners",
+        type: ["collections"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-ownersCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "ownersCount"
+            }
+          },
+        ],
+        icon: <FaUserAstronaut className="" size={25} />,
+      },
+      {
+        name: "On Sale",
+        type: ["collections"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-onSaleCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "onSaleCount"
+            }
+          },
+        ],
+        icon: <AiFillDollarCircle className="" size={25} />,
+      },
+      {
+        name: "On Auction",
+        type: ["collections"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-onAuctionCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "onAuctionCount"
+            }
+          },
+        ],
+        icon: <AiOutlineDollarCircle className="" size={25} />,
+      },
+      {
+        name: "Volume",
+        type: ["collections"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-volume"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "volume"
+            }
+          },
+        ],
+        icon: <FaChartLine className="" size={25} />,
+      },
+      {
+        name: "Change",
+        type: ["collections"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-change"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "change"
+            }
+          },
+        ],
+        icon: <FaChartBar className="" size={25} />,
       },
     ],
 
