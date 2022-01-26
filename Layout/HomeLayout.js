@@ -7,7 +7,7 @@ import {
   MARKET_CONTRACT,
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
-import { toHex } from "../utils/data";
+import { getImage, toHex } from "../utils/data";
 import { chainData } from "../utils/chainData";
 import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
@@ -266,7 +266,7 @@ const HomeLayout = ({ children }) => {
                 <Image
                   height={40}
                   width={40}
-                  src={user?.image}
+                  src={getImage(user?.image)}
                   alt="user-pic"
                   className="w-9 h-9 rounded-full shadow-lg hover:drop-shadow-lg cursor-pointer"
                 />

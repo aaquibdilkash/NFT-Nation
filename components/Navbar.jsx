@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { AiOutlineLogin } from "react-icons/ai";
 import Image from "next/image";
+import { getImage } from "../utils/data";
 
 const Navbar = ({ connectToMetamask }) => {
   const { user } = useSelector((state) => state.userReducer);
@@ -81,7 +82,7 @@ const Navbar = ({ connectToMetamask }) => {
           <Link href={`/user-profile/${user?._id}`}>
             <div className="w-12 h-12 relative transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
               <Image
-                src={user?.image}
+                src={getImage(user?.image)}
                 alt="user-pic"
                 placeholder="blur"
                 blurDataURL="/favicon.png"

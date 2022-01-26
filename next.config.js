@@ -3,9 +3,11 @@ const withPWA = require("next-pwa");
 module.exports = withPWA({
   images: {
     domains: [
+      "cf-ipfs.com",
+      "gateway.pinata.cloud",
+      "ipfs.io",
       "ipfs.infura.io",
-      "source.unsplash.com",
-      "gateway.pinata.cloud"
+      "gateway.ipfs.io",
     ],
   },
   env: {

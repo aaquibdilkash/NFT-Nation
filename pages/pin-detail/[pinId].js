@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import {
   etherAddress,
   getEventData,
+  getImage,
   getMaxBid,
   getUserBid,
   getUserName,
@@ -756,7 +757,7 @@ const PinDetail = () => {
               height={500}
               width={480}
               objectFit="cover"
-              src={image}
+              src={getImage(image)}
             />
 
             <div className="w-full px-5 flex-1 xl:min-w-620">
@@ -824,7 +825,7 @@ const PinDetail = () => {
                               <Image
                                 height={40}
                                 width={40}
-                                src={item?.user?.image}
+                                src={getImage(item?.user?.image)}
                                 className="w-10 h-10 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
@@ -859,7 +860,7 @@ const PinDetail = () => {
                               <Image
                                 height={45}
                                 width={45}
-                                src={item?.user?.image}
+                                src={getImage(item?.user?.image)}
                                 className="w-12 h-12 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
@@ -898,7 +899,7 @@ const PinDetail = () => {
                               <Image
                                 height={45}
                                 width={45}
-                                src={item?.user?.image}
+                                src={getImage(item?.user?.image)}
                                 className="w-12 h-12 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
@@ -933,7 +934,7 @@ const PinDetail = () => {
                               <Image
                                 height={40}
                                 width={40}
-                                src={item?.user?.image}
+                                src={getImage(item?.user?.image)}
                                 className="w-10 h-10 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
@@ -968,7 +969,7 @@ const PinDetail = () => {
                           <Image
                             height={45}
                             width={45}
-                            src={user?.image}
+                            src={getImage(user?.image)}
                             className="w-14 h-14 rounded-full cursor-pointer pt-2"
                             alt="user-profile"
                           />
@@ -1004,7 +1005,7 @@ const PinDetail = () => {
                     height={35}
                     width={35}
                     className="align-middle rounded-full"
-                    src={postedBy?.image}
+                    src={getImage(postedBy?.image)}
                   />
 
                   <p className="inline align-middle text-sm ml-2 font-bold">
@@ -1147,7 +1148,7 @@ const PinDetail = () => {
                           <Image
                             height={45}
                             width={45}
-                            src={user?.image}
+                            src={getImage(user?.image)}
                             className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
                             alt="user-profile"
                           />

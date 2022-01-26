@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { etherAddress, getMaxBid, getUserName } from "../utils/data";
+import { etherAddress, getImage, getMaxBid, getUserName } from "../utils/data";
 import {
   followErrorMessage,
   followSuccessMessage,
@@ -205,7 +205,7 @@ const Pin = ({ pin }) => {
               height={45}
               width={45}
               className="w-12 rounded-full"
-              src={postedBy?.image}
+              src={getImage(postedBy?.image)}
               alt={`${getUserName(postedBy?.userName)}`}
             />
             <div className="ml-3">
@@ -255,7 +255,7 @@ const Pin = ({ pin }) => {
             width={180}
             layout="responsive"
             className="rounded-lg w-full"
-            src={image}
+            src={getImage(image)}
             alt={`${title}`}
           />
         )}

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { getUserName } from "../utils/data";
+import { getImage, getUserName } from "../utils/data";
 import {
   followErrorMessage,
   followSuccessMessage,
@@ -141,7 +141,7 @@ const Collection = ({ collection }) => {
               height={45}
               width={45}
               className="w-12 rounded-full"
-              src={createdBy?.image}
+              src={getImage(createdBy?.image)}
               alt={`${getUserName(createdBy?.userName)}`}
             />
             <div className="ml-3">
@@ -191,7 +191,7 @@ const Collection = ({ collection }) => {
             width={180}
             layout="responsive"
             className="rounded-lg w-full"
-            src={image}
+            src={getImage(image)}
             alt={`${title}`}
           />
         )}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit } from "react-icons/ai";
-import { getUserName } from "../../utils/data";
+import { getImage, getUserName } from "../../utils/data";
 import {
   errorMessage,
   followErrorMessage,
@@ -308,7 +308,7 @@ const UserProfilePage = () => {
                   blurDataURL="/favicon.png"
                   height={250}
                   width={250}
-                  src={image}
+                  src={getImage(image)}
                   objectFit="cover"
                   alt="userProfile-pic"
                 />
@@ -318,8 +318,8 @@ const UserProfilePage = () => {
                 <div className="container mx-auto px-4">
                   <div className="relative flex flex-col min-w-0 break-words bg-gradient-to-r from-themeColor to-secondTheme w-full mb-6 shadow-xl rounded-lg -mt-32">
                     <div className="px-6">
-                      <div className="flex flex-wrap justify-center">
-                        <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
+                      <div className="flex flex-wrap justify-between lg:pt-10">
+                        {/* <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
                           <div className="relative">
                             <img
                               alt="..."
@@ -327,7 +327,7 @@ const UserProfilePage = () => {
                               className="shadow-xl rounded-full h-auto align-middle border-none absolute -m-16 -ml-20 lg:-ml-16 max-w-150-px"
                             />
                           </div>
-                        </div>
+                        </div> */}
                         <div className="flex justify-center w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
                           <div className="flex gap-2 py-2 px-3 mt-20 lg:mt-0">
                             {user?._id !== userId && (
@@ -443,7 +443,7 @@ const UserProfilePage = () => {
               </section>
 
               {!editing && !collectionEditing && (
-                <div className="absolute top-0 z-1 left-5 p-2">
+                <div className="absolute -top-10 z-1 left-0 p-2">
                   <button
                     type="button"
                     className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
@@ -459,7 +459,7 @@ const UserProfilePage = () => {
                 </div>
               )}
               {user?._id === _id && !collectionEditing && (
-                <div className="absolute top-0 z-1 right-5 p-2">
+                <div className="absolute -top-10 z-1 right-0 p-2">
                   <button
                     type="button"
                     className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"

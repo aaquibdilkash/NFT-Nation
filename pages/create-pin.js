@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 // import { create } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getEventData, getUserName, isValidAmount, pinFileToIPFS } from "../utils/data";
+import { getEventData, getImage, getUserName, isValidAmount, pinFileToIPFS } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import {
   approvalLoadingMessage,
@@ -73,7 +73,7 @@ const CreatePin = () => {
   const [sellOrAuct, setSellOrAuct] = useState("");
   const [wrongImageType, setWrongImageType] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Storing NFT Metadata...");
   const [progress, setProgress] = useState(0);
 
   const router = useRouter();
@@ -98,8 +98,8 @@ const CreatePin = () => {
         pinFileToIPFS(
           selectedFile,
           setProgress,
-          (url) => {
-            setFileUrl(url);
+          (url, hash) => {
+            setFileUrl(hash);
             setImageLoading(false);
           },
           (error) => {
@@ -155,22 +155,27 @@ const CreatePin = () => {
       toast.info(validAmountErrorMessage);
       return;
     }
+
+    setLoading(true)
+
     const data = {
       name: title,
       description: about,
-      image: fileUrl,
+      image: `https://ipfs.io/ipfs/${fileUrl}`,
       external_url: destination,
     };
 
     const metadata = new Blob([JSON.stringify(data)], {
       type: "application/json",
-      name: "metadata.json",
     });
+
+    console.log(metadata, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+
     try {
       pinFileToIPFS(
         metadata,
         setProgress,
-        (url) => {
+        (url, hash) => {
           /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
           if (sellOrAuct === "Only Mint NFT") {
             createMarketItem(url);
@@ -467,7 +472,7 @@ const CreatePin = () => {
               {fileUrl && !imageLoading && (
                 <div className="relative h-full">
                   <img
-                    src={fileUrl}
+                    src={getImage(fileUrl)}
                     alt="uploaded-pic"
                     className="h-full w-full rounded-lg drop-shadow-lg"
                   />

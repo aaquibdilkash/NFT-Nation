@@ -2,7 +2,7 @@ import { useState } from "react";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getUserName } from "../utils/data";
+import { getImage, getUserName, pinFileToIPFS } from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -11,8 +11,9 @@ import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { fileUploadErrorMessage } from "../utils/messages";
 
-const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
+// const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
 const ProfileEdit = ({ userId, setEditing }) => {
   const dispatch = useDispatch();
@@ -37,14 +38,26 @@ const ProfileEdit = ({ userId, setEditing }) => {
       setWrongImageType(false);
       setImageLoading(true);
       try {
-        const added = await ipfsClient.add(selectedFile, {
-          progress: (prog) =>
-            setProgress(parseInt((prog / selectedFile.size) * 100)),
-        });
-        const url = `https://ipfs.infura.io/ipfs/${added.path}`;
-        setFileUrl(url);
-        setImageLoading(false);
+        // const added = await ipfsClient.add(selectedFile, {
+        //   progress: (prog) =>
+        //     setProgress(parseInt((prog / selectedFile.size) * 100)),
+        // });
+        // const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+
+        pinFileToIPFS(
+          selectedFile,
+          setProgress,
+          (url, hash) => {
+            setFileUrl(hash);
+            setImageLoading(false);
+          },
+          (error) => {
+            toast.error(fileUploadErrorMessage);
+            setImageLoading(false);
+          }
+        );
       } catch (error) {
+        toast.error(fileUploadErrorMessage);
         console.log("Error uploading file: ", error);
       }
     } else {
@@ -129,7 +142,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
             {fileUrl && !imageLoading && (
               <div className="relative h-full">
                 <img
-                  src={fileUrl}
+                  src={getImage(fileUrl)}
                   alt="uploaded-pic"
                   className="h-full w-full rounded-lg drop-shadow-lg"
                 />
@@ -172,7 +185,7 @@ const ProfileEdit = ({ userId, setEditing }) => {
                 <Image
                   height={40}
                   width={40}
-                  src={user.image}
+                  src={getImage(user.image)}
                   className="w-10 h-10 rounded-full"
                   alt="user-profile"
                 />

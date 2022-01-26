@@ -31,6 +31,17 @@ export const getUserName = (string) => {
     : `@${string?.slice(0, 5)}...${string?.slice(-5)}`;
 };
 
+export const getImage = (hash) => {
+  const clouddflare = "https://cf-ipfs.com/ipfs/"
+  const ipfs = "https://ipfs.io/ipfs/"
+  const pinata = "https://gateway.pinata.cloud/ipfs/"
+  const ipfsGateway = "https://gateway.ipfs.io/ipfs/"
+
+  const url = hash.length === 46 ? `${ipfs}${hash}` : hash
+
+  return url
+}
+
 export const getEventData = (event) => {
   const [
     itemId,
@@ -78,7 +89,7 @@ export const pinFileToIPFS = async (
 
   //we gather a local file for this example, but any valid readStream source will work here.
   let data = new FormData();
-  data.append("file", selectedFile);
+  data.append("file", selectedFile, selectedFile?.name ?? "metadata.json");
 
   axios
     .post(pinataUrl, data, {
@@ -97,9 +108,10 @@ export const pinFileToIPFS = async (
       },
     })
     .then(({ data }) => {
-      // const url= `https://ipfs.io/ipfs/${data?.IpfsHash}`
-      const url = `https://gateway.pinata.cloud/ipfs/${data?.IpfsHash}`;
-      success(url);
+      const {IpfsHash} = data
+      const url= `https://ipfs.io/ipfs/${data?.IpfsHash}`
+      // const url = `https://gateway.pinata.cloud/ipfs/${IpfsHash}`;
+      success(url, IpfsHash);
     })
     .catch((error) => {
       failure(error);
@@ -115,8 +127,6 @@ export const removePinFromIPFS = async (
   axios
     .delete(pinataUrl, {
       headers: {
-        // "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-        // "Content-Type": `${selectedFile?.type}; boundary=${data._boundary}`,
         pinata_api_key: process.env.PINATA_API_KEY,
         pinata_secret_api_key: process.env.PINATA_SECRET_KEY,
       },

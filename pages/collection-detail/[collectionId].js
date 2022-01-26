@@ -3,6 +3,7 @@ import Link from "next/link";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  getImage,
   getUserName,
 } from "../../utils/data";
 import {
@@ -228,7 +229,7 @@ const CollectionDetail = () => {
               className="shadow-lg rounded-lg"
               height={500}
               width={480}
-              src={image}
+              src={getImage(image)}
             />
 
             <div className="w-full px-5 flex-1 xl:min-w-620">
@@ -294,7 +295,7 @@ const CollectionDetail = () => {
                               <Image
                                 height={45}
                                 width={45}
-                                src={item?.user?.image}
+                                src={getImage(item?.user?.image)}
                                 className="w-12 h-12 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
@@ -320,7 +321,7 @@ const CollectionDetail = () => {
                           <Image
                             height={45}
                             width={45}
-                            src={user?.image}
+                            src={getImage(user?.image)}
                             className="w-14 h-14 rounded-full cursor-pointer pt-2"
                             alt="user-profile"
                           />
@@ -356,7 +357,7 @@ const CollectionDetail = () => {
                     height={35}
                     width={35}
                     className="align-middle rounded-full"
-                    src={createdBy?.image}
+                    src={getImage(createdBy?.image)}
                   />
 
                   <p className="inline align-middle text-sm ml-2 font-bold">

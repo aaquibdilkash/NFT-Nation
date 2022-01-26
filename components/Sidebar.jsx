@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FaArtstation, FaHome, FaUserCircle } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
-import { getUserName, isSubset } from "../utils/data";
+import { getImage, getUserName, isSubset } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -225,7 +225,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
             <Image
               height={40}
               width={40}
-              src={user?.image}
+              src={getImage(user?.image)}
               className="w-10 h-10 rounded-full"
               alt="user-profile"
             />
