@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { etherAddress, getImage, getMaxBid, getUserName } from "../utils/data";
 import {
+  contractAddressCopiedMessage,
   followErrorMessage,
   followSuccessMessage,
   loginMessage,
@@ -14,7 +15,11 @@ import {
   unFollowSuccessMessage,
 } from "../utils/messages";
 import axios from "axios";
-import { COLLECTION_SET, CURRENT_PROFILE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import {
+  COLLECTION_SET,
+  CURRENT_PROFILE_SET,
+  USER_GET_SUCCESS,
+} from "../redux/constants/UserTypes";
 import Image from "next/image";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
@@ -38,6 +43,7 @@ const Pin = ({ pin }) => {
     createdAt,
     itemId,
     tokenId,
+    nftContract,
     price,
     seller,
     saved,
@@ -57,9 +63,7 @@ const Pin = ({ pin }) => {
   const { query } = router;
   const { collectionId } = query;
 
-  const { user, collection } = useSelector(
-    (state) => state.userReducer
-  );
+  const { user, collection } = useSelector((state) => state.userReducer);
 
   const [alreadySaved, setAlreadySaved] = useState(
     saved?.find((item) => item === user?._id)
@@ -103,8 +107,10 @@ const Pin = ({ pin }) => {
   );
 
   useEffect(() => {
-    setAlreadyFollowed(user?.followings?.find((item) => item === postedBy?._id))
-  }, [user])
+    setAlreadyFollowed(
+      user?.followings?.find((item) => item === postedBy?._id)
+    );
+  }, [user]);
 
   const followUser = () => {
     if (!user?._id) {
@@ -132,7 +138,7 @@ const Pin = ({ pin }) => {
           payload: {
             ...user,
             followings: filteredFollowings,
-            followingsCount: filteredFollowings.length
+            followingsCount: filteredFollowings.length,
           },
         });
 
@@ -281,6 +287,44 @@ const Pin = ({ pin }) => {
             </span>
           )}
         </div>
+
+        <div className="flex flex-row px-2 pb-1">
+        <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(`${nftContract}`);
+                  toast.info(contractAddressCopiedMessage);
+                }}
+                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
+              >
+                {`Contract Address`}
+              </span>
+
+              <a onClick={(e) => {
+                  e.stopPropagation();
+                }} href={`https://ipfs.io/ipfs/${image}`} target="_blank">
+              <span
+                className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
+              >
+                {`IPFS`}
+              </span>
+              </a>
+
+              <a
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
+                target="_blank"
+              >
+                <span
+                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
+                >
+                  {`Etherscan`}
+                </span>
+              </a>
+        </div>
+
         <div className="p-6 pt-2">
           <div className="flex space-x-4">
             <div className="flex space-x-1 items-center">
@@ -339,6 +383,7 @@ const Pin = ({ pin }) => {
                   {alreadyAdded ? `Remove` : `Add`}
                 </span>
               )}
+              
             </div>
           </div>
         </div>
