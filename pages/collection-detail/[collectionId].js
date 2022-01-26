@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getImage,
-  getUserName,
-} from "../../utils/data";
+import { getImage, getUserName } from "../../utils/data";
 import {
   commentAddErrorMessage,
   commentAddSuccessMessage,
@@ -40,31 +37,21 @@ const CollectionDetail = () => {
   const { collectionId } = query;
   const { user, collection } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
-  const [collectionDetail, setCollectionDetail] = useState();
   const [collectionComments, setCollectionComments] = useState([]);
   const [activeBtn, setActiveBtn] = useState("Items");
   const [sideLoading, setSideLoading] = useState(true);
   const [collectionEditing, setCollectionEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Loading...");
+  const [loadingMessage, setLoadingMessage] = useState("Fetching Comments...");
   const [alreadySaved, setAlreadySaved] = useState(false);
   const [savedLength, setSavedLenth] = useState(0);
   const [tab, setTab] = useState("comments");
 
   const { _id, title, about, category, saved, image, createdBy, pins } =
-    collectionDetail ?? {
-      _id: "",
-      title: "",
-      about: "",
-      saved: [],
-      category: "",
-      image: "",
-      createdBy: {},
-      pins: [],
-    };
+    collection;
 
   const fetchCollectionComments = () => {
     setSideLoading(true);
@@ -82,10 +69,10 @@ const CollectionDetail = () => {
   };
 
   const fetchCollectionDetails = () => {
+    setLoading(true)
     axios
       .get(`/api/collections/${collectionId}`)
       .then((res) => {
-        setCollectionDetail(res?.data?.collection);
         dispatch({
           type: COLLECTION_SET,
           payload: res?.data?.collection,
@@ -96,6 +83,7 @@ const CollectionDetail = () => {
         setSavedLenth(res?.data?.collection?.saved?.length);
 
         setActiveBtn("Items");
+        setLoading(false)
 
         router.push(
           {
@@ -117,7 +105,7 @@ const CollectionDetail = () => {
 
   useEffect(() => {
     user?._id && setAlreadySaved(saved?.find((item) => item === user?._id));
-  }, [user, collectionDetail]);
+  }, [user, collection]);
 
   useEffect(() => {
     collectionId && fetchCollectionDetails();
@@ -175,17 +163,8 @@ const CollectionDetail = () => {
       });
   };
 
-  if (!collectionDetail) {
-    return <Spinner message="Showing Collection..." />;
-  }
-
   if (loading) {
-    return (
-      <Spinner
-        title={loadingMessage}
-        message={`Please Do Not Leave This Page...`}
-      />
-    );
+    return <Spinner message="Showing Collection..." />;
   }
 
   return (
@@ -203,34 +182,36 @@ const CollectionDetail = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {user?._id === _id && user?._id === createdBy?._id && (
-              <div className="absolute top-0 z-1 right-0 p-2">
-                <button
-                  type="button"
-                  className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
-                  onClick={() => {
-                    setCollectionEditing((collectionEditing) => !collectionEditing);
-                  }}
-                >
-                  <AiOutlineEdit color="themeColor" fontSize={21} />
-                </button>
-              </div>
-            )}
+        <div className="absolute top-0 z-1 right-0 p-2">
+          <button
+            type="button"
+            className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
+            onClick={() => {
+              setCollectionEditing((collectionEditing) => !collectionEditing);
+            }}
+          >
+            <AiOutlineEdit color="themeColor" fontSize={21} />
+          </button>
+        </div>
+      )}
       {collectionEditing && (
         <CollectionEdit setCollectionEditing={setCollectionEditing} />
       )}
-      {collectionDetail && !collectionEditing && (
+      {collection && !collectionEditing && (
         <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
           <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
-            <Image
-              unoptimized
-              placeholder="blur"
-              blurDataURL="/favicon.png"
-              alt={title}
-              className="shadow-lg rounded-lg"
-              height={500}
-              width={480}
-              src={getImage(image)}
-            />
+            {image && (
+              <Image
+                unoptimized
+                placeholder="blur"
+                blurDataURL="/favicon.png"
+                alt={title}
+                className="shadow-lg rounded-lg"
+                height={500}
+                width={480}
+                src={getImage(image)}
+              />
+            )}
 
             <div className="w-full px-5 flex-1 xl:min-w-620">
               <div className="flex flex-wrap justify-evenly">
@@ -353,7 +334,7 @@ const CollectionDetail = () => {
               <Link href={`/user-profile/${createdBy?._id}`}>
                 <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
                   <Image
-                    alt={collectionDetail.createdBy.userName}
+                    alt={collection.createdBy.userName}
                     height={35}
                     width={35}
                     className="align-middle rounded-full"

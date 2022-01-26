@@ -22,38 +22,43 @@ import moment from "moment";
 import { Feed } from "../../components";
 import CollectionEdit from "../../components/CollectionEdit";
 import Image from "next/image";
-import { CURRENT_PROFILE_SET, USER_GET_SUCCESS } from "../../redux/constants/UserTypes";
+import {
+  CURRENT_PROFILE_SET,
+  USER_GET_SUCCESS,
+} from "../../redux/constants/UserTypes";
 
 const UserProfilePage = () => {
   const router = useRouter();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { pathname, query } = router;
   const { user, currentProfile } = useSelector((state) => state.userReducer);
   const { userId, type } = query;
-  const [userProfile, setUserProfile] = useState();
   const [editing, setEditing] = useState(false);
   const [collectionEditing, setCollectionEditing] = useState(false);
   const [activeBtn, setActiveBtn] = useState("Owned NFTs");
   const [dropdown, setDropdown] = useState(null);
   const [dropdownChange, setDropdownChange] = useState(true);
   const [following, setFollowing] = useState(false);
-  // const [followingsLength, setFollowingsLength] = useState(0);
-  // const [followersLength, setFollowersLength] = useState(0);
-  const [alreadyFollowed, setAlreadyFollowed] = useState(user?.followings?.find((item) => item === userId));
+  const [loading, setLoading] = useState(true);
+  const [alreadyFollowed, setAlreadyFollowed] = useState(
+    user?.followings?.find((item) => item === userId)
+  );
 
   const fetchUserDetails = () => {
+    setLoading(true);
     axios
       .get(`/api/users/${userId}`)
       .then((res) => {
         const { followers, followings, address } = res?.data?.user;
-        setUserProfile(res?.data?.user);
+
         dispatch({
           type: CURRENT_PROFILE_SET,
-          payload: res?.data?.user
-        })
+          payload: res?.data?.user,
+        });
+
         setAlreadyFollowed(followers?.find((item) => item === user?._id));
-        // setFollowersLength(followers?.length);
-        // setFollowingsLength(followings?.length);
+
+        setLoading(false);
 
         router.push(
           {
@@ -87,31 +92,32 @@ const UserProfilePage = () => {
         toast.success(
           alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
         );
-        
+
         const filteredFollowings = alreadyFollowed
-        ? user?.followings.filter((item, index) => item !== userId)
-        : [...user?.followings, userId];
-        
+          ? user?.followings.filter((item, index) => item !== userId)
+          : [...user?.followings, userId];
 
         dispatch({
           type: USER_GET_SUCCESS,
           payload: {
             ...user,
             followings: filteredFollowings,
-            followingsCount: filteredFollowings.length
+            followingsCount: filteredFollowings.length,
           },
         });
 
         const filteredFollowers = alreadyFollowed
-        ? currentProfile?.followers.filter((item, index) => item !== user?._id)
-        : [...currentProfile?.followers, user?._id];
+          ? currentProfile?.followers.filter(
+              (item, index) => item !== user?._id
+            )
+          : [...currentProfile?.followers, user?._id];
 
         dispatch({
           type: CURRENT_PROFILE_SET,
           payload: {
             ...currentProfile,
             followers: filteredFollowers,
-            followersCount: filteredFollowers.length
+            followersCount: filteredFollowers.length,
           },
         });
 
@@ -133,12 +139,10 @@ const UserProfilePage = () => {
 
   useEffect(() => {
     user?._id &&
-      setAlreadyFollowed(
-        user?.followings?.find((item) => item === userId)
-      );
+      setAlreadyFollowed(user?.followings?.find((item) => item === userId));
   }, [user, currentProfile]);
 
-  if (!userProfile) return <Spinner message="Loading profile..." />;
+  if (loading) return <Spinner message="Loading profile..." />;
 
   const {
     _id,
@@ -151,7 +155,7 @@ const UserProfilePage = () => {
     followings,
     followersCount,
     followingsCount,
-  } = userProfile;
+  } = currentProfile;
 
   const buttonsArray = {
     Users: {
@@ -294,7 +298,7 @@ const UserProfilePage = () => {
       <div className="bg-gradient-to-r from-secondTheme to-themeColor relative rounded-lg pb-2 h-full justify-center items-center">
         <div className="flex flex-col pb-5">
           <div className="p-10">
-            {editing && <ProfileEdit userId={userId} setEditing={setEditing} />}
+            {editing && <ProfileEdit setEditing={setEditing} />}
             {collectionEditing && (
               <CollectionEdit setCollectionEditing={setCollectionEditing} />
             )}
@@ -302,16 +306,18 @@ const UserProfilePage = () => {
           {!editing && !collectionEditing && (
             <div className="relative flex flex-col mb-2 pb-10">
               <div className="flex flex-col justify-center items-center z-10">
-                <Image
-                  className="rounded-lg w-20 h-20 -mt-64"
-                  placeholder="blur"
-                  blurDataURL="/favicon.png"
-                  height={250}
-                  width={250}
-                  src={getImage(image)}
-                  objectFit="cover"
-                  alt="userProfile-pic"
-                />
+                {image && (
+                  <Image
+                    className="rounded-lg w-20 h-20 -mt-64"
+                    placeholder="blur"
+                    blurDataURL="/favicon.png"
+                    height={250}
+                    width={250}
+                    src={getImage(image)}
+                    objectFit="cover"
+                    alt="userProfile-pic"
+                  />
+                )}
               </div>
 
               <section className="relative pt-16 bg-blueGray-200">
@@ -319,15 +325,6 @@ const UserProfilePage = () => {
                   <div className="relative flex flex-col min-w-0 break-words bg-gradient-to-r from-themeColor to-secondTheme w-full mb-6 shadow-xl rounded-lg -mt-32">
                     <div className="px-6">
                       <div className="flex flex-wrap justify-between lg:pt-10">
-                        {/* <div className="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center">
-                          <div className="relative">
-                            <img
-                              alt="..."
-                              src="https://demos.creative-tim.com/notus-js/assets/img/team-2-800x800.jpg"
-                              className="shadow-xl rounded-full h-auto align-middle border-none absolute -m-16 -ml-20 lg:-ml-16 max-w-150-px"
-                            />
-                          </div>
-                        </div> */}
                         <div className="flex justify-center w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
                           <div className="flex gap-2 py-2 px-3 mt-20 lg:mt-0">
                             {user?._id !== userId && (

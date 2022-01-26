@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
@@ -7,7 +7,7 @@ import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import { CURRENT_PROFILE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -15,7 +15,7 @@ import { fileUploadErrorMessage } from "../utils/messages";
 
 // const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
-const ProfileEdit = ({ userId, setEditing }) => {
+const ProfileEdit = ({ setEditing }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.userReducer);
   const [userName, setUserName] = useState("");
@@ -83,12 +83,16 @@ const ProfileEdit = ({ userId, setEditing }) => {
     };
 
     axios
-      .put(`/api/users/${userId}`, obj)
+      .put(`/api/users/${user?._id}`, obj)
       .then((res) => {
         setEditing(false);
         toast.success("Profile Updated Successfuly!");
         dispatch({
           type: USER_GET_SUCCESS,
+          payload: res.data.user,
+        });
+        dispatch({
+          type: CURRENT_PROFILE_SET,
           payload: res.data.user,
         });
       })
@@ -97,6 +101,13 @@ const ProfileEdit = ({ userId, setEditing }) => {
         // console.log("Error in updating profile: ", e);
       });
   };
+
+  useEffect(() => {
+    const {userName, about, image} = user
+    setUserName(userName)
+    setAbout(about)
+    setFileUrl(image)
+  }, [user])
 
   return (
     <div className="flex flex-col justify-center items-center mt-0 lg:h-4/5">

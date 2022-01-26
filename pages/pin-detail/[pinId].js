@@ -614,6 +614,7 @@ const PinDetail = () => {
         });
     }
   };
+
   const makeAuctionBidRequest = (body) => {
     axios
       .post(`/api/pins/bids/${pinId}`, body)
@@ -629,6 +630,7 @@ const PinDetail = () => {
         toast.error(finalProcessingErrorMessage);
       });
   };
+  
   const withdrawAuctionBidRequest = (body) => {
     axios
       .put(`/api/pins/bids/${pinId}`, body)
@@ -881,7 +883,7 @@ const PinDetail = () => {
                 )}
                 {tab === "comments" && !pinComments?.length && sideLoading && (
                   <Spinner
-                  title={loadingMessage}
+                  title={`Fetching Comments...`}
                   // message={`Please Do Not Leave This Page...`}
                 />
                 )}

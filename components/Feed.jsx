@@ -15,7 +15,7 @@ const Feed = () => {
   const [collections, setCollections] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user, hasMore, refresh } = useSelector((state) => state.userReducer);
+  const { user, currentProfile, hasMore, refresh } = useSelector((state) => state.userReducer);
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
@@ -199,7 +199,7 @@ const Feed = () => {
     }
 
     return () => source.cancel("Operation canceled by the user.");
-  }, [router, refresh]);
+  }, [router, refresh, currentProfile]);
 
   // useEffect(() => {
 

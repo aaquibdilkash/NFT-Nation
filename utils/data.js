@@ -37,7 +37,7 @@ export const getImage = (hash) => {
   const pinata = "https://gateway.pinata.cloud/ipfs/"
   const ipfsGateway = "https://gateway.ipfs.io/ipfs/"
 
-  const url = hash.length === 46 ? `${ipfs}${hash}` : hash
+  const url = hash?.length === 46 ? `${ipfs}${hash}` : hash
 
   return url
 }

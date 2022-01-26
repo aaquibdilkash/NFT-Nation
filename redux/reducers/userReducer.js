@@ -35,7 +35,6 @@ export const userReducer = (state = initialState, action) => {
       };
 
     case CURRENT_PROFILE_SET:
-      console.log(action.payload, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDdd")
       return {
         ...state,
         currentProfile: action.payload,

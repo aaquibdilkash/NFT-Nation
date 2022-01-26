@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
@@ -13,12 +13,13 @@ import { toast } from "react-toastify";
 import { errorMessage, fileUploadErrorMessage } from "../utils/messages";
 import { useRouter } from "next/router";
 import { sidebarCategories } from "../utils/sidebarCategories";
+import { COLLECTION_SET } from "../redux/constants/UserTypes";
 
 // const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
 const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.userReducer);
+  const { user, collection } = useSelector((state) => state.userReducer);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
@@ -65,8 +66,6 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
             setImageLoading(false);
           }
         );
-
-        
       } catch (error) {
         toast.error(fileUploadErrorMessage);
         console.log("Error uploading file: ", error);
@@ -100,6 +99,10 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
         .put(`/api/collections/${collectionId}`, obj)
         .then((res) => {
           setCollectionEditing(false);
+          dispatch({
+            type: COLLECTION_SET,
+            payload: res.data.collection
+          })
           toast.success("Collection Updated Successfuly!");
         })
         .catch((e) => {
@@ -128,6 +131,16 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
     }
   };
 
+  useEffect(() => {
+    if (collectionId) {
+      const { title, about, image, category } = collection;
+      setTitle(title);
+      setAbout(about);
+      setFileUrl(image);
+      setCategory(category)
+    }
+  }, [collection]);
+
   return (
     <div className="flex flex-col justify-center items-center mt-0 lg:h-4/5">
       {fields && (
@@ -155,8 +168,8 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
                   </div>
 
                   <p className="mt-32 text-center font-bold text-wrap">
-                    Use high-quality JPG, JPEG, SVG, PNG, GIF or
-                    TIFF less than 20MB
+                    Use high-quality JPG, JPEG, SVG, PNG, GIF or TIFF less than
+                    20MB
                   </p>
                 </div>
                 <input
@@ -230,6 +243,7 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
                 onChange={(e) => {
                   setCategory(e.target.value);
                 }}
+                value={category}
                 className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg"
               >
                 <option value="others" className="text-sm bg-secondTheme">
@@ -256,7 +270,7 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
               <button
                 type="button"
                 onClick={() => {
-                  setCollectionEditing((prev) => !prev)
+                  setCollectionEditing((prev) => !prev);
                 }}
                 className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
               >
