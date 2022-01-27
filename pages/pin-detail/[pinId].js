@@ -8,6 +8,7 @@ import { ethers } from "ethers";
 import Spinner from "../../components/Spinner";
 import { useSelector } from "react-redux";
 import {
+  buttonStyle,
   etherAddress,
   getEventData,
   getImage,
@@ -59,11 +60,12 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { FaCopy, FaDiceD20, FaLink, FaShareAlt } from "react-icons/fa";
+import { FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import moment from "moment";
+import { MdDeleteForever } from "react-icons/md";
 
 const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
@@ -109,6 +111,8 @@ const PinDetail = () => {
     category,
     image,
     postedBy,
+    createdBy,
+    createdAt
   } = pinDetail ?? {
     _id: "",
     title: "",
@@ -128,6 +132,8 @@ const PinDetail = () => {
     properties: [],
     history: [],
     postedBy: {},
+    createdBy: {},
+    createdAt: new Date()
   };
 
   const executeMarketSaleCondition =
@@ -192,7 +198,7 @@ const PinDetail = () => {
   }, []);
 
   const fetchPinHistory = () => {
-    setLoadingMessage("Fetching History...")
+    setLoadingMessage("Fetching History...");
     setSideLoading(true);
     axios
       .get(`/api/pins/history/${pinId}`)
@@ -208,7 +214,7 @@ const PinDetail = () => {
   };
 
   const fetchPinComments = () => {
-    setLoadingMessage("Fetching Comments...")
+    setLoadingMessage("Fetching Comments...");
     setSideLoading(true);
     axios
       .get(`/api/pins/comments/${pinId}`)
@@ -219,6 +225,18 @@ const PinDetail = () => {
       .catch((e) => {
         toast.error(errorMessage);
         setSideLoading(false);
+        // console.log(e);
+      });
+  };
+
+  const deleteComment = (id) => {
+    axios
+      .delete(`/api/pins/comments/${pinId}/${id}`)
+      .then((res) => {
+        fetchPinComments();
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
         // console.log(e);
       });
   };
@@ -234,7 +252,7 @@ const PinDetail = () => {
         );
         setSavedLenth(res?.data?.pin?.saved?.length);
 
-        router.push(
+        router.replace(
           {
             pathname: pathname,
             query: {
@@ -262,12 +280,6 @@ const PinDetail = () => {
     pinId && fetchPinComments();
     pinId && fetchPinHistory();
   }, [pinId, refresh]);
-
-  // useEffect(() => {
-  //   if(tab === "comments") {
-  //     pinId && fetchPinComments();
-  //   }
-  // }, [tab]);
 
   const updatePin = (body) => {
     axios
@@ -810,8 +822,8 @@ const PinDetail = () => {
               src={getImage(image)}
             />
 
-            <div className="w-full px-5 flex-1 xl:min-w-620">
-              <div className="flex flex-wrap justify-evenly">
+            <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
+              <div className="flex flex-wrap justify-center lg:gap-2">
                 {[
                   {
                     name: "properties",
@@ -824,7 +836,7 @@ const PinDetail = () => {
                   {
                     name: "comments",
                     text: `Comments${
-                      commentsCount ? ` (${commentsCount})` : ``
+                      pinComments?.length ? ` (${pinComments?.length})` : ``
                     }`,
                     condition: true,
                     func: () => setTab("comments"),
@@ -844,12 +856,8 @@ const PinDetail = () => {
                 ].map((item, index) => {
                   if (item?.condition)
                     return (
-                      <button key={index} onClick={() => item?.func()}>
-                        <span
-                          className={`${tabButtonStyles} ${
-                            item?.name === tab ? `` : ``
-                          }`}
-                        >
+                      <button className="mt-1" key={index} onClick={() => item?.func()}>
+                        <span className={`${buttonStyle} text-xl`}>
                           {item?.text}
                         </span>
                       </button>
@@ -932,10 +940,7 @@ const PinDetail = () => {
                 )}
 
                 {tab === "comments" && !pinComments?.length && sideLoading && (
-                  <Spinner
-                    title={loadingMessage}
-                    // message={`Please Do Not Leave This Page...`}
-                  />
+                  <Spinner title={loadingMessage} />
                 )}
 
                 {tab === "comments" &&
@@ -966,6 +971,17 @@ const PinDetail = () => {
                         </p>
                         <p className="font-semibold">{item.comment}</p>
                       </div>
+                      {item?.user?._id === user?._id && (
+                        <div className="flex flex-col ml-auto">
+                          <MdDeleteForever
+                            onClick={() => {
+                              deleteComment(item?._id);
+                            }}
+                            size={25}
+                            className="cursor-pointer text-[#ff7f7f]"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
 
@@ -1002,16 +1018,18 @@ const PinDetail = () => {
                           </p>
                         </div>
                         <div className="flex flex-wrap">
-                          <p className="font-semibold">{`${index === pinHistory.length - 1 ? `Minted on`: `Transferred on`}: ${moment(
-                            new Date(item?.createdAt)
-                          ).format("MMM DD, YYYY")}`}</p>
+                          <p className="font-semibold">{`${
+                            index === pinHistory.length - 1
+                              ? `Minted on`
+                              : `Transferred on`
+                          }: ${moment(new Date(item?.createdAt)).format(
+                            "MMM DD, YYYY"
+                          )}`}</p>
                         </div>
                         <div className="flex flex-wrap">
-                          {
-                            index !== pinHistory.length - 1 && (
-                              <p className="font-semibold">{`For: ${item?.price} Matic`}</p>
-                            )
-                          }
+                          {index !== pinHistory.length - 1 && (
+                            <p className="font-semibold">{`For: ${item?.price} Matic`}</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1058,6 +1076,9 @@ const PinDetail = () => {
             {postedBy?._id && (
               <Link href={`/user-profile/${postedBy?._id}`}>
                 <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
+                <p className="inline align-middle text-sm mr-2 font-bold">
+                    {`Owner: `}
+                  </p>
                   <Image
                     alt={pinDetail.postedBy.userName}
                     height={35}
@@ -1066,31 +1087,48 @@ const PinDetail = () => {
                     src={getImage(postedBy?.image)}
                   />
 
-                  <p className="inline align-middle text-sm ml-2 font-bold">
+                  <p className="inline align-middle text-sm ml-1 font-bold">
                     {getUserName(postedBy?.userName)}
                   </p>
                 </div>
               </Link>
             )}
+            {createdBy?._id && (
+              <Link href={`/user-profile/${createdBy?._id}`}>
+                <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
+                <p className="inline align-middle text-sm mr-2 font-bold">
+                    {`Minter: `}
+                  </p>
+                  <Image
+                    alt={createdBy.userName}
+                    height={35}
+                    width={35}
+                    className="align-middle rounded-full"
+                    src={getImage(createdBy?.image)}
+                  />
 
+                  <p className="inline align-middle text-sm ml-1 font-bold">
+                    {getUserName(createdBy?.userName)}
+                  </p>
+                </div>
+              </Link>
+            )}
+          </div>
+          <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
+            <p>{`#${tokenId} ${title}`}</p>
+          </h1>
+          <p className="text-center text-md text-gray-700 font-bold px-4 lg:px-20 mb-5">
+            {about}
+          </p>
+
+
+          <div className="flex flex-wrap justify-center">
+          <div className="font-bold text-sm mr-2 mb-1">
+              <span className={buttonStyle}>{`Minted ${moment(createdAt).fromNow()}`}</span>
+            </div>
             {(priceShowCondition || highestBidShowCondition) && (
               <div className="font-bold text-sm mr-2 mb-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 inline mr-2 text-pink-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span className="align-middle">
-                  {/* {moment(createdAt).format("MMM DD, YYYY")} */}
+                <span className={buttonStyle}>
                   {priceShowCondition
                     ? `On Sale (Price: ${price} Matic)`
                     : `On Auction ${
@@ -1102,46 +1140,47 @@ const PinDetail = () => {
               </div>
             )}
 
-            <div
-              onClick={() => {
-                navigator.clipboard.writeText(`${nftContract}`);
-                toast.info(contractAddressCopiedMessage);
-              }}
-              className="font-bold text-sm mr-2 mb-1 cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1"
-            >
-              <FaCopy className="inline mr-2" size={20} />
-              <span className="align-middle">
-                {/* {moment(createdAt).format("MMM DD, YYYY")} */}
-                {`NFT Contract Address`}
+            <div className="font-bold text-sm mr-2 mb-1">
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(`${nftContract}`);
+                  toast.info(contractAddressCopiedMessage);
+                }}
+                className={buttonStyle}
+              >
+                {`Contract Address`}
               </span>
             </div>
 
             <div className="font-bold text-sm mr-2 mb-1">
-              <FaDiceD20 className="inline mr-2" size={20} />
-              <span className="align-middle">{`Token ID: #${tokenId}`}</span>
+              <span className={buttonStyle}>{`Token ID: ${tokenId}`}</span>
             </div>
-            <div className="font-bold text-sm mr-2">
-              <a href={getIpfsImage(image)} target="_blank">
-                <FaLink className="inline mr-2" size={20} />
-                <span className="align-middle">{`IPFS`}</span>
-              </a>
-            </div>
+
             <div className="font-bold text-sm mr-2 mb-1">
               <a
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                href={getIpfsImage(image)}
+                target="_blank"
+              >
+                <span className={buttonStyle}>{`IPFS`}</span>
+              </a>
+            </div>
+
+            <div className="font-bold text-sm mr-2 mb-1">
+              <a
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
                 target="_blank"
               >
-                <FaLink className="inline mr-2" size={20} />
-                <span className="align-middle">{`Etherscan`}</span>
+                <span className={buttonStyle}>{`Etherscan`}</span>
               </a>
             </div>
           </div>
-          <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
-            <p>{`#${tokenId} ${title}`}</p>
-          </h1>
-          <p className="text-center text-md text-gray-700 font-bold px-4 lg:px-20 mb-5">
-            {about}
-          </p>
           <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
             {buttonArray?.map((item, index) => {
               if (item?.condition) {

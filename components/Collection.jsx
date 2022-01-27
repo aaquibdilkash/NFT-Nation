@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -20,8 +19,6 @@ import moment from "moment";
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 
 const Collection = ({ collection }) => {
-  const [savingPost, setSavingPost] = useState(false);
-
   const {
     title,
     about,
@@ -49,6 +46,7 @@ const Collection = ({ collection }) => {
   const [alreadySaved, setAlreadySaved] = useState(
     saved?.find((item) => item === user?._id)
   );
+  const [savingPost, setSavingPost] = useState(false);
   const [savedLength, setSavedLenth] = useState(saved?.length);
 
   const [following, setFollowing] = useState(false);
@@ -154,20 +152,6 @@ const Collection = ({ collection }) => {
           </div>
 
           <div>
-            {/* <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-7 w-7 cursor-pointer"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-              />
-            </svg> */}
             {user?._id !== createdBy?._id && (
               <span
                 onClick={(e) => {
@@ -206,7 +190,7 @@ const Collection = ({ collection }) => {
             {`Owners: ${ownersCount}`}
           </span>
           <span className={buttonStyle}>
-            {`on Auction: ${onAuctionCount}`}
+            {`On Auction: ${onAuctionCount}`}
           </span>
         </div>
         <div className="flex flex-row px-2 pb-1">
@@ -267,19 +251,6 @@ const Collection = ({ collection }) => {
               </span>
               <span>{savedLength}</span>
             </div>
-            {/* <div className="flex space-x-1 items-center">
-              {collectionId && collection?.createdBy?._id === user?._id && (
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addPinToCollection();
-                  }}
-                  className="text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer"
-                >
-                  {alreadyAdded ? `Remove` : `Add`}
-                </span>
-              )}
-            </div> */}
           </div>
         </div>
       </div>

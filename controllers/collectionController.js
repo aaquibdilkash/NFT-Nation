@@ -55,11 +55,17 @@ const getCollection = catchAsyncErrors(async (req, res) => {
     success: true,
     collection,
   });
+
+  try {
+    updateCollectionData(req.query.id)
+  } catch(e) {
+    return
+  }
+
 });
 
-const getCollectionData = catchAsyncErrors(async (req, res) => {
-  let collection = await Collection.findById(req.query.id).populate("createdBy").populate("pins")
-  console.log(collection.pins[0].history)
+const updateCollectionData = async (id) => {
+  let collection = await Collection.findById(id).populate("pins")
 
   if (!collection) {
     return res.status(404).json({
@@ -87,17 +93,7 @@ const getCollectionData = catchAsyncErrors(async (req, res) => {
   console.log(collection.change, "change good")
   
   collection = await collection.save({ validateBeforeSave: false })
-
-
-  res.status(200).json({
-    success: true,
-    ownersCount: collection.ownersCount,
-    onSaleCount: collection.onSaleCount,
-    onAuctionCount: collection.onAuctionCount,
-    volume: collection.volume,
-    change: collection.change
-  });
-});
+}
 
 const createCollection = catchAsyncErrors(async (req, res) => {
   await Collection.create(req.body);
@@ -201,7 +197,10 @@ const saveCollection = catchAsyncErrors(async (req, res) => {
 });
 
 const getCommentsCollection = catchAsyncErrors(async (req, res) => {
-  const collection = await Collection.findById(req.query.id)
+  
+  const [pinId] = req.query.id
+
+  const collection = await Collection.findById(pinId)
     .select("comments")
     .populate("comments.user");
 
@@ -219,13 +218,14 @@ const getCommentsCollection = catchAsyncErrors(async (req, res) => {
 
 const commentCollection = catchAsyncErrors(async (req, res, next) => {
   const { user, comment } = req.body;
+  const [collectionId] = req.query.id
 
   const newComment = {
     user,
     comment,
   };
 
-  let collection = await Collection.findById(req.query.id).select("comments");
+  let collection = await Collection.findById(collectionId).select("comments");
 
   if (!collection) {
     return res.status(404).json({
@@ -246,9 +246,17 @@ const commentCollection = catchAsyncErrors(async (req, res, next) => {
 });
 
 const updateCollectionComment = catchAsyncErrors(async (req, res, next) => {
-  const { commentId, user, comment } = req.body;
+  const { user, comment } = req.body;
+  const [collectionId, commentId] = req.query.id
 
-  let collection = await Collection.findById(req.query.id).select("comments");
+  let collection = await Collection.findById(collectionId).select("comments");
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
 
   collection.comments.forEach((com) => {
     if (com.user.toString() === user && com._id.toString() === commentId) {
@@ -264,13 +272,19 @@ const updateCollectionComment = catchAsyncErrors(async (req, res, next) => {
 });
 
 const deleteCollectionComment = catchAsyncErrors(async (req, res, next) => {
-  const { commentId, user } = req.body;
+  const [collectionId, commentId] = req.query.id
 
-  let collection = await Collection.findById(req.query.id).select("comments");
+  let collection = await Collection.findById(collectionId).select("comments");
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
 
   collection.comments = collection.comments.filter(
-    (com) =>
-      com?.user?.toString() !== user && com?._id?.toString() !== commentId
+    (com) => com?._id?.toString() !== commentId
   );
 
   collection.commentsCount = collection.comments.length
@@ -285,7 +299,6 @@ const deleteCollectionComment = catchAsyncErrors(async (req, res, next) => {
 export {
   allCollections,
   getCollection,
-  getCollectionData,
   createCollection,
   updateCollection,
   deleteCollection,

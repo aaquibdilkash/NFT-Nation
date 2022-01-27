@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -24,13 +23,11 @@ import {
 import axios from "axios";
 import {
   COLLECTION_SET,
-  CURRENT_PROFILE_SET,
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
 import Image from "next/image";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { toast } from "react-toastify";
-import { FaComment } from "react-icons/fa";
 import moment from "moment";
 
 const Pin = ({ pin }) => {
@@ -229,20 +226,6 @@ const Pin = ({ pin }) => {
           </div>
 
           <div>
-            {/* <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-7 w-7 cursor-pointer"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-              />
-            </svg> */}
             {user?._id !== postedBy?._id && (
               <span
                 onClick={(e) => {

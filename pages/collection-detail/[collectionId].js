@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
-import { getImage, getUserName } from "../../utils/data";
+import { buttonStyle, getImage, getUserName } from "../../utils/data";
 import {
   commentAddErrorMessage,
   commentAddSuccessMessage,
@@ -21,6 +21,8 @@ import { Feed } from "../../components";
 import { AiFillHeart, AiOutlineEdit, AiOutlineHeart } from "react-icons/ai";
 import { COLLECTION_SET } from "../../redux/constants/UserTypes";
 import CollectionEdit from "../../components/CollectionEdit";
+import { MdDeleteForever } from "react-icons/md";
+import moment from "moment";
 
 const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
@@ -67,22 +69,25 @@ const CollectionDetail = () => {
     createdAt,
   } = collection;
 
-  const fetchCollectionData = () => {
-    // setSideLoading(true);
+  const deleteComment = (id) => {
+    setSideLoading(true)
+    setLoadingMessage("Deleting Comment...")
     axios
-      .get(`/api/collections/data/${collectionId}`)
+      .delete(`/api/collections/comments/${collectionId}/${id}`)
       .then((res) => {
-        // setSideLoading(false);
+        fetchCollectionComments();
+        setSideLoading(false)
       })
       .catch((e) => {
-        // toast.error(errorMessage);
-        setSideLoading(false);
+        toast.error(errorMessage);
+        setSideLoading(false)
         // console.log(e);
       });
   };
 
   const fetchCollectionComments = () => {
     setSideLoading(true);
+    setLoadingMessage("Fetching Comments...")
     axios
       .get(`/api/collections/comments/${collectionId}`)
       .then((res) => {
@@ -113,7 +118,7 @@ const CollectionDetail = () => {
         setActiveBtn("Items");
         setLoading(false);
 
-        router.push(
+        router.replace(
           {
             pathname: pathname,
             query: {
@@ -138,7 +143,6 @@ const CollectionDetail = () => {
   useEffect(() => {
     collectionId && fetchCollectionDetails();
     collectionId && fetchCollectionComments();
-    collectionId && fetchCollectionData();
   }, [collectionId, refresh]);
 
   const addComment = () => {
@@ -242,8 +246,8 @@ const CollectionDetail = () => {
               />
             )}
 
-            <div className="w-full px-5 flex-1 xl:min-w-620">
-              <div className="flex flex-wrap justify-evenly">
+            <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
+              <div className="flex flex-wrap justify-center lg:gap-2">
                 {[
                   {
                     name: "comments",
@@ -264,11 +268,9 @@ const CollectionDetail = () => {
                 ].map((item, index) => {
                   if (item?.condition)
                     return (
-                      <button key={index} onClick={() => item?.func()}>
+                      <button className="mt-1" key={index} onClick={() => item?.func()}>
                         <span
-                          className={`${tabButtonStyles} ${
-                            item?.name === tab ? `` : ``
-                          }`}
+                          className={`${buttonStyle} text-xl`}
                         >
                           {item?.text}
                         </span>
@@ -319,6 +321,17 @@ const CollectionDetail = () => {
                         </p>
                         <p className="font-semibold">{item.comment}</p>
                       </div>
+                      {item?.user?._id === user?._id && (
+                        <div className="flex flex-col ml-auto">
+                          <MdDeleteForever
+                            onClick={() => {
+                              deleteComment(item?._id);
+                            }}
+                            size={25}
+                            className="cursor-pointer text-[#ff7f7f]"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
@@ -358,6 +371,7 @@ const CollectionDetail = () => {
             </div>
           </div>
 
+
           <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
             {createdBy?._id && (
               <Link href={`/user-profile/${createdBy?._id}`}>
@@ -376,78 +390,50 @@ const CollectionDetail = () => {
                 </div>
               </Link>
             )}
-
-            {/* <div className="font-bold text-sm mr-2 mb-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 inline mr-2 text-pink-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span className="align-middle">
-                  test
-                </span>
-              </div> */}
-
-            {/* <div
-              onClick={() => {
-                navigator.clipboard.writeText(`${nftContract}`);
-                toast.info(contractAddressCopiedMessage);
-              }}
-              className="font-bold text-sm mr-2 mb-1 cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1"
-            >
-              <FaCopy className="inline mr-2" size={20} />
-              <span className="align-middle">
-                {`NFT Contract Address`}
-              </span>
-            </div> */}
-
-            {/* <div className="font-bold text-sm mr-2 mb-1">
-              <FaDiceD20 className="inline mr-2" size={20} />
-              <span className="align-middle">{`Token ID: #${tokenId}`}</span>
-            </div> */}
-
-            {/* <div className="font-bold text-sm mr-2">
-              <a href={`${image}`} target="_blank">
-                <FaLink className="inline mr-2" size={20} />
-                <span className="align-middle">{`IPFS`}</span>
-              </a>
-            </div> */}
-
-            {/* <div className="font-bold text-sm mr-2 mb-1">
-              <a
-                href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
-                target="_blank"
-              >
-                <FaLink className="inline mr-2" size={20} />
-                <span className="align-middle">{`Etherscan`}</span>
-              </a>
-            </div> */}
           </div>
+
+          
           <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
             <p>{`${title}`}</p>
           </h1>
           <p className="text-center text-md text-gray-700 font-bold px-4 lg:px-20 mb-5">
             {about}
           </p>
-          <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
-            {/* {buttonArray?.map((item, index) => {
-              if (item?.condition) {
+
+          <div className="flex flex-wrap justify-center">
+          {
+              [
+                {
+                  text: `Created ${moment(createdAt).fromNow()}`
+                },
+                {
+                  text: `NFTs: ${collection?.pins?.length}`
+                },
+                {
+                  text: `Owners: ${ownersCount}`
+                },
+                {
+                  text: `on Auction: ${onAuctionCount}`
+                },
+                {
+                  text: `On Sale: ${onSaleCount}`
+                },
+                {
+                  text: `Volume: ${volume}`
+                },
+                {
+                  text: `Change: ${change}%`
+                },
+              ].map((item, index) => {
                 return (
-                  <button key={index} onClick={item?.function}>
-                    <span className={tabButtonStyles}>{item?.text} </span>
-                  </button>
-                );
-              }
-            })} */}
+                  <div key={index} className="font-bold text-sm mr-2 mb-1">
+                  <span className={buttonStyle}>{item?.text}</span>
+                  </div>
+                )
+              })
+            }
+          </div>
+          <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
             <button className={tabButtonStyles}>
               <div className="flex gap-2 items-center">
                 <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
@@ -510,7 +496,7 @@ const CollectionDetail = () => {
               text: "Customize Collection",
               query: {
                 type: "pins",
-                postedBy: true,
+                createdBy: true,
               },
               condition: user?._id === createdBy?._id,
             },

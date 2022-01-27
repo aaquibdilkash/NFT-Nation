@@ -60,7 +60,7 @@ const UserProfilePage = () => {
 
         setLoading(false);
 
-        router.push(
+        router.replace(
           {
             pathname: pathname,
             query: {
@@ -580,7 +580,7 @@ const UserProfilePage = () => {
                                         setDropdownChange(true);
                                         setActiveBtn(ele.name);
 
-                                        router.push(
+                                        router.replace(
                                           {
                                             pathname: pathname,
                                             query: {

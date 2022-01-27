@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { create as ipfsHttpClient } from "ipfs-http-client";
+// import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import { getImage, getUserName, pinFileToIPFS } from "../utils/data";

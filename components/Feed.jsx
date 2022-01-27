@@ -56,7 +56,7 @@ const Feed = () => {
   }${collection ? `&collection=${collectionId}` : ``}${
     postedBy ? `&postedBy=${user?._id}` : ``
   }${
-    createdBy ? `&createdBy=${userId}` : ``
+    createdBy ? `&createdBy=${userId ?? user?._id}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
   const collectionLink = `/api/collections?${page ? `page=${page}` : `page=1`}${

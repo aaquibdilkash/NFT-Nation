@@ -139,7 +139,10 @@ const savePin = catchAsyncErrors(async (req, res) => {
 });
 
 const getCommentsPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id)
+
+  const [pinId] = req.query.id
+  
+  const pin = await Pin.findById(pinId)
     .select("comments")
     .populate("comments.user");
 
@@ -156,15 +159,15 @@ const getCommentsPin = catchAsyncErrors(async (req, res) => {
 });
 
 const commentPin = catchAsyncErrors(async (req, res, next) => {
-  console.log("in comment pin", req.body);
   const { user, comment } = req.body;
+  const [pinId] = req.query.id
 
   const newComment = {
     user,
     comment,
   };
 
-  let pin = await Pin.findById(req.query.id).select("comments");
+  let pin = await Pin.findById(pinId).select("comments");
 
   if (!pin) {
     return res.status(404).json({
@@ -184,9 +187,17 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
 });
 
 const updatePinComment = catchAsyncErrors(async (req, res, next) => {
-  const { commentId, user, comment } = req.body;
+  const { user, comment } = req.body;
+  const [pinId, commentId] = req.query.id
 
-  let pin = await Pin.findById(req.query.id);
+  let pin = await Pin.findById(pinId);
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
 
   pin.comments.forEach((com) => {
     if (com.user.toString() === user && com._id.toString() === commentId) {
@@ -202,13 +213,18 @@ const updatePinComment = catchAsyncErrors(async (req, res, next) => {
 });
 
 const deletePinComment = catchAsyncErrors(async (req, res, next) => {
-  const { commentId, user } = req.body;
+  const [pinId, commentId] = req.query.id
+  let pin = await Pin.findById(pinId).select("comments");
 
-  let pin = await Pin.findById(req.query.id);
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
 
   pin.comments = pin.comments.filter(
-    (com) =>
-      com?.user?.toString() !== user && com?._id?.toString() !== commentId
+    (com) => com?._id?.toString() !== commentId
   );
 
   pin.commentsCount = pin.comments.length;

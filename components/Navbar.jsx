@@ -10,7 +10,7 @@ const Navbar = ({ connectToMetamask }) => {
   const { user } = useSelector((state) => state.userReducer);
   const router = useRouter();
   const { pathname, query } = router;
-  const { keyword, type, feed } = query;
+  const { keyword, type, feed, page } = query;
 
   return (
     <div className="flex gap-2 md:gap-5 w-full mt-5 pb-7">
@@ -63,6 +63,7 @@ const Navbar = ({ connectToMetamask }) => {
                           query: {
                             // ...query,
                             // keyword,
+                            ...(page ? {page: 1} : {}),
                             ...(keyword ? {keyword} : {}),
                             ...(feed ? {feed} : {}),
                             type: item?.value,

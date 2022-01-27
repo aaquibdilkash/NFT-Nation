@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { buttonStyle, getImage, getUserName } from "../utils/data";
@@ -15,7 +14,6 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import moment from "moment";
 import {
-  CURRENT_PROFILE_SET,
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
@@ -154,7 +152,6 @@ const User = ({ userProfile }) => {
               <span
                 onClick={(e) => {
                   e.stopPropagation();
-                  // addPinToCollection();
                   followUser();
                 }}
                 className={buttonStyle}
@@ -165,7 +162,7 @@ const User = ({ userProfile }) => {
           </div>
         </div>
 
-        <div className="px-6 pb-0">
+        <div className="px-6 pb-2">
           <p className="text-sm text-center font-semibold">{about}</p>
         </div>
 

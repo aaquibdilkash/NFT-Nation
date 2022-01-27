@@ -92,6 +92,12 @@ const pinSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  pinCollection: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Collection",
+    required: true,
+    select: false
+  },
   saved: [
     {
       type: mongoose.Schema.ObjectId,

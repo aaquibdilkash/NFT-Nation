@@ -25,7 +25,7 @@ const HomeLayout = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pathname, query } = router;
-  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented } = query;
+  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented, type } = query;
   const { user, marketContract, refresh, hasMore, changePage } = useSelector(
     (state) => state.userReducer
   );
@@ -223,7 +223,7 @@ const HomeLayout = ({ children }) => {
       undefined,
       { shallow: true }
     );
-  }, [category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented]);
+  }, [category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented, type, keyword]);
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
