@@ -295,7 +295,7 @@ const UserProfilePage = () => {
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="bg-gradient-to-r from-secondTheme to-themeColor relative rounded-lg pb-2 h-full justify-center items-center">
+      <div className="bg-gradient-to-r from-secondTheme to-themeColor relative rounded-lg pb-2 h-full justify-center items-center mt-6 lg:mt-0">
         <div className="flex flex-col pb-5">
           <div className="lg:p-10">
             {editing && <ProfileEdit setEditing={setEditing} />}

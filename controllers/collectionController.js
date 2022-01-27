@@ -4,15 +4,23 @@ import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import Collection from "../models/collection";
 import redisClient from "./redis";
+// import Redis from "ioredis"
+
 
 const DEFAULT_EXPIRATION = 3600;
 
 const allCollections = catchAsyncErrors(async (req, res) => {
-  const data = await redisClient.get(`collections${JSON.stringify(req.query)}`);
+  // const redisClient = new Redis(process.env.REDIS_URL);
 
-  if (data) {
-    return res.status(200).json(JSON.parse(data));
-  }
+  redisClient.get(`collections${JSON.stringify(req.query)}`, (err, data) => {
+    if (err) {
+      console.error(err);
+    } else {
+      if(data) {
+        return res.status(200).json(JSON.parse(data));
+      }
+    }
+  });
 
   const resultPerPage = 8;
   const collectionsCount = await Collection.countDocuments();
@@ -54,6 +62,8 @@ const allCollections = catchAsyncErrors(async (req, res) => {
     "ex",
     DEFAULT_EXPIRATION,
   );
+
+  // await redisClient.quit();
 
   res.status(200).json({
     success: true,
