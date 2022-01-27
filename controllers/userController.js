@@ -1,9 +1,20 @@
 import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
+import { createClient } from "redis";
+
+const redisClient = createClient(process.env.REDIS_URL);
+redisClient.connect();
+const DEFAULT_EXPIRATION = 3600;
 
 const allUsers = catchAsyncErrors(async (req, res) => {
-  const resultPerPage = 12;
+  const data = await redisClient.get(`users${JSON.stringify(req.query)}`);
+
+  if (data) {
+    return res.json(JSON.parse(data));
+  }
+
+  const resultPerPage = 8;
   const usersCount = await User.countDocuments();
 
   const searchPagination = new SearchPagination(User.find(), req.query)
@@ -33,6 +44,18 @@ const allUsers = catchAsyncErrors(async (req, res) => {
   searchPagination.pagination(resultPerPage);
 
   users = await searchPagination.query.clone();
+
+  redisClient.setEx(
+    `users${JSON.stringify(req.query)}`,
+    DEFAULT_EXPIRATION,
+    JSON.stringify({
+      success: true,
+      users,
+      usersCount,
+      filteredUsersCount,
+      resultPerPage,
+    })
+  );
 
   res.status(200).json({
     success: true,

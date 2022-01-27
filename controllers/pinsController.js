@@ -3,9 +3,19 @@ import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import Collection from "../models/collection";
-import pin from "../models/pin";
+import { createClient } from "redis";
+
+const redisClient = createClient(process.env.REDIS_URL);
+redisClient.connect();
+const DEFAULT_EXPIRATION = 3600;
 
 const allPins = catchAsyncErrors(async (req, res) => {
+  const data = await redisClient.get(`pins${JSON.stringify(req.query)}`);
+
+  if (data) {
+    return res.json(JSON.parse(data));
+  }
+
   const resultPerPage = 8;
   const pinsCount = await Pin.countDocuments();
 
@@ -38,6 +48,18 @@ const allPins = catchAsyncErrors(async (req, res) => {
   searchPagination.pagination(resultPerPage);
 
   pins = await searchPagination.query.clone();
+
+  redisClient.setEx(
+    `pins${JSON.stringify(req.query)}`,
+    DEFAULT_EXPIRATION,
+    JSON.stringify({
+      success: true,
+      pins,
+      pinsCount,
+      filteredPinsCount,
+      resultPerPage,
+    })
+  );
 
   res.status(200).json({
     success: true,
@@ -139,9 +161,8 @@ const savePin = catchAsyncErrors(async (req, res) => {
 });
 
 const getCommentsPin = catchAsyncErrors(async (req, res) => {
+  const [pinId] = req.query.id;
 
-  const [pinId] = req.query.id
-  
   const pin = await Pin.findById(pinId)
     .select("comments")
     .populate("comments.user");
@@ -160,7 +181,7 @@ const getCommentsPin = catchAsyncErrors(async (req, res) => {
 
 const commentPin = catchAsyncErrors(async (req, res, next) => {
   const { user, comment } = req.body;
-  const [pinId] = req.query.id
+  const [pinId] = req.query.id;
 
   const newComment = {
     user,
@@ -188,7 +209,7 @@ const commentPin = catchAsyncErrors(async (req, res, next) => {
 
 const updatePinComment = catchAsyncErrors(async (req, res, next) => {
   const { user, comment } = req.body;
-  const [pinId, commentId] = req.query.id
+  const [pinId, commentId] = req.query.id;
 
   let pin = await Pin.findById(pinId);
 
@@ -213,7 +234,7 @@ const updatePinComment = catchAsyncErrors(async (req, res, next) => {
 });
 
 const deletePinComment = catchAsyncErrors(async (req, res, next) => {
-  const [pinId, commentId] = req.query.id
+  const [pinId, commentId] = req.query.id;
   let pin = await Pin.findById(pinId).select("comments");
 
   if (!pin) {
@@ -237,7 +258,6 @@ const deletePinComment = catchAsyncErrors(async (req, res, next) => {
 });
 
 const saveHistoryPin = catchAsyncErrors(async (req, res, next) => {
-
   let pin = await Pin.findById(req.query.id);
 
   pin.history.unshift(req.body);
@@ -250,7 +270,9 @@ const saveHistoryPin = catchAsyncErrors(async (req, res, next) => {
 });
 
 const getHistoryPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id).select("history").populate("history.user");
+  const pin = await Pin.findById(req.query.id)
+    .select("history")
+    .populate("history.user");
 
   if (!pin) {
     return res.status(404).json({

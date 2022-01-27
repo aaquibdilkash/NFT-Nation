@@ -11,10 +11,13 @@ import {
   getUserName,
 } from "../utils/data";
 import {
+  addToCollectionSuccessMessage,
   contractAddressCopiedMessage,
+  errorMessage,
   followErrorMessage,
   followSuccessMessage,
   loginMessage,
+  removeToCollectionSuccessMessage,
   saveCollectionErrorMessage,
   saveErrorMessage,
   unFollowErrorMessage,
@@ -161,12 +164,10 @@ const Pin = ({ pin }) => {
     }
     setAddingPost(true);
     axios
-      .put(`/api/collections/pins/${collection?._id}`, {
-        pinId: _id,
-      })
+      .put(`/api/collections/pins/${collection?._id}/${_id}`)
       .then((res) => {
         setAddingPost(false);
-        // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+        toast.success(alreadyAdded ? removeToCollectionSuccessMessage : addToCollectionSuccessMessage);
         const filteredCollectionPins = alreadyAdded
           ? collection.pins.filter((item, index) => item !== _id)
           : [...collection.pins, _id];
@@ -188,7 +189,7 @@ const Pin = ({ pin }) => {
       .catch((e) => {
         console.log(e);
         setAddingPost(false);
-        toast.error(saveCollectionErrorMessage);
+        toast.error(errorMessage);
       });
   };
 
@@ -256,7 +257,7 @@ const Pin = ({ pin }) => {
           <h2 className="text-sm text-gray-800 font-semibold">{`#${tokenId} ${title}`}</h2>
           <p className="text-sm font-semibold">{about}</p>
         </div>
-        <div className="flex flex-row px-2 pb-1">
+        <div className="flex flex-row px-2 py-1">
           {(priceShowCondition || highestBidShowCondition) && (
             <span className={buttonStyle}>
               {priceShowCondition ? `On Sale` : `On Auction`}

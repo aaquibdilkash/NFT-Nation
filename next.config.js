@@ -19,6 +19,7 @@ module.exports = withPWA({
     PINATA_API_KEY: process.env.PINATA_API_KEY,
     PINATA_SECRET_KEY: process.env.PINATA_SECRET_KEY,
     PINATA_JWT: process.env.PINATA_JWT,
+    REDIS_URL: process.env.REDIS_URL,
   },
   pwa: {
     dest: "public",
