@@ -54,6 +54,14 @@ const allPins = catchAsyncErrors(async (req, res) => {
 
   pins = await searchPagination.query.clone();
 
+  res.status(200).json({
+    success: true,
+    pins,
+    pinsCount,
+    filteredPinsCount,
+    resultPerPage,
+  });
+
   redisClient.set(
     `pins${JSON.stringify(req.query)}`,
     JSON.stringify({
@@ -68,14 +76,6 @@ const allPins = catchAsyncErrors(async (req, res) => {
   );
 
   // await redisClient.quit();
-
-  res.status(200).json({
-    success: true,
-    pins,
-    pinsCount,
-    filteredPinsCount,
-    resultPerPage,
-  });
 });
 
 const getPin = catchAsyncErrors(async (req, res) => {

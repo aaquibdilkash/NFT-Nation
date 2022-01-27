@@ -50,6 +50,14 @@ const allCollections = catchAsyncErrors(async (req, res) => {
 
   collections = await searchPagination.query.clone();
 
+  res.status(200).json({
+    success: true,
+    collections,
+    collectionsCount,
+    filteredCollectionsCount,
+    resultPerPage,
+  });
+
   redisClient.set(
     `collections${JSON.stringify(req.query)}`,
     JSON.stringify({
@@ -64,14 +72,6 @@ const allCollections = catchAsyncErrors(async (req, res) => {
   );
 
   // await redisClient.quit();
-
-  res.status(200).json({
-    success: true,
-    collections,
-    collectionsCount,
-    filteredCollectionsCount,
-    resultPerPage,
-  });
 });
 
 const getCollection = catchAsyncErrors(async (req, res) => {

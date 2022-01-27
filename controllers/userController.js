@@ -50,6 +50,14 @@ const allUsers = catchAsyncErrors(async (req, res) => {
 
   users = await searchPagination.query.clone();
 
+  res.status(200).json({
+    success: true,
+    users,
+    usersCount,
+    filteredUsersCount,
+    resultPerPage,
+  });
+
   redisClient.set(
     `users${JSON.stringify(req.query)}`,
     JSON.stringify({
@@ -64,14 +72,6 @@ const allUsers = catchAsyncErrors(async (req, res) => {
   );
 
   // await redisClient.quit();
-
-  res.status(200).json({
-    success: true,
-    users,
-    usersCount,
-    filteredUsersCount,
-    resultPerPage,
-  });
 });
 
 const getUser = catchAsyncErrors(async (req, res) => {

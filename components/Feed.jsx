@@ -7,6 +7,7 @@ import { CHANGE_PAGE, HAS_MORE } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
+import { errorMessage } from "../utils/messages";
 
 const Feed = () => {
   const dispatch = useDispatch();
@@ -104,9 +105,10 @@ const Feed = () => {
       })
       .catch((e) => {
         if (axios.isCancel(e)) {
+          
         } else {
           setLoading(false);
-          toast.error("Something went wrong!");
+          toast.error(errorMessage);
         }
       });
   };
