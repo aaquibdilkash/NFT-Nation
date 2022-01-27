@@ -3,17 +3,15 @@ import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import Collection from "../models/collection";
-import { createClient } from "redis";
+import redisClient from "./redis";
 
-const redisClient = createClient(process.env.REDIS_URL);
-redisClient.connect();
 const DEFAULT_EXPIRATION = 3600;
 
 const allPins = catchAsyncErrors(async (req, res) => {
   const data = await redisClient.get(`pins${JSON.stringify(req.query)}`);
 
   if (data) {
-    return res.json(JSON.parse(data));
+    return res.status(200).json(JSON.parse(data));
   }
 
   const resultPerPage = 8;
@@ -49,16 +47,17 @@ const allPins = catchAsyncErrors(async (req, res) => {
 
   pins = await searchPagination.query.clone();
 
-  redisClient.setEx(
+  redisClient.set(
     `pins${JSON.stringify(req.query)}`,
-    DEFAULT_EXPIRATION,
     JSON.stringify({
       success: true,
       pins,
       pinsCount,
       filteredPinsCount,
       resultPerPage,
-    })
+    }),
+    "ex",
+    DEFAULT_EXPIRATION,
   );
 
   res.status(200).json({
