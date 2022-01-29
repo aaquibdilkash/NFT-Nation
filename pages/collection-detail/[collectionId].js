@@ -262,7 +262,7 @@ const CollectionDetail = () => {
                   {
                     name: "edit",
                     text: `Edit`,
-                    condition: user?._id === createdBy?._id,
+                    condition: user?._id === collection?.createdBy?._id,
                     func: () => setCollectionEditing((prev) => !prev),
                   },
                 ].map((item, index) => {
@@ -520,11 +520,8 @@ const CollectionDetail = () => {
                       { shallow: true }
                     );
                   }}
-                  className={`${
-                    activeBtn === item?.name
-                      ? activeBtnStyles
-                      : notActiveBtnStyles
-                  }`}
+                  className={`${buttonStyle} ${activeBtn === item?.name ? `` : `bg-transparent text-[#000000]`}`}
+
                 >
                   {item?.text}
                 </button>

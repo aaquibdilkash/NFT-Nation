@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 // import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getImage, getUserName, pinFileToIPFS } from "../utils/data";
+import { getImage, getUserName, pinFileToIPFS, removePinFromIPFS } from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -11,7 +11,7 @@ import { CURRENT_PROFILE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTy
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { fileUploadErrorMessage } from "../utils/messages";
+import { duplicateFileInfoMessage, errorMessage, fileUploadErrorMessage } from "../utils/messages";
 
 // const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
@@ -23,8 +23,29 @@ const ProfileEdit = ({ setEditing }) => {
   const [imageLoading, setImageLoading] = useState(false);
   const [fields, setFields] = useState();
   const [fileUrl, setFileUrl] = useState("");
+  const [prevFileUrl, setPrevFileUrl] = useState(null);
   const [wrongImageType, setWrongImageType] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const unPinHash = localStorage.getItem("unPinProfileHash");
+      if (unPinHash && unPinHash !== user?.image) {
+        removePinFromIPFS(
+          unPinHash,
+          () => {
+            localStorage.removeItem("unPinProfileHash");
+          },
+          (e) => {
+            console.log(e)
+          }
+        );
+      } else {
+        localStorage.removeItem("unPinProfileHash");
+      }
+    }
+
+  }, []);
 
   const uploadImage = async (e) => {
     const selectedFile = e.target.files[0];
@@ -47,8 +68,16 @@ const ProfileEdit = ({ setEditing }) => {
         pinFileToIPFS(
           selectedFile,
           setProgress,
-          (url, hash) => {
+          (hash, isDuplicate) => {
+            if(isDuplicate) {
+              toast.info(duplicateFileInfoMessage)
+              setImageLoading(false);
+              return
+            }
             setFileUrl(hash);
+            if(hash !== user?.image) {
+              localStorage.setItem("unPinProfileHash", hash)
+            }
             setImageLoading(false);
           },
           (error) => {
@@ -85,8 +114,23 @@ const ProfileEdit = ({ setEditing }) => {
     axios
       .put(`/api/users/${user?._id}`, obj)
       .then((res) => {
-        setEditing(false);
         toast.success("Profile Updated Successfuly!");
+        // localStorage.removeItem("unPinProfileHash");
+
+        if(res.data.user.image !== prevFileUrl) {
+          // localStorage.setItem("unPinProfileHash", prevFileUrl)
+          removePinFromIPFS(
+            prevFileUrl,
+            () => {
+              localStorage.removeItem("unPinProfileHash");
+            },
+            (e) => {
+              localStorage.setItem("unPinProfileHash", prevFileUrl)
+              console.log(e)
+            }
+          );
+        }
+
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
@@ -95,6 +139,7 @@ const ProfileEdit = ({ setEditing }) => {
           type: CURRENT_PROFILE_SET,
           payload: res.data.user,
         });
+        setEditing(false);
       })
       .catch((e) => {
         toast.error("Something went wrong!");
@@ -107,6 +152,7 @@ const ProfileEdit = ({ setEditing }) => {
     setUserName(userName)
     setAbout(about)
     setFileUrl(image)
+    setPrevFileUrl(image)
   }, [user])
 
   return (
@@ -121,7 +167,7 @@ const ProfileEdit = ({ setEditing }) => {
           <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
             {imageLoading && (
               <div className="flex flex-col items-center justify-center h-full w-full px-16 mx-16">
-                <Spinner title="Uploading..." message={`${progress}%`} />
+                <Spinner title={progress ? `Uploading...`: ``} message={progress ? `${progress}%`: ``} />
               </div>
             )}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
@@ -161,8 +207,21 @@ const ProfileEdit = ({ setEditing }) => {
                   type="button"
                   className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                   onClick={() => {
-                    setFileUrl(null);
-                    setProgress(0);
+                    if(fileUrl !== user?.image) {
+                      setProgress(0);
+                      setImageLoading(true)
+                      removePinFromIPFS(fileUrl, () => {
+                        setImageLoading(false)
+                        setFileUrl(null)
+                        localStorage.removeItem("unPinProfileHash")
+                      }, () => {
+                        toast.error(errorMessage)
+                        setImageLoading(false)
+                      })
+                    } else {
+                      setFileUrl(null)
+                      setProgress(0);
+                    }
                   }}
                 >
                   <MdDelete />

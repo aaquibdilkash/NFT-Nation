@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   },
   image: {
     type: String,
+    default: ""
   },
   about: {
     type: String,
@@ -41,6 +42,12 @@ const userSchema = new mongoose.Schema({
   followingsCount: {
     type: Number,
     default: 0
+  },
+
+  refer: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
   },
   // nftMinted: {
   //   type: Number,

@@ -3,7 +3,20 @@ import axios from "axios";
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
-export const buttonStyle = "text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer hover:drop-shadow-xl";
+export const feedPathArray = [
+  "/",
+  "/pin-detail/[pinId]",
+  "/collection-detail/[collectionId]",
+  "/user-profile/[userId]",
+];
+
+export const ether = (n) => {
+  return new web3.utils.BN(
+      web3.utils.toWei(n.toString(), 'ether')
+  )
+}
+
+export const buttonStyle = "text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer shadow-xl drop-shadow-lg";
 
 export const toHex = (num) => {
   return "0x" + num.toString(16);
@@ -39,7 +52,7 @@ export const getImage = (hash) => {
   const pinata = "https://gateway.pinata.cloud/ipfs/"
   const ipfsGateway = "https://gateway.ipfs.io/ipfs/"
 
-  const url = hash?.length === 46 ? `${ipfs}${hash}` : hash
+  const url = hash?.length === 46 ? `${ipfs}${hash}` : "/favicon.png"
 
   return url
 }
@@ -99,7 +112,7 @@ export const pinFileToIPFS = async (
 
   //we gather a local file for this example, but any valid readStream source will work here.
   let data = new FormData();
-  data.append("file", selectedFile, selectedFile?.name ?? "metadata.json");
+  data.append("file", selectedFile, selectedFile?.name ? `${selectedFile?.name}`: `metadata.json`);
 
   axios
     .post(pinataUrl, data, {
@@ -118,10 +131,10 @@ export const pinFileToIPFS = async (
       },
     })
     .then(({ data }) => {
-      const {IpfsHash} = data
+      const {IpfsHash, isDuplicate} = data
       const url= `https://ipfs.io/ipfs/${data?.IpfsHash}`
       // const url = `https://gateway.pinata.cloud/ipfs/${IpfsHash}`;
-      success(url, IpfsHash);
+      success(IpfsHash, isDuplicate);
     })
     .catch((error) => {
       failure(error);
@@ -146,7 +159,7 @@ export const removePinFromIPFS = async (
       //handle response here
     })
     .catch(function (error) {
-      failure()
+      failure(error)
       //handle error here
     });
 };

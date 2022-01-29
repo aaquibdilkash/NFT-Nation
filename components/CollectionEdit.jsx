@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 // import { create as ipfsHttpClient } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getImage, getUserName, pinFileToIPFS } from "../utils/data";
+import {
+  getImage,
+  getUserName,
+  pinFileToIPFS,
+  removePinFromIPFS,
+} from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -10,7 +15,11 @@ import { useDispatch } from "react-redux";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { errorMessage, fileUploadErrorMessage } from "../utils/messages";
+import {
+  duplicateFileInfoMessage,
+  errorMessage,
+  fileUploadErrorMessage,
+} from "../utils/messages";
 import { useRouter } from "next/router";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import { COLLECTION_SET } from "../redux/constants/UserTypes";
@@ -29,12 +38,30 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
   const [category, setCategory] = useState("");
   const [fields, setFields] = useState();
   const [fileUrl, setFileUrl] = useState("");
+  const [prevFileUrl, setPrevFileUrl] = useState(null);
   const [wrongImageType, setWrongImageType] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const router = useRouter();
   const { query } = router;
   const { collectionId, userId } = query;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const unPinHash = localStorage.getItem("unPinCollectionHash");
+      if (unPinHash) {
+        removePinFromIPFS(
+          unPinHash,
+          () => {
+            localStorage.removeItem("unPinCollectionHash");
+          },
+          (e) => {
+            console.log(e);
+          }
+        );
+      }
+    }
+  }, []);
 
   const uploadImage = async (e) => {
     const selectedFile = e.target.files[0];
@@ -57,8 +84,14 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
         pinFileToIPFS(
           selectedFile,
           setProgress,
-          (url, hash) => {
+          (hash, isDuplicate) => {
+            if (isDuplicate) {
+              toast.info(duplicateFileInfoMessage);
+              setImageLoading(false);
+              return;
+            }
             setFileUrl(hash);
+            localStorage.setItem("unPinCollectionHash", hash);
             setImageLoading(false);
           },
           (error) => {
@@ -98,12 +131,28 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
       axios
         .put(`/api/collections/${collectionId}`, obj)
         .then((res) => {
-          setCollectionEditing(false);
           dispatch({
             type: COLLECTION_SET,
-            payload: res.data.collection
-          })
+            payload: res.data.collection,
+          });
+          // localStorage.removeItem("unPinCollectionHash")
+
+          if (res.data.collection.image !== prevFileUrl) {
+            // localStorage.setItem("unPinProfileHash", prevFileUrl)
+            removePinFromIPFS(
+              prevFileUrl,
+              () => {
+                localStorage.removeItem("unPinCollectionHash");
+              },
+              (e) => {
+                localStorage.setItem("unPinCollectionHash", prevFileUrl);
+                console.log(e);
+              }
+            );
+          }
+
           toast.success("Collection Updated Successfuly!");
+          setCollectionEditing(false);
         })
         .catch((e) => {
           toast.error(errorMessage);
@@ -121,8 +170,9 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
       axios
         .post(`/api/collections`, obj)
         .then((res) => {
-          setCollectionEditing(false);
           toast.success("Collection Created Successfuly!");
+          localStorage.removeItem("unPinCollectionHash");
+          setCollectionEditing(false);
         })
         .catch((e) => {
           toast.error(errorMessage);
@@ -137,7 +187,8 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
       setTitle(title);
       setAbout(about);
       setFileUrl(image);
-      setCategory(category)
+      setPrevFileUrl(image);
+      setCategory(category);
     }
   }, [collection]);
 
@@ -153,7 +204,10 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
           <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
             {imageLoading && (
               <div className="flex flex-col items-center justify-center h-full w-full px-16 mx-16">
-                <Spinner title="Uploading..." message={`${progress}%`} />
+                <Spinner
+                  title={progress ? `Uploading...` : ``}
+                  message={progress ? `${progress}%` : ``}
+                />
               </div>
             )}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
@@ -191,8 +245,42 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
                   type="button"
                   className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                   onClick={() => {
-                    setFileUrl(null);
-                    setProgress(0);
+                    if (collectionId) {
+                      if (fileUrl !== collection?.image) {
+                        setProgress(0);
+                        setImageLoading(true);
+                        removePinFromIPFS(
+                          fileUrl,
+                          () => {
+                            setImageLoading(false);
+                            setFileUrl(null);
+                            localStorage.removeItem("unPinCollectionHash");
+                          },
+                          () => {
+                            toast.error(errorMessage);
+                            setImageLoading(false);
+                          }
+                        );
+                      } else {
+                        setFileUrl(null);
+                        setProgress(0);
+                      }
+                    } else if(userId) {
+                      setProgress(0);
+                      setImageLoading(true);
+                      removePinFromIPFS(
+                        fileUrl,
+                        () => {
+                          setFileUrl(null);
+                          localStorage.removeItem("unPinCollectionHash");
+                          setImageLoading(false);
+                        },
+                        () => {
+                          toast.error(errorMessage);
+                          setImageLoading(false);
+                        }
+                      );
+                    }
                   }}
                 >
                   <MdDelete />

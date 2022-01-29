@@ -12,6 +12,7 @@ module.exports = withPWA({
   },
   env: {
     DB_URI: process.env.DB_URI,
+    LOCAL_DB_URI: process.env.LOCAL_DB_URI,
     PROJECT_ID: process.env.PROJECT_ID,
     PRIVATE_KEY: process.env.PRIVATE_KEY,
     INFURA_PROJECT_ID: process.env.INFURA_PROJECT_ID,

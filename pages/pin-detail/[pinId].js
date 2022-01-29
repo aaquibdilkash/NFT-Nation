@@ -6,7 +6,7 @@ import Market from "./../../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 import Spinner from "../../components/Spinner";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   buttonStyle,
   etherAddress,
@@ -33,6 +33,8 @@ import {
   finalErrorMessage,
   finalProcessingErrorMessage,
   finalSuccessMessage,
+  giftLoadingMessage,
+  giftUserSelectInfoMessage,
   loginMessage,
   makeBidLoadingMessage,
   saveErrorMessage,
@@ -49,6 +51,8 @@ import {
   tokenBidWithdrawSuccessMessage,
   tokenBuyErrorMessage,
   tokenBuySuccessMessage,
+  tokenGiftErrorMessage,
+  tokenGiftSuccessMessage,
   tokenSaleCancelErrorMessage,
   tokenSaleCancelSuccessMessage,
   tokenSaleErrorMessage,
@@ -66,15 +70,17 @@ import { Feed } from "../../components";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import moment from "moment";
 import { MdDeleteForever } from "react-icons/md";
+import { GIFTING_USER_SET } from "../../redux/constants/UserTypes";
 
 const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
 
 const PinDetail = () => {
   const router = useRouter();
+  const dispatch = useDispatch()
   const { pathname } = router;
   const { pinId } = router.query;
-  const { user, marketContract } = useSelector((state) => state.userReducer);
+  const { user, giftingUser, marketContract } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [pinDetail, setPinDetail] = useState();
   const [pinComments, setPinComments] = useState([]);
@@ -90,6 +96,7 @@ const PinDetail = () => {
   const [sideLoading, setSideLoading] = useState(true);
   const [alreadySaved, setAlreadySaved] = useState(false);
   const [savedLength, setSavedLenth] = useState(0);
+  const [activeBtn, setActiveBtn] = useState("More Like This");
   const [tab, setTab] = useState("comments");
 
   const {
@@ -184,18 +191,18 @@ const PinDetail = () => {
   const highestBidShowCondition =
     price === "0.0" && owner === etherAddress && !auctionEnded;
 
-  useEffect(() => {
-    const listener = () => {
-      setTimeout(() => {
-        setRefresh((prev) => !prev);
-      }, 5000);
-    };
+  // useEffect(() => {
+  //   const listener = () => {
+  //     setTimeout(() => {
+  //       setRefresh((prev) => !prev);
+  //     }, 5000);
+  //   };
 
-    marketContract &&
-      marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
-        listener();
-      });
-  }, []);
+  //   marketContract &&
+  //     marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
+  //       listener();
+  //     });
+  // }, []);
 
   const fetchPinHistory = () => {
     setLoadingMessage("Fetching History...");
@@ -288,6 +295,10 @@ const PinDetail = () => {
         setAddingSellPrice(false);
         setInputPrice("");
         setRefresh((prev) => !prev);
+        dispatch({
+          type: GIFTING_USER_SET,
+          payload: {}
+        })
         setLoading(false);
         toast.success(finalSuccessMessage);
       })
@@ -308,6 +319,74 @@ const PinDetail = () => {
       .catch((e) => {
         // toast.error("could not be transferred");
       });
+  };
+
+  const giftMarketItem = async () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    if (!giftingUser?._id) {
+      toast.info(giftUserSelectInfoMessage);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    // get approval
+    try {
+      var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+      var transaction = await contract.approve(nftmarketaddress, tokenId);
+      setLoadingMessage(approvalLoadingMessage);
+      await transaction.wait();
+      toast.success(tokenApproveSuccessMessage);
+    } catch (e) {
+      toast.error(tokenApproveErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    // execute Market Sale function
+    try {
+      contract = new ethers.Contract(
+        nftmarketaddress,
+        Market.abi,
+        signer
+      );
+      console.log(nftaddress, itemId, giftingUser?.address)
+      transaction = await contract.giftMarketItem(nftaddress, itemId, giftingUser?.address);
+      setLoadingMessage(giftLoadingMessage);
+      const tx = await transaction.wait();
+      toast.success(tokenGiftSuccessMessage);
+      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDD")
+      const event = tx.events[2];
+      var eventData = getEventData(event);
+      console.log(eventData);
+    } catch (e) {
+      toast.error(tokenGiftErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    // transfer asset
+    const transferObj = {
+      user: giftingUser?._id,
+      price: "0.0",
+    };
+    transferPin(transferObj);
+
+    // upadate pin in the database
+    updatePin({
+      ...eventData,
+      postedBy: giftingUser?._id,
+      destination: "https://nft-nation.vercel.app",
+    });
   };
 
   const executeMarketSale = async () => {
@@ -360,6 +439,7 @@ const PinDetail = () => {
       destination: "https://nft-nation.vercel.app",
     });
   };
+
 
   const createMarketSale = async () => {
     if (!user?._id) {
@@ -733,6 +813,11 @@ const PinDetail = () => {
       text: `Buy ${price} Matic`,
       condition: executeMarketSaleCondition,
       function: executeMarketSale,
+    },
+    {
+      text: `Gift`,
+      condition: createMarketSaleCondition,
+      function: giftMarketItem,
     },
     {
       text: `Sell`,
@@ -1277,9 +1362,54 @@ const PinDetail = () => {
         </div>
       )}
       <>
-        <h2 className="text-center font-bold text-2xl mt-8 mb-4">
-          More like this
-        </h2>
+      <div className="flex flex-wrap justify-evenly mt-2 mb-2">
+          {[
+            {
+              name: `More NFTs Like This`,
+              text: `More NFTs Like This`,
+              query: {
+                type: "pins",
+                category,
+                page: 1
+              },
+              condition: true,
+            },
+            {
+              name: "Gift This NFT To Someone",
+              text: "Gift This NFT To Someone",
+              query: {
+                type: "users",
+                page: 1
+              },
+              condition: createMarketSaleCondition,
+            },
+          ].map((item, index) => {
+            if (item?.condition)
+              return (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    setActiveBtn(item.name);
+
+                    router.push(
+                      {
+                        pathname: pathname,
+                        query: {
+                          pinId,
+                          ...item?.query,
+                        },
+                      },
+                      undefined,
+                      { shallow: true }
+                    );
+                  }}
+                  className={`${buttonStyle} ${activeBtn === item?.name ? `` : `bg-transparent text-[#000000]`}`}
+                >
+                  {item?.text}
+                </button>
+              );
+          })}
+        </div>
         <Feed />
       </>
     </>

@@ -34,16 +34,16 @@ const HomeLayout = ({ children }) => {
   let web3;
   let accounts;
   let chainId;
-  const chain = chainData.ropsten;
+  const chain = chainData.localhost;
 
   const connectToMetamask = async () => {
 
     if (!window?.ethereum) {
       // window.ethereum.isMetaMask
       toast.info(
-        "Web3 is not enabled in this browser, Please install Metamask to get started!",
+        "Web3 is Not Enabled. Please Install Metamask Extension For Your Browser to Get Started!",
         {
-          autoClose: 6000,
+          autoClose: 3000,
         }
       );
       return;
@@ -162,7 +162,6 @@ const HomeLayout = ({ children }) => {
     const obj = {
       address: address,
       userName: address,
-      image: `https://ipfs.infura.io/ipfs/QmYS1WpWLduEU1i6stmAaCymDS7XsSCoTd4SFfTyK88J6A`,
     };
     axios
       .post("/api/users", obj)

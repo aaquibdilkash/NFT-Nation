@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { AiOutlineLogin } from "react-icons/ai";
 import Image from "next/image";
-import { getImage } from "../utils/data";
+import { feedPathArray, getImage } from "../utils/data";
 
 const Navbar = ({ connectToMetamask }) => {
   const { user } = useSelector((state) => state.userReducer);
@@ -33,51 +33,71 @@ const Navbar = ({ connectToMetamask }) => {
           }}
           placeholder="Search NFTs, Collections or Users..."
           value={keyword}
-          onFocus={() => pathname !== "/" && router.push("/")}
+          onFocus={() => {
+            !feedPathArray.includes(pathname) &&
+              router.push(
+                {
+                  pathname: "/",
+                  query: {
+                    ...query,
+                    keyword
+                  },
+                },
+                undefined,
+                { shallow: true }
+              );
+          }}
           className="text-sm font-bold p-2 w-full bg-secondTheme outline-none"
         />
         <div className="ms:flex hidden sm:block items-center px-0 rounded-lg space-x-4 mx-auto">
-						<select readOnly value={type || "pins"} id="Com" className="text-sm font-bold text-gray-800 outline-none border-0 px-2 py-2 rounded-lg bg-transparent">
+          <select
+            readOnly
+            value={type || "pins"}
+            id="Com"
+            className="text-sm font-bold text-gray-800 outline-none border-0 px-2 py-2 rounded-lg bg-transparent"
+          >
+            {[
               {
-                [
-                  {
-                    name: "NFTs",
-                    value: "pins"
-                  },
-                  {
-                    name: "Collections",
-                    value: "collections"
-                  },
-                  {
-                    name: "Users",
-                    value: "users"
-                  },
-                ].map((item, index) => {
-                  return (
-                    <option
-                    key={index}
-                    onClick={() => {
-                      router.push(
-                        {
-                          pathname: "/",
-                          query: {
-                            // ...query,
-                            // keyword,
-                            ...(page ? {page: 1} : {}),
-                            ...(keyword ? {keyword} : {}),
-                            ...(feed ? {feed} : {}),
-                            type: item?.value,
-                          },
+                name: "NFTs",
+                value: "pins",
+              },
+              {
+                name: "Collections",
+                value: "collections",
+              },
+              {
+                name: "Users",
+                value: "users",
+              },
+            ].map((item, index) => {
+              return (
+                <option
+                  key={index}
+                  onClick={() => {
+                    router.push(
+                      {
+                        pathname: "/",
+                        query: {
+                          // ...query,
+                          // keyword,
+                          ...(page ? { page: 1 } : {}),
+                          ...(keyword ? { keyword } : {}),
+                          ...(feed ? { feed } : {}),
+                          type: item?.value,
                         },
-                        undefined,
-                        { shallow: true }
-                      );
-                    }} value={item?.value}>{item?.name}</option>
-                  )
-                })
-              }
+                      },
+                      undefined,
+                      { shallow: true }
+                    );
+                  }}
+                  value={item?.value}
+                >
+                  {item?.name}
+                </option>
+              );
+            })}
           </select>
-					</div>
+        </div>
       </div>
       <div className="flex gap-3 ">
         {user?._id && (

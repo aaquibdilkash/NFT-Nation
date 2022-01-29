@@ -2,12 +2,12 @@ import { nftaddress, nftmarketaddress } from "../config";
 import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
 import Market from "../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import React, { useEffect, useState } from "react";
-import Web3Modal from "web3modal";
+import Web3Modal, { local } from "web3modal";
 import { ethers } from "ethers";
 // import { create } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getEventData, getImage, getIpfsImage, getUserName, isValidAmount, pinFileToIPFS } from "../utils/data";
+import { getEventData, getImage, getIpfsImage, getUserName, isValidAmount, pinFileToIPFS, removePinFromIPFS } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import {
   approvalLoadingMessage,
@@ -15,6 +15,8 @@ import {
   createAuctionLoadingMessage,
   createItemLoadingMessage,
   createSaleLoadingMessage,
+  duplicateFileInfoMessage,
+  errorMessage,
   fileUploadErrorMessage,
   finalErrorMessage,
   finalSuccessMessage,
@@ -40,6 +42,7 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { use } from "chai";
 
 // const projectId = process.env.INFURA_PROJECT_ID
 // const projectSecret = process.env.INFURA_PROJECT_SECRET
@@ -78,6 +81,25 @@ const CreatePin = () => {
 
   const router = useRouter();
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const unPinHash = localStorage.getItem("unPinNFTHash");
+      if (unPinHash) {
+        removePinFromIPFS(
+          unPinHash,
+          () => {
+            localStorage.removeItem("unPinNFTHash");
+          },
+          (e) => {
+            console.log(e);
+          }
+        );
+      }
+    }
+
+  }, []);
+  
+
   const uploadImage = async (e) => {
     const selectedFile = e.target.files[0];
     // uploading asset to sanity
@@ -98,8 +120,14 @@ const CreatePin = () => {
         pinFileToIPFS(
           selectedFile,
           setProgress,
-          (url, hash) => {
+          (hash, isDuplicate) => {
+            if(isDuplicate) {
+              toast.info(duplicateFileInfoMessage)
+              setImageLoading(false);
+              return
+            }
             setFileUrl(hash);
+            localStorage.setItem("unPinNFTHash", hash)
             setImageLoading(false);
           },
           (error) => {
@@ -168,8 +196,6 @@ const CreatePin = () => {
     const metadata = new Blob([JSON.stringify(data)], {
       type: "application/json",
     });
-
-    console.log(metadata, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
 
     try {
       pinFileToIPFS(
@@ -343,7 +369,7 @@ const CreatePin = () => {
     });
   };
 
-  const createMarketItem = async (url) => {
+  const createMarketItem = async (nftaddress, tokenId) => {
     setLoading(true);
     setLoadingMessage(confirmLoadingMessage);
     const web3Modal = new Web3Modal();
@@ -355,7 +381,7 @@ const CreatePin = () => {
     /* next, create the item */
     try {
       var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
-      console.log(url, "DDDDDDDDDDDDDDD");
+      
       var transaction = await contract.createToken(url);
       setLoadingMessage(mintLoadingMessage);
       var tx = await transaction.wait();
@@ -403,10 +429,71 @@ const CreatePin = () => {
     });
   };
 
+  const importNFT = async (url) => {
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    // const provider = new ethers.providers.JsonRpcProvider(`https://polygon-mumbai.g.alchemy.com/v2/${process.env.PROJECT_ID}`);
+    const signer = provider.getSigner();
+
+    /* next, create the item */
+    // try {
+    //   var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+
+    //   var transaction = await contract.createToken(url);
+    //   setLoadingMessage(mintLoadingMessage);
+    //   var tx = await transaction.wait();
+    //   toast.success(tokenMintSuccessMessage);
+    //   var event = tx.events[0];
+    //   var tokenId = event.args[2].toNumber();
+    // } catch (e) {
+    //   console.log(e);
+    //   toast.error(tokenMintErrorMessage);
+    //   setLoading(false);
+    //   return;
+    // }
+
+    /* then list the item for sale on the marketplace */
+    try {
+      setLoadingMessage(confirmLoadingMessage);
+      contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+      transaction = await contract.createMarketItem(nftaddress, tokenId);
+      setLoadingMessage(createItemLoadingMessage);
+      tx = await transaction.wait();
+      toast.success(MarketItemSuccessMessage);
+      console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+      event = tx.events[0];
+      console.log(getEventData(event));
+      var eventData = getEventData(event);
+    } catch (e) {
+      toast.error(marketItemErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    savePin({
+      ...eventData,
+      title,
+      about,
+      category,
+      image: fileUrl,
+      postedBy: user?._id,
+      createdBy: user?._id,
+      history: [{
+        user: user?._id,
+        price: "0.0"
+      }],
+      destination: "https://nft-nation.vercel.app",
+    });
+  };
+
   const savePin = (obj) => {
     axios
       .post("/api/pins", obj)
       .then((res) => {
+        localStorage.removeItem("unPinNFTHash")
         router.push("/");
         toast.success(finalSuccessMessage);
         setLoading(false);
@@ -456,8 +543,8 @@ const CreatePin = () => {
           <div className="rounded-lg bg-secondaryColor p-3 flex flex-0.7 w-full">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted rounded-lg border-gray-300 p-3 w-full h-420">
               {imageLoading && (
-                <Spinner title="Uploading..." message={`${progress}%`} />
-              )}
+                <Spinner title={progress ? `Uploading...`: ``} message={progress ? `${progress}%`: ``} />
+                )}
               {wrongImageType && <p>It&apos;s wrong file type.</p>}
               {!fileUrl && !imageLoading && (
                 // eslint-disable-next-line jsx-a11y/label-has-associated-control
@@ -494,8 +581,18 @@ const CreatePin = () => {
                     type="button"
                     className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                     onClick={() => {
-                      setFileUrl(null);
                       setProgress(0);
+                      setImageLoading(true)
+                      removePinFromIPFS(fileUrl, () => {
+                        setFileUrl(null)
+                        localStorage.removeItem("unPinNFTHash")
+                        setImageLoading(false)
+                      }, () => {
+                        toast.error(errorMessage)
+                        setImageLoading(false)
+                      })
+                      // setFileUrl(null);
+                      // setProgress(0);
                     }}
                   >
                     <MdDelete />

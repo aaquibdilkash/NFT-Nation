@@ -6,15 +6,14 @@ import Collection from "../models/collection";
 import redisClient from "./redis";
 // import Redis from "ioredis"
 
-
 const DEFAULT_EXPIRATION = 3600;
 
 const allCollections = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
 
-  const data = await redisClient.get(`collections${JSON.stringify(req.query)}`)
+  const data = await redisClient.get(req?.url);
 
-  if(data) {
+  if (data) {
     return res.status(200).json(JSON.parse(data));
   }
 
@@ -65,7 +64,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
   });
 
   redisClient.set(
-    `collections${JSON.stringify(req.query)}`,
+    req?.url,
     JSON.stringify({
       success: true,
       collections,
@@ -74,7 +73,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
       resultPerPage,
     }),
     "ex",
-    DEFAULT_EXPIRATION,
+    DEFAULT_EXPIRATION
   );
 
   // await redisClient.quit();
@@ -116,34 +115,40 @@ const updateCollectionData = async (id) => {
   collection.ownersCount = new Set(
     collection.pins.map((item) => item.postedBy._id.toString())
   ).size;
-  console.log(collection.ownersCount, "ownersCount good");
+  // console.log(collection.ownersCount, "ownersCount good");
 
   collection.onSaleCount = collection.pins.filter(
     (item) => item.price != "0.0"
   ).length;
-  console.log(collection.onSaleCount, "onSaleCount good");
+  // console.log(collection.onSaleCount, "onSaleCount good");
 
   collection.onAuctionCount = collection.pins.filter(
     (item) => !item.auctionEnded
   ).length;
-  console.log(collection.onAuctionCount, "onAuctionCount good");
+  // console.log(collection.onAuctionCount, "onAuctionCount good");
 
-  collection.volume = collection.pins.reduce((a, b) => ({
-    price:
-      parseFloat(a?.history[0]?.price ?? "0.0") +
-      parseFloat(b?.history[0]?.price ?? "0.0"),
-  })).price;
-  console.log(collection.volume, "volume good");
+  collection.volume = collection.pins.reduce((total, item) => {
+    return (
+      total +
+      (item?.history && item?.history?.length > 0
+        ? parseFloat(item?.history[0]?.price ?? "0.0")
+        : parseFloat("0.0"))
+    );
+  }, 0);
+  // console.log(collection.volume, "volume good");
 
-  const prevVolume = collection.pins.reduce((a, b) => ({
-    price:
-      parseFloat(a?.history[1]?.price ?? "0.0") +
-      parseFloat(b?.history[1]?.price ?? "0.0"),
-  })).price;
-  console.log(prevVolume, "preVolume good");
+  const prevVolume = collection.pins.reduce((total, item) => {
+    return (
+      total +
+      (item?.history && item?.history?.length > 1
+        ? parseFloat(item?.history[1]?.price ?? "0.0")
+        : parseFloat("0.0"))
+    );
+  }, 0);
+  // console.log(prevVolume, "preVolume good");
 
   collection.change = ((collection.volume - prevVolume) / prevVolume) * 100;
-  console.log(collection.change, "change good");
+  // console.log(collection.change, "change good");
 
   collection = await collection.save({ validateBeforeSave: false });
 };
@@ -154,6 +159,14 @@ const createCollection = catchAsyncErrors(async (req, res) => {
   res.status(200).json({
     success: true,
   });
+
+  // redisClient.flushall('ASYNC', () => {
+  //   console.log("flused all keys in redis")
+  // });
+
+  redisClient.del("/api/collections?page=1", () => {
+    console.log("collections page 1 redis refreshed")
+  })
 });
 
 const updateCollection = catchAsyncErrors(async (req, res) => {
@@ -170,7 +183,7 @@ const updateCollection = catchAsyncErrors(async (req, res) => {
     new: true,
     runValidators: true,
     useFindAndModify: false,
-  });
+  }).populate("createdBy");
 
   res.status(200).json({
     success: true,

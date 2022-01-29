@@ -1,4 +1,4 @@
-const Spinner = ({ title = "", message }) => {
+const Spinner = ({ title = "", message, margin=true }) => {
   return (
     <div className="flex flex-col justify-center items-center w-full h-full">
       <div className="flex items-center justify-center ">

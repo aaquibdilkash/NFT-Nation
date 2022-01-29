@@ -8,11 +8,13 @@ import {
   MARKET_CONTRACT,
   COLLECTION_SET,
   CURRENT_PROFILE_SET,
+  GIFTING_USER_SET,
 } from "../constants/UserTypes";
 
 const initialState = {
   user: {},
   currentProfile: {},
+  giftingUser: {},
   refresh: false,
   hasMore: false,
   changePage: false,
@@ -38,6 +40,12 @@ export const userReducer = (state = initialState, action) => {
       return {
         ...state,
         currentProfile: action.payload,
+      };
+
+    case GIFTING_USER_SET:
+      return {
+        ...state,
+        giftingUser: action.payload,
       };
 
     case HAS_MORE:

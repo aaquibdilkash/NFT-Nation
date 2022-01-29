@@ -14,6 +14,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import moment from "moment";
 import {
+  GIFTING_USER_SET,
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
@@ -35,7 +36,9 @@ const User = ({ userProfile }) => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.userReducer);
+  const { user, giftingUser } = useSelector((state) => state.userReducer);
+  const {query} = router
+  const {pinId} = query
 
   const [currentProfile, setCurrentProfile] = useState(userProfile);
 
@@ -171,6 +174,18 @@ const User = ({ userProfile }) => {
             {`${currentProfile?.followersCount} Followers`}
           </span>
           <span className={buttonStyle}>{`${followingsCount} Followings`}</span>
+
+          {
+            pinId && <span 
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch({
+                type: GIFTING_USER_SET,
+                payload: giftingUser?._id === _id ? {} : userProfile
+              })
+            }} 
+            className={buttonStyle}>{giftingUser?._id === _id ? `Selected`: `Gift`}</span>
+          }
         </div>
         <div className="p-6 pt-2"></div>
       </div>

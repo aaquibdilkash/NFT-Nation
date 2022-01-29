@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { FaArtstation, FaHome, FaUserCircle } from "react-icons/fa";
-import { IoIosArrowForward } from "react-icons/io";
+import { FaArtstation, FaHome, FaUserAstronaut, FaUserCircle } from "react-icons/fa";
+import { IoIosAperture, IoIosArrowForward } from "react-icons/io";
 import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
-import { getImage, getUserName, isSubset } from "../utils/data";
+import { feedPathArray, getImage, getUserName, isSubset } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -23,13 +23,6 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
   const handleCloseSidebar = () => {
     setToggleSidebar(false);
   };
-
-  const pathArray = [
-    "/",
-    "/pin-detail/[pinId]",
-    "/collection-detail/[collectionId]",
-    "/user-profile/[userId]",
-  ];
 
   return (
     <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
@@ -91,10 +84,22 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
               }}
               className={query.feed ? isActiveStyle : isNotActiveStyle}
             >
-              <FaUserCircle className="" size={25} />
+              <FaUserAstronaut className="" size={25} />
               My Feed
             </div>
           )}
+          <Link href={`/ico`} >
+            <div
+              onClick={() => {
+                handleCloseSidebar();
+              }}
+              className={asPath == `/ico` ? isActiveStyle : isNotActiveStyle}
+            >
+              <IoIosAperture className="" size={25} />
+              ICO and Earn
+            </div>
+            </Link>
+
           <div className="flex flex-col gap-4">
             <h3 className="mt-1 px-5 text-base 2xl:text-xl font-bold">
               Discover Categories
@@ -113,7 +118,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                         pathname:
                           (pathname === "/user-profile/[userId]" &&
                             query.type === "users") ||
-                          !pathArray.includes(pathname)
+                          !feedPathArray.includes(pathname)
                             ? "/"
                             : pathname,
                         query: {

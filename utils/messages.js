@@ -10,6 +10,8 @@ export const makeBidLoadingMessage = `Making Your Bid...`;
 export const cancelSaleLoadingMessage = `Putting Down Your Token From Sale...`;
 export const cancelAuctionLoadingMessage = `Putting Down Your Token From Auction...`;
 export const buyLoadingMessage = `Transfering The Ownership Of This Token To You...`;
+export const giftLoadingMessage = `Transfering The Ownership Of This Token As A Gift...`;
+export const getNNTLoadingMessage = `Transfering NFT Nation Token To You...`;
 
 export const validAmountErrorMessage = `Please enter a valid amount`;
 export const fileUploadErrorMessage = `Something went wrong while uploading the file, Please Try Again Later!`;
@@ -21,6 +23,8 @@ export const tokenAuctionErrorMessage = `Token Auction Could Not Be Created, Ple
 export const tokenAuctionEndErrorMessage = `Token Auction Could Not Be Ended, Please Try Again Later!`;
 export const marketItemErrorMessage = `Market Item Could Not Be Created, Please Try Again Later!`;
 export const tokenBuyErrorMessage = `Token Buy Could Not Be Created, Please Try Again Later!`;
+export const tokenGiftErrorMessage = `Token Could Not Be Gifted, Please Try Again Later!`;
+export const getNNTErrorMessage = `Tokens Could Not Be Tranferred To You, Please Try Again Later!`;
 export const tokenBidErrorMessage = `Your Bid Could Not Be Created, Please Try Again Later!`;
 export const tokenBidWithdrawErrorMessage = `Your Bid Could Not Be Withdrawn, Please Try Again Later!`;
 export const finalErrorMessage = `Something went wrong while saving your Token, Please Contact Support!`;
@@ -38,6 +42,8 @@ export const tokenApproveSuccessMessage = `Token Approved Successfuly!`;
 export const tokenSaleSuccessMessage = `Token Sale Created Successfuly!`;
 export const tokenSaleCancelSuccessMessage = `Token Sale is Cancelled Successfuly!`;
 export const tokenBuySuccessMessage = `Token Bought Successfuly!`;
+export const tokenGiftSuccessMessage = `Token Gifted Successfuly!`;
+export const getNNTSuccessMessage = `Tokens Transferred To You Successfuly!`;
 export const tokenAuctionSuccessMessage = `Token Auction Created Successfuly!`;
 export const tokenAuctionEndSuccessMessage = `Token Auction Ended Successfuly!`;
 export const tokenBidSuccessMessage = `Your Bid Created Successfuly!`;
@@ -53,3 +59,7 @@ export const unFollowSuccessMessage = `User Unfollowed Successfuly!`;
 export const finalSuccessMessage = `Well Done! Everything went well!`;
 export const shareInfoMessage = `Share Link Copied To Clipboard!`;
 export const contractAddressCopiedMessage = `Contract Address Copied To Clipboard!`;
+export const duplicateFileInfoMessage = `This Is A Duplicate File. Please Try Another One`
+
+
+export const giftUserSelectInfoMessage = `Please Select A User Below By Searching`

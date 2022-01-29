@@ -9,7 +9,7 @@ const DEFAULT_EXPIRATION = 3600;
 const allUsers = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
 
-  const data = await redisClient.get(`users${JSON.stringify(req.query)}`)
+  const data = await redisClient.get(req?.url)
 
   if(data) {
     return res.status(200).json(JSON.parse(data));
@@ -65,7 +65,7 @@ const allUsers = catchAsyncErrors(async (req, res) => {
   });
 
   redisClient.set(
-    `users${JSON.stringify(req.query)}`,
+    req?.url,
     JSON.stringify({
       success: true,
       users,
@@ -106,6 +106,14 @@ const createUser = catchAsyncErrors(async (req, res) => {
     success: true,
     user,
   });
+
+  // redisClient.flushall('ASYNC', () => {
+  //   console.log("flused all keys in redis")
+  // });
+
+  redisClient.del("/api/users?page=1", () => {
+    console.log("users page 1 redis refreshed")
+  })
 });
 
 const updateUser = catchAsyncErrors(async (req, res) => {

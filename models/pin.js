@@ -96,7 +96,6 @@ const pinSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "Collection",
     default: null,
-    required: true,
     select: false
   },
   saved: [
@@ -131,7 +130,7 @@ const pinSchema = new mongoose.Schema({
   }],
   history: {
     type: [historySchema],
-    select: false
+    select: true
   },
   attributes: [{
     trait_type: {

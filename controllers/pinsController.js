@@ -11,10 +11,14 @@ const DEFAULT_EXPIRATION = 3600;
 const allPins = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
 
-  const data = await redisClient.get(`pins${JSON.stringify(req.query)}`)
+  try {
+    const data = await redisClient.get(req?.url);
 
-  if(data) {
-    return res.status(200).json(JSON.parse(data));
+    if (data) {
+      return res.status(200).json(JSON.parse(data));
+    }
+  } catch (e) {
+    console.log(e);
   }
 
   // redisClient.get(`pins${JSON.stringify(req.query)}`, (err, data) => {
@@ -69,7 +73,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
   });
 
   redisClient.set(
-    `pins${JSON.stringify(req.query)}`,
+    req?.url,
     JSON.stringify({
       success: true,
       pins,
@@ -78,7 +82,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
       resultPerPage,
     }),
     "ex",
-    DEFAULT_EXPIRATION,
+    DEFAULT_EXPIRATION
   );
 
   // await redisClient.quit();
@@ -108,6 +112,14 @@ const createPin = catchAsyncErrors(async (req, res) => {
   res.status(200).json({
     success: true,
   });
+
+  // redisClient.flushall('ASYNC', () => {
+  //   console.log("flused all keys in redis")
+  // });
+
+  redisClient.del("/api/pins?page=1", () => {
+    console.log("pins page 1 redis refreshed")
+  })
 });
 
 const updatePin = catchAsyncErrors(async (req, res) => {
@@ -272,7 +284,7 @@ const deletePinComment = catchAsyncErrors(async (req, res, next) => {
 });
 
 const saveHistoryPin = catchAsyncErrors(async (req, res, next) => {
-  let pin = await Pin.findById(req.query.id);
+  let pin = await Pin.findById(req.query.id).select("history")
 
   pin.history.unshift(req.body);
 
