@@ -106,6 +106,22 @@ const getPin = catchAsyncErrors(async (req, res) => {
   });
 });
 
+const isPinExist = catchAsyncErrors(async (req, res) => {
+  const {nftContract, tokenId} = req.body
+  
+  const pin = await Pin.findOne({nftContract, tokenId})
+
+  if (pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin Already Exist!",
+    });
+  }
+  res.status(200).json({
+    success: true
+  });
+});
+
 const createPin = catchAsyncErrors(async (req, res) => {
   const pin = await Pin.create(req.body);
 
@@ -378,4 +394,5 @@ export {
   deletePinComment,
   makeAuctionBid,
   withdrawAuctionBid,
+  isPinExist
 };

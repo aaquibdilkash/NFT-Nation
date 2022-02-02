@@ -53,17 +53,24 @@ export const getUserName = (string) => {
 };
 
 export const getImage = (hash) => {
+  if(!hash) {
+    return "/favicon.png"
+  }
   const clouddflare = "https://cf-ipfs.com/ipfs/"
   const ipfs = "https://ipfs.io/ipfs/"
   const pinata = "https://gateway.pinata.cloud/ipfs/"
   const ipfsGateway = "https://gateway.ipfs.io/ipfs/"
 
-  const url = hash?.length === 46 ? `${ipfs}${hash}` : "/favicon.png"
+  const url = hash?.length === 46 ? `${ipfs}${hash}` : hash
 
   return url
 }
 
 export const getIpfsImage = (hash) => {
+  if(!hash) {
+    return "/favicon.png"
+  }
+  
   const ipfs = "https://ipfs.io/ipfs/"
 
   const url = hash?.length === 46 ? `${ipfs}${hash}` : hash

@@ -7,7 +7,15 @@ import { ethers } from "ethers";
 // import { create } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getEventData, getImage, getIpfsImage, getUserName, isValidAmount, parseAmount, pinFileToIPFS, removePinFromIPFS } from "../utils/data";
+import {
+  getEventData,
+  getImage,
+  getIpfsImage,
+  isValidAmount,
+  parseAmount,
+  pinFileToIPFS,
+  removePinFromIPFS,
+} from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import {
   approvalLoadingMessage,
@@ -59,12 +67,13 @@ import { toast } from "react-toastify";
 //   }
 // })
 
-
 const CreatePin = () => {
   const { user } = useSelector((state) => state.userReducer);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
-  const [price, setPrice] = useState("0");
+  const [price, setPrice] = useState("");
+  const [nftContract, setNftContract] = useState("");
+  const [tokenId, setTokenId] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
   const [destination, setDestination] = useState();
   const [category, setCategory] = useState();
@@ -73,7 +82,10 @@ const CreatePin = () => {
   const [sellOrAuct, setSellOrAuct] = useState("");
   const [wrongImageType, setWrongImageType] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Storing NFT Metadata...");
+  const [importing, setImporting] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(
+    "Storing NFT Metadata..."
+  );
   const [progress, setProgress] = useState(0);
 
   const router = useRouter();
@@ -93,9 +105,7 @@ const CreatePin = () => {
         );
       }
     }
-
   }, []);
-  
 
   const uploadImage = async (e) => {
     const selectedFile = e.target.files[0];
@@ -118,13 +128,13 @@ const CreatePin = () => {
           selectedFile,
           setProgress,
           (hash, isDuplicate) => {
-            if(isDuplicate) {
-              toast.info(duplicateFileInfoMessage)
+            if (isDuplicate) {
+              toast.info(duplicateFileInfoMessage);
               setImageLoading(false);
-              return
+              return;
             }
             setFileUrl(hash);
-            localStorage.setItem("unPinNFTHash", hash)
+            localStorage.setItem("unPinNFTHash", hash);
             setImageLoading(false);
           },
           (error) => {
@@ -181,7 +191,7 @@ const CreatePin = () => {
       return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     const data = {
       name: title,
@@ -199,8 +209,8 @@ const CreatePin = () => {
         metadata,
         setProgress,
         (hash, isDuplicate) => {
-          const url = getIpfsImage(hash)
-          console.log(url, "DDDDDDDDDDd")
+          const url = getIpfsImage(hash);
+          console.log(url, "DDDDDDDDDDd");
           /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
           if (sellOrAuct === "Only Mint NFT") {
             createMarketItem(url);
@@ -262,7 +272,7 @@ const CreatePin = () => {
     try {
       setLoadingMessage(confirmLoadingMessage);
       // const auctionPrice = ethers.utils.parseUnits(price, "ether");
-      const auctionPrice = parseAmount(price)
+      const auctionPrice = parseAmount(price);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
       transaction = await contract.createMarketItemForSale(
         nftaddress,
@@ -289,10 +299,12 @@ const CreatePin = () => {
       image: fileUrl,
       postedBy: user?._id,
       createdBy: user?._id,
-      history: [{
-        user: user?._id,
-        price: "0.0"
-      }],
+      history: [
+        {
+          user: user?._id,
+          price: "0.0",
+        },
+      ],
       destination: "https://nft-nation.vercel.app",
     });
   };
@@ -361,10 +373,12 @@ const CreatePin = () => {
       image: fileUrl,
       postedBy: user?._id,
       createdBy: user?._id,
-      history: [{
-        user: user?._id,
-        price: "0.0"
-      }],
+      history: [
+        {
+          user: user?._id,
+          price: "0.0",
+        },
+      ],
       destination: "https://nft-nation.vercel.app",
     });
   };
@@ -381,7 +395,7 @@ const CreatePin = () => {
     /* next, create the item */
     try {
       var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
-      
+
       var transaction = await contract.createToken(url);
       setLoadingMessage(mintLoadingMessage);
       var tx = await transaction.wait();
@@ -421,17 +435,65 @@ const CreatePin = () => {
       image: fileUrl,
       postedBy: user?._id,
       createdBy: user?._id,
-      history: [{
-        user: user?._id,
-        price: "0.0"
-      }],
+      history: [
+        {
+          user: user?._id,
+          price: "0.0",
+        },
+      ],
       destination: "https://nft-nation.vercel.app",
     });
   };
 
-  const importNFT = async (url) => {
+  const importNFTHandler = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    if (!nftContract || !tokenId) {
+      setFields(true);
+
+      setTimeout(() => {
+        setFields(false);
+      }, 2000);
+
+      return;
+    }
+
+    if (nftContract?.length !== 42) {
+      toast.info("Please Enter A Valid NFT Contract Address!");
+      return;
+    }
+
+    if (isNaN(tokenId)) {
+      toast.info("Please Enter A Token ID!");
+      return;
+    }
+
+    importNFT(nftContract, tokenId);
+  };
+
+  const importNFT = async (nftContract, tokenId) => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
     setLoading(true);
-    setLoadingMessage(confirmLoadingMessage);
+    setLoadingMessage("Verifying Ownership Of This NFT...");
+
+    try {
+      await axios.post(`/api/pins/isPinExist`, {
+        nftContract,
+        tokenId,
+      });
+    } catch (e) {
+      console.log(e.response);
+      setLoading(false);
+      toast.error("This NFT already Exist In Marketplace!");
+      return;
+    }
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -439,27 +501,51 @@ const CreatePin = () => {
     const signer = provider.getSigner();
 
     /* next, create the item */
-    // try {
-    //   var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+    try {
+      var contract = new ethers.Contract(nftContract, NFT.abi, provider);
+      // const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider)
+      try {
+        const owner = await contract.ownerOf(tokenId);
+        console.log(owner, user?.address, owner === user?.address);
+        if (owner !== user?.address) {
+          toast.error("You Are Not The Owner Of This NFT!");
+          setLoading(false);
+          return;
+        }
+        toast.success("Ownership Verified!");
+      } catch (e) {
+        console.log(e);
+        toast.error("This NFT Contract Address Doesn't Exist!");
+        setLoading(false);
+        return;
+      }
 
-    //   var transaction = await contract.createToken(url);
-    //   setLoadingMessage(mintLoadingMessage);
-    //   var tx = await transaction.wait();
-    //   toast.success(tokenMintSuccessMessage);
-    //   var event = tx.events[0];
-    //   var tokenId = event.args[2].toNumber();
-    // } catch (e) {
-    //   console.log(e);
-    //   toast.error(tokenMintErrorMessage);
-    //   setLoading(false);
-    //   return;
-    // }
+      try {
+        const tokenUri = await contract.tokenURI(tokenId);
+        var { data } = await axios.get(tokenUri);
+        console.log(data, "DDDDDDDDDDDDDDDd");
+
+        setLoadingMessage("Fetching NFT Metadata...");
+      } catch (e) {
+        console.log(e);
+        toast.error("Metadata For This NFT Could Not Be Fetched!");
+        setLoading(false);
+        return;
+      }
+      // var event = tx.events[0];
+      // var tokenId = event.args[2].toNumber();
+    } catch (e) {
+      console.log(e);
+      toast.error("Contract Address For This NFT Could Not Be Found!");
+      setLoading(false);
+      return;
+    }
 
     /* then list the item for sale on the marketplace */
     try {
       setLoadingMessage(confirmLoadingMessage);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      const transaction = await contract.createMarketItem(nftaddress, tokenId);
+      const transaction = await contract.createMarketItem(nftContract, tokenId);
       setLoadingMessage(createItemLoadingMessage);
       const tx = await transaction.wait();
       toast.success(MarketItemSuccessMessage);
@@ -473,18 +559,22 @@ const CreatePin = () => {
       return;
     }
 
+    const { name, image, description } = data;
+
     savePin({
       ...eventData,
-      title,
-      about,
-      category,
-      image: fileUrl,
+      title: name,
+      about: description,
+      category: "Art",
+      image,
       postedBy: user?._id,
       createdBy: user?._id,
-      history: [{
-        user: user?._id,
-        price: "0.0"
-      }],
+      history: [
+        {
+          user: user?._id,
+          price: "0.0",
+        },
+      ],
       destination: "https://nft-nation.vercel.app",
     });
   };
@@ -493,7 +583,7 @@ const CreatePin = () => {
     axios
       .post("/api/pins", obj)
       .then((res) => {
-        localStorage.removeItem("unPinNFTHash")
+        localStorage.removeItem("unPinNFTHash");
         router.push("/");
         toast.success(finalSuccessMessage);
         setLoading(false);
@@ -536,82 +626,92 @@ const CreatePin = () => {
       <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
         {fields && (
           <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
-            Please add all fields.
+            Please Add All The Fields.
           </p>
         )}
-        <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
-          <div className="rounded-lg bg-secondaryColor p-3 flex flex-0.7 w-full">
-            <div className=" flex justify-center items-center flex-col border-2 border-dotted rounded-lg border-gray-300 p-3 w-full h-420">
-              {imageLoading && (
-                <Spinner title={progress ? `Uploading...`: ``} message={progress ? `${progress}%`: ``} />
+        {!importing && (
+          <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-4/5  w-full">
+            <div className="rounded-lg bg-secondaryColor p-3 flex flex-0.7 w-full">
+              <div className=" flex justify-center items-center flex-col border-2 border-dotted rounded-lg border-gray-300 p-3 w-full h-420">
+                {imageLoading && (
+                  <Spinner
+                    title={progress ? `Uploading...` : ``}
+                    message={progress ? `${progress}%` : ``}
+                  />
                 )}
-              {wrongImageType && <p>It&apos;s wrong file type.</p>}
-              {!fileUrl && !imageLoading && (
-                // eslint-disable-next-line jsx-a11y/label-has-associated-control
-                <label>
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <div className="flex flex-col justify-center items-center">
-                      <p className="font-bold text-2xl">
-                        <AiOutlineCloudUpload size={30} className="font-bold"/>
+                {wrongImageType && <p>It&apos;s wrong file type.</p>}
+                {!fileUrl && !imageLoading && (
+                  <label>
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="flex flex-col justify-center items-center">
+                        <p className="font-bold text-2xl">
+                          <AiOutlineCloudUpload
+                            size={30}
+                            className="font-bold"
+                          />
+                        </p>
+                        <p className="text-lg font-bold">Click to upload</p>
+                      </div>
+
+                      <p className="mt-32 text-center font-bold">
+                        Use high-quality JPG, JPEG, SVG, PNG, GIF or TIFF less
+                        than 100MB
                       </p>
-                      <p className="text-lg font-bold">Click to upload</p>
                     </div>
-
-                    <p className="mt-32 text-center font-bold">
-                      Use high-quality JPG, JPEG, SVG, PNG, GIF
-                      or TIFF less than 100MB
-                    </p>
+                    <input
+                      type="file"
+                      name="upload-image"
+                      onChange={uploadImage}
+                      className="w-0 h-0"
+                    />
+                  </label>
+                )}
+                {fileUrl && !imageLoading && (
+                  <div className="relative h-full">
+                    <img
+                      src={getImage(fileUrl)}
+                      alt="uploaded-pic"
+                      className="h-full w-full rounded-lg drop-shadow-lg"
+                    />
+                    <button
+                      type="button"
+                      className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                      onClick={() => {
+                        setProgress(0);
+                        setImageLoading(true);
+                        removePinFromIPFS(
+                          fileUrl,
+                          () => {
+                            setFileUrl(null);
+                            localStorage.removeItem("unPinNFTHash");
+                            setImageLoading(false);
+                          },
+                          () => {
+                            toast.error(errorMessage);
+                            setImageLoading(false);
+                          }
+                        );
+                        // setFileUrl(null);
+                        // setProgress(0);
+                      }}
+                    >
+                      <MdDelete />
+                    </button>
                   </div>
-                  <input
-                    type="file"
-                    name="upload-image"
-                    onChange={uploadImage}
-                    className="w-0 h-0"
-                  />
-                </label>
-              )}
-              {fileUrl && !imageLoading && (
-                <div className="relative h-full">
-                  <img
-                    src={getImage(fileUrl)}
-                    alt="uploaded-pic"
-                    className="h-full w-full rounded-lg drop-shadow-lg"
-                  />
-                  <button
-                    type="button"
-                    className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
-                    onClick={() => {
-                      setProgress(0);
-                      setImageLoading(true)
-                      removePinFromIPFS(fileUrl, () => {
-                        setFileUrl(null)
-                        localStorage.removeItem("unPinNFTHash")
-                        setImageLoading(false)
-                      }, () => {
-                        toast.error(errorMessage)
-                        setImageLoading(false)
-                      })
-                      // setFileUrl(null);
-                      // setProgress(0);
-                    }}
-                  >
-                    <MdDelete />
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-1 flex-col gap-6 lg:pl-5 mt-5 w-full">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={42}
-              placeholder="Add Your NFT's Title"
-              className="outline-none text-lg font-bold border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
-            />
-            {/* {user?._id && (
+            <div className="flex flex-1 flex-col gap-6 lg:pl-5 mt-5 w-full">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={42}
+                placeholder="Add Your NFT's Title"
+                className="outline-none text-lg font-bold border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
+              />
+              {/* {user?._id && (
               <Link href={`/user-profile/${user?._id}`}>
                 <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1">
                   <Image
@@ -625,85 +725,87 @@ const CreatePin = () => {
                 </div>
               </Link>
             )} */}
-            <textarea
-              type="text"
-              value={about}
-              onChange={(e) => setAbout(e.target.value)}
-              maxLength={80}
-              placeholder="Tell everyone what your NFT is about"
-              className="outline-none text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
-            />
+              <textarea
+                type="text"
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
+                maxLength={80}
+                placeholder="Tell everyone what your NFT is about"
+                className="outline-none text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
+              />
 
-            <div className="flex flex-col w-full">
-              <div>
-                <p className="mb-2 font-semibold text-sm">
-                  Choose Pin Category
-                </p>
-                <select
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                  }}
-                  value={category}
-                  className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg"
-                >
-                  <option value="others" className="text-sm bg-secondTheme">
-                    Select Category
-                  </option>
-                  {sidebarCategories["Discover Categories"].map((item) => {
-                    if(item?.name !== "All") return (
-                      (
-                        <option
-                          key={`${item.name}`}
-                          className="text-sm border-0 outline-none capitalize bg-secondTheme text-textColor "
-                          value={item.name}
-                        >
-                          {item.name}
-                        </option>
-                      )
-                    )
-                      })}
-                </select>
-              </div>
-              <div className="mt-2">
-                <p className="mb-2 font-semibold text-sm">
-                  What do you wanna do...?
-                </p>
-                <select
-                  onChange={(e) => {
-                    setSellOrAuct(e.target.value);
-                  }}
-                  value={sellOrAuct}
-                  className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer"
-                >
-                  <option value="others" className="sm:text-sm bg-secondTheme">
-                    Select Your Choice
-                  </option>
-                  {[
-                    "Only Mint NFT",
-                    "Mint NFT and Put on Sale",
-                    "Mint NFT and Put on Auction",
-                  ].map((item) => (
-                    <option
-                      key={`${item}`}
-                      className="text-sm border-0 outline-none capitalize bg-secondTheme text-textColor "
-                      value={item}
-                    >
-                      {item}
+              <div className="flex flex-col w-full">
+                <div>
+                  <p className="mb-2 font-semibold text-sm">
+                    Choose Pin Category
+                  </p>
+                  <select
+                    onChange={(e) => {
+                      setCategory(e.target.value);
+                    }}
+                    value={category}
+                    className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg"
+                  >
+                    <option value="others" className="text-sm bg-secondTheme">
+                      Select Category
                     </option>
-                  ))}
-                </select>
-              </div>
-              {sellOrAuct === "Mint NFT and Put on Sale" && (
-                <input
-                  type="text"
-                  value={price}
-                  maxLength={10}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="Add a price for sale (in MATIC)"
-                  className="outline-none mt-2 text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
+                    {sidebarCategories["Discover Categories"].map((item) => {
+                      if (item?.name !== "All")
+                        return (
+                          <option
+                            key={`${item.name}`}
+                            className="text-sm border-0 outline-none capitalize bg-secondTheme text-textColor "
+                            value={item.name}
+                          >
+                            {item.name}
+                          </option>
+                        );
+                    })}
+                  </select>
+                </div>
+                <div className="mt-2">
+                  <p className="mb-2 font-semibold text-sm">
+                    What do you wanna do...?
+                  </p>
+                  <select
+                    onChange={(e) => {
+                      setSellOrAuct(e.target.value);
+                    }}
+                    value={sellOrAuct}
+                    className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer"
+                  >
+                    <option
+                      value="others"
+                      className="sm:text-sm bg-secondTheme"
+                    >
+                      Select Your Choice
+                    </option>
+                    {[
+                      "Only Mint NFT",
+                      "Mint NFT and Put on Sale",
+                      "Mint NFT and Put on Auction",
+                    ].map((item) => (
+                      <option
+                        key={`${item}`}
+                        className="text-sm border-0 outline-none capitalize bg-secondTheme text-textColor "
+                        value={item}
+                      >
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {sellOrAuct === "Mint NFT and Put on Sale" && (
+                  <input
+                    type="text"
+                    value={price}
+                    maxLength={10}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Add a price for sale (in MATIC)"
+                    className="outline-none mt-2 text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
                   />
-              )}
-              {/* <p className="mt-2 font-semibold text-sm">
+                )}
+                {/* <p className="mt-2 font-semibold text-sm">
                   Attributes
                 </p>
               <div className="flex flex-row justify-between">
@@ -792,18 +894,72 @@ const CreatePin = () => {
                 </select>
               </div>
               </div> */}
-              <div className="flex justify-end items-end mt-5">
-                <button
-                  type="button"
-                  onClick={submitHandler}
-                  className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
-                >
-                  Mint Token
-                </button>
+                <div className="flex justify-end items-end mt-5 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImporting(true);
+                      // importNFT("0x93010854BF5935fF0dc6DE5Cb4b4aCa2D44260C1", "4")
+                    }}
+                    className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+                  >
+                    Import NFT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={submitHandler}
+                    className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+                  >
+                    Mint NFT
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {importing && (
+          <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-col w-4/5 text-center justify-evenly">
+            <div className="flex flex-wrap m-2 gap-3">
+              <input
+                className=" flex-1 border-gray-100 outline-none border-2 p-2 rounded-lg focus:border-gray-300"
+                type="text"
+                placeholder="Enter NFT Contract Address..."
+                maxLength={42}
+                value={nftContract}
+                onChange={(e) => setNftContract(e.target.value)}
+              />
+              <input
+                className=" flex-2 border-gray-100 outline-none border-2 p-2 rounded-lg focus:border-gray-300"
+                type="text"
+                placeholder="Enter Token ID..."
+                maxLength={6}
+                value={tokenId}
+                onChange={(e) => setTokenId(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap m-2 gap-3 justify-center">
+              <button
+                type="button"
+                className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+                onClick={() => {
+                  setImporting(false);
+                }}
+              >
+                {`Cancel`}
+              </button>
+              <button
+                type="button"
+                className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+                onClick={() => {
+                  importNFTHandler();
+                }}
+              >
+                {`Import NFT`}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
