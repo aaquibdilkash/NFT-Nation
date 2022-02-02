@@ -2,12 +2,12 @@ import { nftaddress, nftmarketaddress } from "../config";
 import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
 import Market from "../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import React, { useEffect, useState } from "react";
-import Web3Modal, { local } from "web3modal";
+import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 // import { create } from "ipfs-http-client";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getEventData, getImage, getIpfsImage, getUserName, isValidAmount, pinFileToIPFS, removePinFromIPFS } from "../utils/data";
+import { getEventData, getImage, getIpfsImage, getUserName, isValidAmount, parseAmount, pinFileToIPFS, removePinFromIPFS } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import {
   approvalLoadingMessage,
@@ -39,10 +39,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import Head from "next/head";
-import Image from "next/image";
-import Link from "next/link";
 import { toast } from "react-toastify";
-import { use } from "chai";
 
 // const projectId = process.env.INFURA_PROJECT_ID
 // const projectSecret = process.env.INFURA_PROJECT_SECRET
@@ -201,7 +198,9 @@ const CreatePin = () => {
       pinFileToIPFS(
         metadata,
         setProgress,
-        (url, hash) => {
+        (hash, isDuplicate) => {
+          const url = getIpfsImage(hash)
+          console.log(url, "DDDDDDDDDDd")
           /* after file is uploaded to IPFS, pass the URL to save it on Polygon */
           if (sellOrAuct === "Only Mint NFT") {
             createMarketItem(url);
@@ -262,7 +261,8 @@ const CreatePin = () => {
     /* then list the item for sale on the marketplace */
     try {
       setLoadingMessage(confirmLoadingMessage);
-      const auctionPrice = ethers.utils.parseUnits(price, "ether");
+      // const auctionPrice = ethers.utils.parseUnits(price, "ether");
+      const auctionPrice = parseAmount(price)
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
       transaction = await contract.createMarketItemForSale(
         nftaddress,
@@ -369,7 +369,7 @@ const CreatePin = () => {
     });
   };
 
-  const createMarketItem = async (nftaddress, tokenId) => {
+  const createMarketItem = async (url) => {
     setLoading(true);
     setLoadingMessage(confirmLoadingMessage);
     const web3Modal = new Web3Modal();
@@ -459,12 +459,12 @@ const CreatePin = () => {
     try {
       setLoadingMessage(confirmLoadingMessage);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      transaction = await contract.createMarketItem(nftaddress, tokenId);
+      const transaction = await contract.createMarketItem(nftaddress, tokenId);
       setLoadingMessage(createItemLoadingMessage);
-      tx = await transaction.wait();
+      const tx = await transaction.wait();
       toast.success(MarketItemSuccessMessage);
       console.log(tx, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-      event = tx.events[0];
+      const event = tx.events[0];
       console.log(getEventData(event));
       var eventData = getEventData(event);
     } catch (e) {
@@ -643,6 +643,7 @@ const CreatePin = () => {
                   onChange={(e) => {
                     setCategory(e.target.value);
                   }}
+                  value={category}
                   className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg"
                 >
                   <option value="others" className="text-sm bg-secondTheme">
@@ -671,6 +672,7 @@ const CreatePin = () => {
                   onChange={(e) => {
                     setSellOrAuct(e.target.value);
                   }}
+                  value={sellOrAuct}
                   className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer"
                 >
                   <option value="others" className="sm:text-sm bg-secondTheme">
@@ -694,7 +696,7 @@ const CreatePin = () => {
               {sellOrAuct === "Mint NFT and Put on Sale" && (
                 <input
                   type="text"
-                  vlaue={price}
+                  value={price}
                   maxLength={10}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="Add a price for sale (in MATIC)"

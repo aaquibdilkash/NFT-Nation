@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
   refer: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
-    required: true,
+    // required: true,
   },
   // nftMinted: {
   //   type: Number,

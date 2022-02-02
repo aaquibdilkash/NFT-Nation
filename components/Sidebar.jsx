@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FaArtstation, FaHome, FaUserAstronaut, FaUserCircle } from "react-icons/fa";
+import { FaArtstation, FaHome, FaUserAstronaut } from "react-icons/fa";
 import { IoIosAperture, IoIosArrowForward } from "react-icons/io";
 import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
 import { feedPathArray, getImage, getUserName, isSubset } from "../utils/data";
@@ -74,7 +74,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
                   {
                     pathname: "/",
                     query: {
-                      feed: user?._id,
+                      feed: true,
                     },
                   },
                   undefined,
@@ -96,7 +96,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
               className={asPath == `/ico` ? isActiveStyle : isNotActiveStyle}
             >
               <IoIosAperture className="" size={25} />
-              ICO and Earn
+              NNT ICO
             </div>
             </Link>
 

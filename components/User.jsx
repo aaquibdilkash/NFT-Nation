@@ -18,6 +18,7 @@ import {
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const User = ({ userProfile }) => {
   const {
@@ -37,8 +38,8 @@ const User = ({ userProfile }) => {
   const dispatch = useDispatch();
 
   const { user, giftingUser } = useSelector((state) => state.userReducer);
-  const {query} = router
-  const {pinId} = query
+  const { query } = router;
+  const { pinId } = query;
 
   const [currentProfile, setCurrentProfile] = useState(userProfile);
 
@@ -53,6 +54,11 @@ const User = ({ userProfile }) => {
       toast.info(loginMessage);
       return;
     }
+
+    if(following) {
+      return
+    }
+    
     setFollowing(true);
     axios
       .put(`/api/users/follow/${_id}`, {
@@ -112,18 +118,16 @@ const User = ({ userProfile }) => {
         onClick={() => router.push(`/user-profile/${_id}`)}
         className="relative cursor-pointer w-25"
       >
-        {image && (
-          <Image
-            placeholder="blur"
-            blurDataURL="/favicon.png"
-            height={200}
-            width={180}
-            layout="responsive"
-            className="rounded-lg w-full"
-            src={getImage(image)}
-            alt={`${getUserName(userName)}`}
-          />
-        )}
+        <Image
+          placeholder="blur"
+          blurDataURL="/favicon.png"
+          height={200}
+          width={180}
+          layout="responsive"
+          className="rounded-lg w-full"
+          src={getImage(image)}
+          alt={`${getUserName(userName)}`}
+        />
 
         <div className="flex items-center justify-between px-4">
           <div
@@ -159,7 +163,18 @@ const User = ({ userProfile }) => {
                 }}
                 className={buttonStyle}
               >
-                {alreadyFollowed ? `UnFollow` : `Follow`}
+                {!following ? (
+                  `${alreadyFollowed ? `UnFollow` : `Follow`}`
+                ) : (
+                  <AiOutlineLoading3Quarters
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={15}
+                  />
+                )}
               </span>
             )}
           </div>
@@ -173,19 +188,22 @@ const User = ({ userProfile }) => {
           <span className={buttonStyle}>
             {`${currentProfile?.followersCount} Followers`}
           </span>
-          <span className={buttonStyle}>{`${followingsCount} Followings`}</span>
+          <span className={buttonStyle}>{`${followingsCount} Following`}</span>
 
-          {
-            pinId && <span 
-            onClick={(e) => {
-              e.stopPropagation();
-              dispatch({
-                type: GIFTING_USER_SET,
-                payload: giftingUser?._id === _id ? {} : userProfile
-              })
-            }} 
-            className={buttonStyle}>{giftingUser?._id === _id ? `Selected`: `Gift`}</span>
-          }
+          {pinId && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch({
+                  type: GIFTING_USER_SET,
+                  payload: giftingUser?._id === _id ? {} : userProfile,
+                });
+              }}
+              className={buttonStyle}
+            >
+              {giftingUser?._id === _id ? `Selected` : `Gift`}
+            </span>
+          )}
         </div>
         <div className="p-6 pt-2"></div>
       </div>

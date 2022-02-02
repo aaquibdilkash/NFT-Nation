@@ -126,7 +126,7 @@ const Navbar = ({ connectToMetamask }) => {
         )}
         <Link href="/create-pin">
           <div className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
-            <IoMdAdd className="" />
+            <IoMdAdd color="themeColor" fontSize={21}/>
           </div>
         </Link>
       </div>

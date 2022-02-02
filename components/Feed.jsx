@@ -9,14 +9,15 @@ import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import { errorMessage } from "../utils/messages";
 
-const Feed = () => {
+const Feed = (props) => {
+  // const { data, filteredDataCount, resultPerPage } = props.data;
   const dispatch = useDispatch();
   const router = useRouter();
-  const [pins, setPins] = useState([]);
-  const [collections, setCollections] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { user, currentProfile, hasMore, refresh } = useSelector((state) => state.userReducer);
+  const [dataArray, setDataArray] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { user, currentProfile, hasMore, refresh } = useSelector(
+    (state) => state.userReducer
+  );
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
@@ -44,9 +45,10 @@ const Feed = () => {
     postedBy,
   } = query;
 
+
   const pinLink = `/api/pins?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${(feed && user?._id) ? `&feed=${user?._id}` : ``}${
+  }${feed && user?._id ? `&feed=${user?._id}` : ``}${
     category ? `&category=${category}` : ``
   }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${
     bids ? `&bids=${userId}` : ``
@@ -55,10 +57,10 @@ const Feed = () => {
   }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${
     pinId ? `&ne=${pinId}` : ``
   }${collection ? `&collection=${collectionId}` : ``}${
-    postedBy ? `&postedBy=${user?._id}` : ``
-  }${
-    createdBy ? `&createdBy=${userId ?? user?._id}` : ``
-  }${sort ? `&sort=${sort}` : ``}`;
+    postedBy ? `&postedBy=${userId ?? user?._id}` : ``
+  }${createdBy ? `&createdBy=${userId ?? user?._id}` : ``}${
+    sort ? `&sort=${sort}` : ``
+  }`;
 
   const collectionLink = `/api/collections?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
@@ -74,9 +76,14 @@ const Feed = () => {
     followings ? `&followings=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
-  const fetchPins = () => {
-    setCollections([])
-    setUsers([])
+  const link =
+    type === "collections"
+      ? collectionLink
+      : type === "users"
+      ? userLink
+      : pinLink;
+
+  const fetchData = () => {
     setLoading(!page || page == 1);
     dispatch({
       type: CHANGE_PAGE,
@@ -84,19 +91,19 @@ const Feed = () => {
     });
 
     axios
-      .get(pinLink, {
+      .get(link, {
         cancelToken: source.token,
       })
       .then((res) => {
-        const { pins, resultPerPage, filteredPinsCount } = res.data;
+        const { data, resultPerPage, filteredDataCount } = res.data;
         (page ? parseInt(page) === 1 : true)
-          ? setPins(pins)
-          : setPins((prev) => [...prev, ...pins]);
+          ? setDataArray(data)
+          : setDataArray((prev) => [...prev, ...data]);
         setLoading(false);
         dispatch({
           type: HAS_MORE,
           payload:
-            (page ? parseInt(page) : 1) * resultPerPage < filteredPinsCount,
+            (page ? parseInt(page) : 1) * resultPerPage < filteredDataCount,
         });
         dispatch({
           type: CHANGE_PAGE,
@@ -105,7 +112,6 @@ const Feed = () => {
       })
       .catch((e) => {
         if (axios.isCancel(e)) {
-          
         } else {
           setLoading(false);
           toast.error(errorMessage);
@@ -113,125 +119,44 @@ const Feed = () => {
       });
   };
 
-  const fetchCollections = () => {
-    setPins([])
-    setUsers([])
-    setLoading(!page || page == 1);
-    dispatch({
-      type: CHANGE_PAGE,
-      payload: false,
-    });
-
-    axios
-      .get(collectionLink, {
-        cancelToken: source.token,
-      })
-      .then((res) => {
-        const { collections, resultPerPage, filteredCollectionsCount } =
-          res.data;
-        (page ? parseInt(page) === 1 : true)
-          ? setCollections(collections)
-          : setCollections((prev) => [...prev, ...collections]);
-        setLoading(false);
-        dispatch({
-          type: HAS_MORE,
-          payload:
-            (page ? parseInt(page) : 1) * resultPerPage <
-            filteredCollectionsCount,
-        });
-        dispatch({
-          type: CHANGE_PAGE,
-          payload: true,
-        });
-      })
-      .catch((e) => {
-        if (axios.isCancel(e)) {
-        } else {
-          setLoading(false);
-          toast.error("Something went wrong!");
-        }
-      });
-  };
-
-  const fetchUsers = () => {
-    setPins([])
-    setCollections([])
-    setLoading(!page || page == 1);
-    dispatch({
-      type: CHANGE_PAGE,
-      payload: false,
-    });
-
-    axios
-      .get(userLink, {
-        cancelToken: source.token,
-      })
-      .then((res) => {
-        const { users, resultPerPage, filteredUsersCount } = res.data;
-        (page ? parseInt(page) === 1 : true)
-          ? setUsers(users)
-          : setUsers((prev) => [...prev, ...users]);
-        setLoading(false);
-        dispatch({
-          type: HAS_MORE,
-          payload:
-            (page ? parseInt(page) : 1) * resultPerPage < filteredUsersCount,
-        });
-        dispatch({
-          type: CHANGE_PAGE,
-          payload: true,
-        });
-      })
-      .catch((e) => {
-        if (axios.isCancel(e)) {
-        } else {
-          setLoading(false);
-          toast.error("Something went wrong!");
-        }
-      });
-  };
-
   useEffect(() => {
-    if (!type || type === "pins") {
-      fetchPins();
-    } else if (type === "collections") {
-      fetchCollections();
-    } else if (type === "users") {
-      fetchUsers();
-    }
+    fetchData()
 
-    return () => source.cancel("Operation canceled by the user.");
+    return () => source.cancel("Operation Cancelled By The User!");
   }, [router, refresh, currentProfile]);
 
   // useEffect(() => {
+  //   (page ? parseInt(page) === 1 : true)
+  //     ? setDataArray(data)
+  //     : setDataArray((prev) => [...prev, ...data]);
+  //   setLoading(false);
+  //   dispatch({
+  //     type: HAS_MORE,
+  //     payload: (page ? parseInt(page) : 1) * resultPerPage < filteredDataCount,
+  //   });
+  //   dispatch({
+  //     type: CHANGE_PAGE,
+  //     payload: true,
+  //   });
 
-  // }, [user])
+  // }, [router, refresh, currentProfile]);
 
-  const ideaName = category || "new";
-
-  const showType = type || "pins";
   if (loading && (!page || page == 1)) {
     return (
-      <Spinner message={`We are adding ${ideaName} ${showType} to your feed!`} />
+      <Spinner
+        message={`We are adding ${category ?? "new"} ${
+          type ?? "pins"
+        } to your feed...`}
+      />
     );
   }
 
-  if (!loading && (!pins.length && !collections.length && !users.length)) {
+  if (!loading && !dataArray?.length) {
     return (
       <>
-        {(!type || type === "pins") && pins.length === 0 && (
+        {dataArray.length === 0 && (
           <div className="mt-10 text-center text-xl font-bold">
-            No Pins Found!
-          </div>
-        )}
-        {type === "collections" && collections.length === 0 && (
-          <div className="mt-10 text-center text-xl font-bold">
-            No Collections Found!
-          </div>
-        )}
-        {type === "users" && users.length === 0 && (
-          <div className="mt-10 text-center text-xl font-bold">
-            No Users Found!
+            {`No ${type ?? "pins"} Found!`}
           </div>
         )}
       </>
@@ -241,18 +166,14 @@ const Feed = () => {
   return (
     <>
       <div className="">
-        {(!type || type === "pins") && pins?.length > 0 && (
-          <MasonryLayout comp={pins} type="pins" />
-        )}
-        {type === "collections" && collections?.length > 0 && (
-          <MasonryLayout comp={collections} type="collections" />
-        )}
-        {type === "users" && users?.length > 0 && (
-          <MasonryLayout comp={users} type="users" />
+        {dataArray?.length > 0 && (
+          <MasonryLayout comp={dataArray} type={type ?? "pins"} />
         )}
         {hasMore && (
           <Spinner
-            message={`We are adding more ${ideaName} ${showType} to your feed!`}
+            message={`We are adding more ${category ?? "new"} ${
+              type ?? "pins"
+            } to your feed...`}
           />
         )}
       </div>

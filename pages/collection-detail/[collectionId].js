@@ -18,7 +18,7 @@ import Image from "next/image";
 import { FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
-import { AiFillHeart, AiOutlineEdit, AiOutlineHeart } from "react-icons/ai";
+import { AiFillHeart, AiOutlineEdit, AiOutlineHeart, AiOutlineLoading3Quarters } from "react-icons/ai";
 import { COLLECTION_SET } from "../../redux/constants/UserTypes";
 import CollectionEdit from "../../components/CollectionEdit";
 import { MdDeleteForever } from "react-icons/md";
@@ -26,11 +26,6 @@ import moment from "moment";
 
 const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
-
-const activeBtnStyles =
-  "bg-themeColor mr-4 mt-2 text-secondTheme font-semibold p-2 px-3 rounded-full w-auto outline-noned shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
-const notActiveBtnStyles =
-  "bg-primary mr-4 mt-2 text-textColor font-semibold p-2 px-3 rounded-full w-auto outline-none shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block";
 
 const CollectionDetail = () => {
   const router = useRouter();
@@ -178,6 +173,11 @@ const CollectionDetail = () => {
       toast.info(loginMessage);
       return;
     }
+
+    if(savingPost) {
+      return
+    }
+    
     setSavingPost(true);
     axios
       .put(`/api/collections/save/${_id}`, {
@@ -233,7 +233,6 @@ const CollectionDetail = () => {
       {collection && !collectionEditing && (
         <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
           <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
-            {image && (
               <Image
                 unoptimized
                 placeholder="blur"
@@ -244,7 +243,6 @@ const CollectionDetail = () => {
                 width={480}
                 src={getImage(image)}
               />
-            )}
 
             <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
               <div className="flex flex-wrap justify-center lg:gap-2">
@@ -303,7 +301,6 @@ const CollectionDetail = () => {
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
                           <div>
-                            {item?.user?.image && (
                               <Image
                                 height={45}
                                 width={45}
@@ -311,7 +308,6 @@ const CollectionDetail = () => {
                                 className="w-12 h-12 rounded-full cursor-pointer"
                                 alt="user-profile"
                               />
-                            )}
                           </div>
                         </Link>
                       )}
@@ -340,7 +336,6 @@ const CollectionDetail = () => {
                   {user?._id && (
                     <Link href={`/user-profile/${user?._id}`}>
                       <div>
-                        {user?.image && (
                           <Image
                             height={45}
                             width={45}
@@ -348,7 +343,6 @@ const CollectionDetail = () => {
                             className="w-14 h-14 rounded-full cursor-pointer pt-2"
                             alt="user-profile"
                           />
-                        )}
                       </div>
                     </Link>
                   )}
@@ -439,26 +433,39 @@ const CollectionDetail = () => {
                 <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
                   {savedLength}
                 </p>
-                {!alreadySaved && (
-                  <AiOutlineHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      saveCollection();
-                    }}
-                    className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
-                {alreadySaved && (
-                  <AiFillHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      saveCollection();
-                    }}
-                    className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
+                {!savingPost ? (
+                <span>
+                  {!alreadySaved ? (
+                    <AiOutlineHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        saveCollection();
+                      }}
+                      className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                      size={25}
+                    />
+                  ) : (
+                    <AiFillHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        saveCollection();
+                      }}
+                      className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                      size={25}
+                    />
+                  )}
+                </span>
+              ) : (
+                <AiOutlineLoading3Quarters
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // savePin();
+                      }}
+                      className="animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                      size={20}
+                    />
+              )
+            }
               </div>
             </button>
             <button className={tabButtonStyles}>
@@ -487,7 +494,7 @@ const CollectionDetail = () => {
               text: `Items (${collection?.pins?.length})`,
               query: {
                 type: "pins",
-                collection: _id,
+                collection: true,
               },
               condition: true,
             },

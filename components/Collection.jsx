@@ -13,7 +13,11 @@ import {
 } from "../utils/messages";
 import axios from "axios";
 import Image from "next/image";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import {
+  AiFillHeart,
+  AiOutlineHeart,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 import { toast } from "react-toastify";
 import moment from "moment";
 import { USER_GET_SUCCESS } from "../redux/constants/UserTypes";
@@ -55,14 +59,21 @@ const Collection = ({ collection }) => {
   );
 
   useEffect(() => {
-    setAlreadyFollowed(user?.followings?.find((item) => item === createdBy?._id))
-  }, [user])
+    setAlreadyFollowed(
+      user?.followings?.find((item) => item === createdBy?._id)
+    );
+  }, [user]);
 
   const followUser = () => {
     if (!user?._id) {
       toast.info(loginMessage);
       return;
     }
+
+    if(following) {
+      return
+    }
+
     setFollowing(true);
     axios
       .put(`/api/users/follow/${createdBy?._id}`, {
@@ -73,20 +84,19 @@ const Collection = ({ collection }) => {
         toast.success(
           alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
         );
-        
+
         const filteredFollowings = alreadyFollowed
-        ? user?.followings.filter((item, index) => item !== createdBy?._id)
-        : [...user?.followings, createdBy?._id];
+          ? user?.followings.filter((item, index) => item !== createdBy?._id)
+          : [...user?.followings, createdBy?._id];
 
         dispatch({
           type: USER_GET_SUCCESS,
           payload: {
             ...user,
             followings: filteredFollowings,
-            followingsCount: filteredFollowings.length
+            followingsCount: filteredFollowings.length,
           },
         });
-
       })
       .catch((e) => {
         console.log(e);
@@ -102,6 +112,11 @@ const Collection = ({ collection }) => {
       toast.info(loginMessage);
       return;
     }
+
+    if(savingPost) {
+      return
+    }
+    
     setSavingPost(true);
     axios
       .put(`/api/collections/save/${_id}`, {
@@ -161,50 +176,47 @@ const Collection = ({ collection }) => {
                 }}
                 className={buttonStyle}
               >
-                {alreadyFollowed ? `UnFollow` : `Follow`}
+                {!following ? (
+                  `${alreadyFollowed ? `UnFollow` : `Follow`}`
+                ) : (
+                  <AiOutlineLoading3Quarters
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={15}
+                  />
+                )}{" "}
               </span>
             )}
           </div>
         </div>
-        {image && (
-          <Image
-            placeholder="blur"
-            blurDataURL="/favicon.png"
-            height={200}
-            width={180}
-            layout="responsive"
-            className="rounded-lg w-full"
-            src={getImage(image)}
-            alt={`${title}`}
-          />
-        )}
+        <Image
+          placeholder="blur"
+          blurDataURL="/favicon.png"
+          height={200}
+          width={180}
+          layout="responsive"
+          className="rounded-lg w-full"
+          src={getImage(image)}
+          alt={`${title}`}
+        />
         <div className="py-6 px-4 pb-0">
           <h2 className="text-sm text-gray-800 font-semibold">{`${title}`}</h2>
           <p className="text-sm font-semibold">{about}</p>
         </div>
         <div className="flex flex-row px-2 py-2">
-          <span className={buttonStyle}>
-            {`NFTs: ${pinsCount}`}
-          </span>
-          <span className={buttonStyle}>
-            {`Owners: ${ownersCount}`}
-          </span>
-          <span className={buttonStyle}>
-            {`On Auction: ${onAuctionCount}`}
-          </span>
+          <span className={buttonStyle}>{`NFTs: ${pinsCount}`}</span>
+          <span className={buttonStyle}>{`Owners: ${ownersCount}`}</span>
+          <span className={buttonStyle}>{`On Auction: ${onAuctionCount}`}</span>
         </div>
         <div className="flex flex-row px-2 pb-1">
-        <span className={buttonStyle}>
-            {`On Sale: ${onSaleCount}`}
-          </span>
-          <span className={buttonStyle}>
-            {`Volume: ${volume}`}
-          </span>
-          <span className={buttonStyle}>
-            {`Change: ${change}%`}
-          </span>
+          <span className={buttonStyle}>{`On Sale: ${onSaleCount}`}</span>
+          <span className={buttonStyle}>{`Volume: ${volume}`}</span>
+          <span className={buttonStyle}>{`Change: ${change}%`}</span>
         </div>
-        
+
         <div className="p-6 pt-2">
           <div className="flex space-x-4">
             <div className="flex space-x-1 items-center">
@@ -227,28 +239,38 @@ const Collection = ({ collection }) => {
               <span>{commentsCount}</span>
             </div>
             <div className="flex space-x-1 items-center">
-              <span>
-                {!alreadySaved && (
-                  <AiOutlineHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      saveCollection();
-                    }}
-                    className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
-                {alreadySaved && (
-                  <AiFillHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      saveCollection();
-                    }}
-                    className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
-              </span>
+              {!savingPost ? (
+                <span>
+                  {!alreadySaved ? (
+                    <AiOutlineHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        saveCollection();
+                      }}
+                      className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                      size={25}
+                    />
+                  ) : (
+                    <AiFillHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        saveCollection();
+                      }}
+                      className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                      size={25}
+                    />
+                  )}
+                </span>
+              ) : (
+                <AiOutlineLoading3Quarters
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // savePin();
+                  }}
+                  className="animate-spin text-[#000000] drop-shadow-lg cursor-pointer"
+                  size={22}
+                />
+              )}
               <span>{savedLength}</span>
             </div>
           </div>

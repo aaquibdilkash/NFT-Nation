@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { nftaddress, nftmarketaddress } from "./../../config";
-import NFT from "./../../artifacts/contracts/NFT.sol/NFT.json";
-import Market from "./../../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
+import { nftaddress, nftmarketaddress } from "../../config";
+import NFT from "../../artifacts/contracts/NFT.sol/NFT.json";
+import Market from "../../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import Web3Modal from "web3modal";
 import { ethers } from "ethers";
 import Spinner from "../../components/Spinner";
@@ -17,6 +17,7 @@ import {
   getUserBid,
   getUserName,
   isValidAmount,
+  parseAmount,
 } from "../../utils/data";
 import {
   approvalLoadingMessage,
@@ -67,7 +68,11 @@ import Image from "next/image";
 import { FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import {
+  AiFillHeart,
+  AiOutlineHeart,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 import moment from "moment";
 import { MdDeleteForever } from "react-icons/md";
 import { GIFTING_USER_SET } from "../../redux/constants/UserTypes";
@@ -77,10 +82,12 @@ const tabButtonStyles =
 
 const PinDetail = () => {
   const router = useRouter();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { pathname } = router;
   const { pinId } = router.query;
-  const { user, giftingUser, marketContract } = useSelector((state) => state.userReducer);
+  const { user, giftingUser, marketContract } = useSelector(
+    (state) => state.userReducer
+  );
   const [refresh, setRefresh] = useState(false);
   const [pinDetail, setPinDetail] = useState();
   const [pinComments, setPinComments] = useState([]);
@@ -96,7 +103,7 @@ const PinDetail = () => {
   const [sideLoading, setSideLoading] = useState(true);
   const [alreadySaved, setAlreadySaved] = useState(false);
   const [savedLength, setSavedLenth] = useState(0);
-  const [activeBtn, setActiveBtn] = useState("More Like This");
+  const [activeBtn, setActiveBtn] = useState("More NFTs Like This");
   const [tab, setTab] = useState("comments");
 
   const {
@@ -119,7 +126,7 @@ const PinDetail = () => {
     image,
     postedBy,
     createdBy,
-    createdAt
+    createdAt,
   } = pinDetail ?? {
     _id: "",
     title: "",
@@ -140,7 +147,7 @@ const PinDetail = () => {
     history: [],
     postedBy: {},
     createdBy: {},
-    createdAt: new Date()
+    createdAt: new Date(),
   };
 
   const executeMarketSaleCondition =
@@ -297,8 +304,8 @@ const PinDetail = () => {
         setRefresh((prev) => !prev);
         dispatch({
           type: GIFTING_USER_SET,
-          payload: {}
-        })
+          payload: {},
+        });
         setLoading(false);
         toast.success(finalSuccessMessage);
       })
@@ -329,6 +336,20 @@ const PinDetail = () => {
 
     if (!giftingUser?._id) {
       toast.info(giftUserSelectInfoMessage);
+      setActiveBtn("Gift This NFT To Someone");
+
+      router.push(
+        {
+          pathname: pathname,
+          query: {
+            pinId,
+            type: "users",
+            page: 1
+          },
+        },
+        undefined,
+        { shallow: true }
+      );
       return;
     }
 
@@ -354,17 +375,17 @@ const PinDetail = () => {
 
     // execute Market Sale function
     try {
-      contract = new ethers.Contract(
-        nftmarketaddress,
-        Market.abi,
-        signer
+      contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+      console.log(nftaddress, itemId, giftingUser?.address);
+      transaction = await contract.giftMarketItem(
+        nftaddress,
+        itemId,
+        giftingUser?.address
       );
-      console.log(nftaddress, itemId, giftingUser?.address)
-      transaction = await contract.giftMarketItem(nftaddress, itemId, giftingUser?.address);
       setLoadingMessage(giftLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenGiftSuccessMessage);
-      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDD")
+      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDD");
       const event = tx.events[2];
       var eventData = getEventData(event);
       console.log(eventData);
@@ -409,7 +430,8 @@ const PinDetail = () => {
         Market.abi,
         signer
       );
-      const auctionPrice = ethers.utils.parseUnits(price, "ether");
+      const auctionPrice = parseAmount(price);
+      // const auctionPrice = ethers.utils.parseUnits(price, "ether");
       const transaction = await contract.executeMarketSale(nftaddress, itemId, {
         value: auctionPrice,
       });
@@ -439,7 +461,6 @@ const PinDetail = () => {
       destination: "https://nft-nation.vercel.app",
     });
   };
-
 
   const createMarketSale = async () => {
     if (!user?._id) {
@@ -474,7 +495,8 @@ const PinDetail = () => {
     try {
       setLoadingMessage(confirmLoadingMessage);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      const auctionPrice = ethers.utils.parseUnits(inputPrice, "ether");
+      // const auctionPrice = ethers.utils.parseUnits(inputPrice, "ether");
+      const auctionPrice = parseAmount(inputPrice);
       transaction = await contract.createMarketSale(
         nftaddress,
         itemId,
@@ -524,7 +546,8 @@ const PinDetail = () => {
         Market.abi,
         signer
       );
-      const auctionBid = ethers.utils.parseUnits(inputPrice, "ether");
+      // const auctionBid = ethers.utils.parseUnits(inputPrice, "ether");
+      const auctionBid = parseAmount(inputPrice);
       const transaction = await contract.makeAuctionBid(itemId, {
         value: auctionBid,
       });
@@ -790,6 +813,11 @@ const PinDetail = () => {
       toast.info(loginMessage);
       return;
     }
+
+    if (savingPost) {
+      return;
+    }
+
     setSavingPost(true);
     axios
       .put(`/api/pins/save/${_id}`, {
@@ -941,7 +969,11 @@ const PinDetail = () => {
                 ].map((item, index) => {
                   if (item?.condition)
                     return (
-                      <button className="mt-1" key={index} onClick={() => item?.func()}>
+                      <button
+                        className="mt-1"
+                        key={index}
+                        onClick={() => item?.func()}
+                      >
                         <span className={`${buttonStyle} text-xl`}>
                           {item?.text}
                         </span>
@@ -964,15 +996,13 @@ const PinDetail = () => {
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
                           <div>
-                            {item?.user?.image && (
-                              <Image
-                                height={40}
-                                width={40}
-                                src={getImage(item?.user?.image)}
-                                className="w-10 h-10 rounded-full cursor-pointer"
-                                alt="user-profile"
-                              />
-                            )}
+                            <Image
+                              height={40}
+                              width={40}
+                              src={getImage(item?.user?.image)}
+                              className="w-10 h-10 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
                           </div>
                         </Link>
                       )}
@@ -999,15 +1029,13 @@ const PinDetail = () => {
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
                           <div>
-                            {item?.user?.image && (
-                              <Image
-                                height={45}
-                                width={45}
-                                src={getImage(item?.user?.image)}
-                                className="w-12 h-12 rounded-full cursor-pointer"
-                                alt="user-profile"
-                              />
-                            )}
+                            <Image
+                              height={45}
+                              width={45}
+                              src={getImage(item?.user?.image)}
+                              className="w-12 h-12 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
                           </div>
                         </Link>
                       )}
@@ -1038,15 +1066,13 @@ const PinDetail = () => {
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
                           <div>
-                            {item?.user?.image && (
-                              <Image
-                                height={45}
-                                width={45}
-                                src={getImage(item?.user?.image)}
-                                className="w-12 h-12 rounded-full cursor-pointer"
-                                alt="user-profile"
-                              />
-                            )}
+                            <Image
+                              height={45}
+                              width={45}
+                              src={getImage(item?.user?.image)}
+                              className="w-12 h-12 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
                           </div>
                         </Link>
                       )}
@@ -1084,15 +1110,13 @@ const PinDetail = () => {
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
                           <div>
-                            {item?.user?.image && (
-                              <Image
-                                height={40}
-                                width={40}
-                                src={getImage(item?.user?.image)}
-                                className="w-12 h-12 rounded-full cursor-pointer"
-                                alt="user-profile"
-                              />
-                            )}
+                            <Image
+                              height={40}
+                              width={40}
+                              src={getImage(item?.user?.image)}
+                              className="w-12 h-12 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
                           </div>
                         </Link>
                       )}
@@ -1126,15 +1150,13 @@ const PinDetail = () => {
                   {user?._id && (
                     <Link href={`/user-profile/${user?._id}`}>
                       <div>
-                        {user?.image && (
-                          <Image
-                            height={45}
-                            width={45}
-                            src={getImage(user?.image)}
-                            className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                            alt="user-profile"
-                          />
-                        )}
+                        <Image
+                          height={45}
+                          width={45}
+                          src={getImage(user?.image)}
+                          className="w-14 h-14 rounded-full cursor-pointer pt-2"
+                          alt="user-profile"
+                        />
                       </div>
                     </Link>
                   )}
@@ -1161,7 +1183,7 @@ const PinDetail = () => {
             {postedBy?._id && (
               <Link href={`/user-profile/${postedBy?._id}`}>
                 <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
-                <p className="inline align-middle text-sm mr-2 font-bold">
+                  <p className="inline align-middle text-sm mr-2 font-bold">
                     {`Owner: `}
                   </p>
                   <Image
@@ -1181,7 +1203,7 @@ const PinDetail = () => {
             {createdBy?._id && (
               <Link href={`/user-profile/${createdBy?._id}`}>
                 <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
-                <p className="inline align-middle text-sm mr-2 font-bold">
+                  <p className="inline align-middle text-sm mr-2 font-bold">
                     {`Minter: `}
                   </p>
                   <Image
@@ -1206,10 +1228,11 @@ const PinDetail = () => {
             {about}
           </p>
 
-
           <div className="flex flex-wrap justify-center">
-          <div className="font-bold text-sm mr-2 mb-1">
-              <span className={buttonStyle}>{`Minted ${moment(createdAt).fromNow()}`}</span>
+            <div className="font-bold text-sm mr-2 mb-1">
+              <span className={buttonStyle}>{`Minted ${moment(
+                createdAt
+              ).fromNow()}`}</span>
             </div>
             {(priceShowCondition || highestBidShowCondition) && (
               <div className="font-bold text-sm mr-2 mb-1">
@@ -1281,24 +1304,36 @@ const PinDetail = () => {
                 <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
                   {savedLength}
                 </p>
-                {!alreadySaved && (
-                  <AiOutlineHeart
+                {!savingPost ? (
+                  <span>
+                    {!alreadySaved ? (
+                      <AiOutlineHeart
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          savePin();
+                        }}
+                        className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        size={25}
+                      />
+                    ) : (
+                      <AiFillHeart
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          savePin();
+                        }}
+                        className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        size={25}
+                      />
+                    )}
+                  </span>
+                ) : (
+                  <AiOutlineLoading3Quarters
                     onClick={(e) => {
                       e.stopPropagation();
-                      savePin();
+                      // savePin();
                     }}
-                    className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
-                {alreadySaved && (
-                  <AiFillHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      savePin();
-                    }}
-                    className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
+                    className="animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={20}
                   />
                 )}
               </div>
@@ -1326,15 +1361,13 @@ const PinDetail = () => {
                   {user?._id && (
                     <Link href={`/user-profile/${user?._id}`}>
                       <div>
-                        {user?.image && (
-                          <Image
-                            height={45}
-                            width={45}
-                            src={getImage(user?.image)}
-                            className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
-                            alt="user-profile"
-                          />
-                        )}
+                        <Image
+                          height={45}
+                          width={45}
+                          src={getImage(user?.image)}
+                          className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
+                          alt="user-profile"
+                        />
                       </div>
                     </Link>
                   )}
@@ -1362,7 +1395,7 @@ const PinDetail = () => {
         </div>
       )}
       <>
-      <div className="flex flex-wrap justify-evenly mt-2 mb-2">
+        <div className="flex flex-wrap justify-evenly mt-2 mb-2">
           {[
             {
               name: `More NFTs Like This`,
@@ -1370,7 +1403,7 @@ const PinDetail = () => {
               query: {
                 type: "pins",
                 category,
-                page: 1
+                page: 1,
               },
               condition: true,
             },
@@ -1379,7 +1412,7 @@ const PinDetail = () => {
               text: "Gift This NFT To Someone",
               query: {
                 type: "users",
-                page: 1
+                page: 1,
               },
               condition: createMarketSaleCondition,
             },
@@ -1403,7 +1436,11 @@ const PinDetail = () => {
                       { shallow: true }
                     );
                   }}
-                  className={`${buttonStyle} ${activeBtn === item?.name ? `` : `bg-transparent text-[#000000]`}`}
+                  className={`${buttonStyle} ${
+                    activeBtn === item?.name
+                      ? ``
+                      : `bg-transparent text-[#000000]`
+                  }`}
                 >
                   {item?.text}
                 </button>

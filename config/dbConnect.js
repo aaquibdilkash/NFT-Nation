@@ -5,7 +5,9 @@ const dbConnect = () => {
         return
     }
 
-    mongoose.connect(process.env.DB_URI, {
+    const URI = process.env.NODE_ENV !== "production" ? process.env.LOCAL_DB_URI : process.env.DB_URI
+
+    mongoose.connect(URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     }).then((con) => {

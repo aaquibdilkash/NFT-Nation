@@ -3,6 +3,8 @@ import axios from "axios";
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
+export const basePath = process.env.NODE_ENV !== "production" ? `http://localhost:3000` : `https://nft-nation.vercel.app`
+
 export const feedPathArray = [
   "/",
   "/pin-detail/[pinId]",
@@ -14,6 +16,10 @@ export const ether = (n) => {
   return new web3.utils.BN(
       web3.utils.toWei(n.toString(), 'ether')
   )
+}
+
+export const parseAmount = (amount) => {
+  return ethers.utils.parseUnits(amount, "ether")
 }
 
 export const buttonStyle = "text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer shadow-xl drop-shadow-lg";

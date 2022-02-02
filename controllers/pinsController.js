@@ -15,7 +15,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
     const data = await redisClient.get(req?.url);
 
     if (data) {
-      return res.status(200).json(JSON.parse(data));
+      // return res.status(200).json(JSON.parse(data));
     }
   } catch (e) {
     console.log(e);
@@ -46,9 +46,9 @@ const allPins = catchAsyncErrors(async (req, res) => {
     .notin()
     .sorted();
 
-  if ((req.query.feed, "pins")) {
+  if (req.query.feed) {
     const user = await User.findById(req.query.feed);
-    searchPagination.feed(user?.followings);
+    searchPagination.feed("pins", [...user?.followings, req.query.feed]);
   }
 
   if (req.query.collection) {
@@ -66,9 +66,9 @@ const allPins = catchAsyncErrors(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    pins,
-    pinsCount,
-    filteredPinsCount,
+    data: pins,
+    dataCount: pinsCount,
+    filteredDataCount: filteredPinsCount,
     resultPerPage,
   });
 
@@ -76,9 +76,9 @@ const allPins = catchAsyncErrors(async (req, res) => {
     req?.url,
     JSON.stringify({
       success: true,
-      pins,
-      pinsCount,
-      filteredPinsCount,
+      data: pins,
+      dataCount: pinsCount,
+      filteredDataCount: filteredPinsCount,
       resultPerPage,
     }),
     "ex",

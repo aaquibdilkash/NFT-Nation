@@ -18,18 +18,14 @@ import {
   followSuccessMessage,
   loginMessage,
   removeToCollectionSuccessMessage,
-  saveCollectionErrorMessage,
   saveErrorMessage,
   unFollowErrorMessage,
   unFollowSuccessMessage,
 } from "../utils/messages";
 import axios from "axios";
-import {
-  COLLECTION_SET,
-  USER_GET_SUCCESS,
-} from "../redux/constants/UserTypes";
+import { COLLECTION_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { AiFillHeart, AiOutlineHeart, AiOutlineLoading3Quarters } from "react-icons/ai";
 import { toast } from "react-toastify";
 import moment from "moment";
 
@@ -80,6 +76,11 @@ const Pin = ({ pin }) => {
       toast.info(loginMessage);
       return;
     }
+
+    if(savingPost) {
+      return
+    }
+
     setSavingPost(true);
     axios
       .put(`/api/pins/save/${_id}`, {
@@ -121,6 +122,11 @@ const Pin = ({ pin }) => {
       toast.info(loginMessage);
       return;
     }
+
+    if(following) {
+      return
+    }
+
     setFollowing(true);
     axios
       .put(`/api/users/follow/${postedBy?._id}`, {
@@ -162,12 +168,21 @@ const Pin = ({ pin }) => {
       toast.info(loginMessage);
       return;
     }
+
+    if(addingPost) {
+      return
+    }
+
     setAddingPost(true);
     axios
       .put(`/api/collections/pins/${collection?._id}/${_id}`)
       .then((res) => {
         setAddingPost(false);
-        toast.success(alreadyAdded ? removeToCollectionSuccessMessage : addToCollectionSuccessMessage);
+        toast.success(
+          alreadyAdded
+            ? removeToCollectionSuccessMessage
+            : addToCollectionSuccessMessage
+        );
         const filteredCollectionPins = alreadyAdded
           ? collection.pins.filter((item, index) => item !== _id)
           : [...collection.pins, _id];
@@ -236,12 +251,20 @@ const Pin = ({ pin }) => {
                 }}
                 className={buttonStyle}
               >
-                {alreadyFollowed ? `UnFollow` : `Follow`}
+                {!following ? `${alreadyFollowed ? `UnFollow` : `Follow`}` : (
+                  <AiOutlineLoading3Quarters
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // savePin();
+                  }}
+                  className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                  size={15}
+                />
+                )}
               </span>
             )}
           </div>
         </div>
-        {image && (
           <Image
             placeholder="blur"
             blurDataURL="/favicon.png"
@@ -252,7 +275,6 @@ const Pin = ({ pin }) => {
             src={getImage(image)}
             alt={`${title}`}
           />
-        )}
         <div className="p-6 pb-0">
           <h2 className="text-sm text-gray-800 font-semibold">{`#${tokenId} ${title}`}</h2>
           <p className="text-sm font-semibold">{about}</p>
@@ -331,28 +353,39 @@ const Pin = ({ pin }) => {
               <span>{commentsCount}</span>
             </div>
             <div className="flex space-x-1 items-center">
-              <span>
-                {!alreadySaved && (
-                  <AiOutlineHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      savePin();
-                    }}
-                    className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
-                {alreadySaved && (
-                  <AiFillHeart
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      savePin();
-                    }}
-                    className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                    size={25}
-                  />
-                )}
-              </span>
+              {!savingPost ? (
+                <span>
+                  {!alreadySaved ? (
+                    <AiOutlineHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        savePin();
+                      }}
+                      className="text-[#000000] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                      size={25}
+                    />
+                  ) : (
+                    <AiFillHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        savePin();
+                      }}
+                      className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                      size={25}
+                    />
+                  )}
+                </span>
+              ) : (
+                <AiOutlineLoading3Quarters
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // savePin();
+                      }}
+                      className="animate-spin text-[#000000] drop-shadow-lg cursor-pointer"
+                      size={22}
+                    />
+              )
+            }
               <span>{savedLength}</span>
             </div>
             <div className="flex space-x-1 items-center">
@@ -364,7 +397,18 @@ const Pin = ({ pin }) => {
                   }}
                   className={buttonStyle}
                 >
-                  {alreadyAdded ? `Remove` : `Add`}
+                  {!addingPost ? (
+                  `${alreadyAdded ? `Remove` : `Add`}`
+                ) : (
+                  <AiOutlineLoading3Quarters
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={15}
+                  />
+                )}
                 </span>
               )}
             </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AiOutlineEdit } from "react-icons/ai";
+import { AiOutlineEdit, AiOutlineLoading3Quarters } from "react-icons/ai";
 import { getImage, getUserName } from "../../utils/data";
 import {
   errorMessage,
@@ -82,6 +82,11 @@ const UserProfilePage = () => {
       toast.info(loginMessage);
       return;
     }
+
+    if (following) {
+      return;
+    }
+    
     setFollowing(true);
     axios
       .put(`/api/users/follow/${userId}`, {
@@ -306,18 +311,16 @@ const UserProfilePage = () => {
           {!editing && !collectionEditing && (
             <div className="relative flex flex-col mb-2 pb-10">
               <div className="flex flex-col justify-center items-center z-10">
-                {image && (
-                  <Image
-                    className="rounded-lg w-20 h-20 -mt-64"
-                    placeholder="blur"
-                    blurDataURL="/favicon.png"
-                    height={250}
-                    width={250}
-                    src={getImage(image)}
-                    objectFit="cover"
-                    alt="userProfile-pic"
-                  />
-                )}
+                <Image
+                  className="rounded-lg w-20 h-20 -mt-64"
+                  placeholder="blur"
+                  blurDataURL="/favicon.png"
+                  height={250}
+                  width={250}
+                  src={getImage(image)}
+                  objectFit="cover"
+                  alt="userProfile-pic"
+                />
               </div>
 
               <section className="relative pt-16 bg-blueGray-200">
@@ -335,7 +338,18 @@ const UserProfilePage = () => {
                                 className="bg-pink-500 bg-themeColor uppercase text-[#ffffff] font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
                                 type="button"
                               >
-                                {`${alreadyFollowed ? `Unfollow` : `Follow`}`}
+                                {!following ? (
+                                  `${alreadyFollowed ? `UnFollow` : `Follow`}`
+                                ) : (
+                                  <AiOutlineLoading3Quarters
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // savePin();
+                                    }}
+                                    className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                                    size={15}
+                                  />
+                                )}
                               </button>
                             )}
                             {user?._id === userId && (

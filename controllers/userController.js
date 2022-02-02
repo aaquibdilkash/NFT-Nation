@@ -9,10 +9,14 @@ const DEFAULT_EXPIRATION = 3600;
 const allUsers = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
 
-  const data = await redisClient.get(req?.url)
+  try {
+    const data = await redisClient.get(req?.url);
 
-  if(data) {
-    return res.status(200).json(JSON.parse(data));
+    if (data) {
+      // return res.status(200).json(JSON.parse(data));
+    }
+  } catch (e) {
+    console.log(e);
   }
 
   // redisClient.get(`users${JSON.stringify(req.query)}`, (err, data) => {
@@ -43,10 +47,10 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     }
   }
 
-  // if(req.query.feed, "users") {
-  //   const user = await User.findById(req.query.feed)
-  //   searchPagination.feed(user?.followings)
-  // }
+  if(req.query.feed) {
+    const user = await User.findById(req.query.feed)
+    searchPagination.feed("users", user?.followings, user?.followers)
+  }
 
   let users = await searchPagination.query;
 
@@ -58,9 +62,9 @@ const allUsers = catchAsyncErrors(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    users,
-    usersCount,
-    filteredUsersCount,
+    data: users,
+    dataCount: usersCount,
+    filteredDataCount: filteredUsersCount,
     resultPerPage,
   });
 
@@ -68,9 +72,9 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     req?.url,
     JSON.stringify({
       success: true,
-      users,
-      usersCount,
-      filteredUsersCount,
+      data: users,
+      dataCount: usersCount,
+      filteredDataCount: filteredUsersCount,
       resultPerPage,
     }),
     "ex",
