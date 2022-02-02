@@ -176,8 +176,8 @@ const UserProfilePage = () => {
           },
         },
         {
-          name: `Followings`,
-          text: `Followings (${followingsCount})`,
+          name: `Following`,
+          text: `Following (${followingsCount})`,
           condition: true,
           query: {
             followings: true,

@@ -98,13 +98,21 @@ class SearchPagination {
   }
 
   feed(type="pins", followings = [], followers = []) {
+    // const keyword = this.queryStr.feed ? (
+    //   type === "pins" ? {"postedBy": {$in: followings}} : type === "collections" ? {"createdBy": {$in: followings}} : {}
+    // ) : {};
+
     const keyword = this.queryStr.feed ? (
       type === "pins" ? {
         $or: [
           {"postedBy": {$in: followings}},
           {"createdBy": {$in: followings}},
         ],
-      } : type === "collections" ? {"createdBy": {$in: followings}} : {
+      } : type === "collections" ? {
+        $or: [
+          {"createdBy": {$in: followings}}
+        ]
+      } : {
         $or: [
           {followings: {$elemMatch: {"_id": {$in: followings}}}},
         ],

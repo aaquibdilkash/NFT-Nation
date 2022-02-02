@@ -18,10 +18,11 @@ import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { nftmarketaddress } from "../config";
 import { toast } from "react-toastify";
-import Footer from "../components/Footer";
+// import Footer from "../components/Footer";
 
 const HomeLayout = ({ children }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
   const { pathname, query } = router;
@@ -34,7 +35,8 @@ const HomeLayout = ({ children }) => {
   let web3;
   let accounts;
   let chainId;
-  const chain = chainData.localhost;
+  const chain = chainData.ropsten;
+  // const chain = chainData.localhost;
 
   const connectToMetamask = async () => {
 
@@ -159,6 +161,7 @@ const HomeLayout = ({ children }) => {
   };
 
   const login = (address) => {
+    setLoggingIn(true)
     const obj = {
       address: address,
       userName: address,
@@ -167,12 +170,14 @@ const HomeLayout = ({ children }) => {
       .post("/api/users", obj)
       .then((res) => {
         toast.success("Logged In Successfuly!");
+        setLoggingIn(false)
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
         });
       })
       .catch((e) => {
+        setLoggingIn(false)
         toast.error("Something went wrong while logging you in!");
         // console.log(e);
       });
@@ -291,7 +296,7 @@ const HomeLayout = ({ children }) => {
       >
         <div className="px-2 md:px-5">
           <div className="transparent sticky top-4 z-40">
-            <Navbar connectToMetamask={connectToMetamask} />
+            <Navbar connectToMetamask={connectToMetamask} loggingIn={loggingIn}/>
           </div>
           <div className="h-full">{children}</div>
           {/* <div className="sticky transparent w-auto bottom-0">

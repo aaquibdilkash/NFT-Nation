@@ -8,7 +8,7 @@ async function main() {
   const NAME = 'NFT Nation Token';
   const SYMBOL = 'NNT';
   // const TOTAL_SUPPLY = parseAmount(1000000000)
-  const TOTAL_SUPPLY = ethers.utils.parseUnits("1000000000", "ether")
+  const TOTAL_SUPPLY = ethers.utils.parseUnits("100000000000", "ether")
 
   const ERCToken = await hre.ethers.getContractFactory("Token");
   const ercToken = await ERCToken.deploy(NAME, SYMBOL, TOTAL_SUPPLY);
@@ -21,7 +21,7 @@ async function main() {
   console.log("nftMarket deployed to:", nftMarket.address);
 
   // await ercToken.transfer(nftMarket.address, parseAmount(500000000))
-  await ercToken.transfer(nftMarket.address, ethers.utils.parseUnits("500000000", "ether"))
+  await ercToken.transfer(nftMarket.address, ethers.utils.parseUnits("50000000000", "ether"))
 
   const NFT = await hre.ethers.getContractFactory("NFT");
   const nft = await NFT.deploy(NAME, SYMBOL);

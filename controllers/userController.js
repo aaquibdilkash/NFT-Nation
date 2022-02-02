@@ -13,7 +13,7 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     const data = await redisClient.get(req?.url);
 
     if (data) {
-      // return res.status(200).json(JSON.parse(data));
+      return res.status(200).json(JSON.parse(data));
     }
   } catch (e) {
     console.log(e);

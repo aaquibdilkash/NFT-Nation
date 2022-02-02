@@ -2,11 +2,11 @@ import Link from "next/link";
 import { IoMdAdd, IoMdSearch } from "react-icons/io";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { AiOutlineLogin } from "react-icons/ai";
+import { AiOutlineLoading3Quarters, AiOutlineLogin } from "react-icons/ai";
 import Image from "next/image";
 import { feedPathArray, getImage } from "../utils/data";
 
-const Navbar = ({ connectToMetamask }) => {
+const Navbar = ({ connectToMetamask, loggingIn }) => {
   const { user } = useSelector((state) => state.userReducer);
   const router = useRouter();
   const { pathname, query } = router;
@@ -40,7 +40,7 @@ const Navbar = ({ connectToMetamask }) => {
                   pathname: "/",
                   query: {
                     ...query,
-                    keyword
+                    keyword,
                   },
                 },
                 undefined,
@@ -100,33 +100,48 @@ const Navbar = ({ connectToMetamask }) => {
         </div>
       </div>
       <div className="flex gap-3 ">
-        {user?._id && (
-          <Link href={`/user-profile/${user?._id}`}>
-            <div className="w-12 h-12 relative transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
-              <Image
-                src={getImage(user?.image)}
-                alt="user-pic"
-                placeholder="blur"
-                blurDataURL="/favicon.png"
-                // height={100}
-                // width={100}
-                layout="fill"
-                className="rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
-              />
+        {!loggingIn ? (
+          user?._id ? (
+            <Link href={`/user-profile/${user?._id}`}>
+              <div className="w-12 h-12 relative transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
+                <Image
+                  src={getImage(user?.image)}
+                  alt="user-pic"
+                  placeholder="blur"
+                  blurDataURL="/favicon.png"
+                  // height={100}
+                  // width={100}
+                  layout="fill"
+                  className="rounded-lg shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+                />
+              </div>
+            </Link>
+          ) : (
+            <div
+              onClick={connectToMetamask}
+              className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+            >
+              <AiOutlineLogin color="themeColor" fontSize={21} />
             </div>
-          </Link>
-        )}
-        {!user?._id && (
+          )
+        ) : (
           <div
             onClick={connectToMetamask}
             className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
           >
-            <AiOutlineLogin color="themeColor" fontSize={21} />
+            <AiOutlineLoading3Quarters
+              onClick={(e) => {
+                e.stopPropagation();
+                // savePin();
+              }}
+              className="font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+              size={21}
+            />
           </div>
         )}
         <Link href="/create-pin">
           <div className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
-            <IoMdAdd color="themeColor" fontSize={21}/>
+            <IoMdAdd color="themeColor" fontSize={21} />
           </div>
         </Link>
       </div>
