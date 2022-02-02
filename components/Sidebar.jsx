@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FaArtstation, FaHome, FaUserAstronaut } from "react-icons/fa";
 import { IoIosAperture, IoIosArrowForward } from "react-icons/io";
-import { AiFillCloseCircle, AiOutlineLogin } from "react-icons/ai";
+import { AiFillCloseCircle, AiOutlineLoading3Quarters, AiOutlineLogin } from "react-icons/ai";
 import { feedPathArray, getImage, getUserName, isSubset } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
@@ -17,7 +17,7 @@ const isNotActiveArrowStyle =
 const isActiveArrowStyle =
   "text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center gap-3 font-extrabold transition-all duration-200 ease-in-out capitalize hover:cursor-pointer bg-themeColor";
 
-const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
+const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, loggingIn = false }) => {
   const router = useRouter();
   const { query, asPath, pathname } = router;
   const handleCloseSidebar = () => {
@@ -248,7 +248,13 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {} }) => {
           className="bg-gradient-to-r from-themeColor to-secondTheme flex my-5 mb-3 gap-2 p-3 items-center bg-secondTheme rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
         >
           <p className="font-bold">{`Connect and Get In`}</p>
-          <AiOutlineLogin className="font-bold" fontSize={21} />
+          {
+            !loggingIn ? (
+              <AiOutlineLogin className="font-bold" fontSize={21} />
+            ) : (
+              <AiOutlineLoading3Quarters className="font-bold animate-spin" fontSize={21} />
+            )
+          }
         </div>
       )}
     </div>

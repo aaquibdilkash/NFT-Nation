@@ -67,6 +67,8 @@ import { toast } from "react-toastify";
 //   }
 // })
 
+const createPinButtonStyles = "w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+
 const CreatePin = () => {
   const { user } = useSelector((state) => state.userReducer);
   const [title, setTitle] = useState("");
@@ -901,15 +903,15 @@ const CreatePin = () => {
                       setImporting(true);
                       // importNFT("0x93010854BF5935fF0dc6DE5Cb4b4aCa2D44260C1", "4")
                     }}
-                    className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
-                  >
+                    className={createPinButtonStyles}
+                    >
                     Import NFT
                   </button>
                   <button
                     type="button"
                     onClick={submitHandler}
-                    className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
-                  >
+                    className={createPinButtonStyles}
+                    >
                     Mint NFT
                   </button>
                 </div>
@@ -941,7 +943,7 @@ const CreatePin = () => {
             <div className="flex flex-wrap m-2 gap-3 justify-center">
               <button
                 type="button"
-                className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+                className={createPinButtonStyles}
                 onClick={() => {
                   setImporting(false);
                 }}
@@ -950,7 +952,7 @@ const CreatePin = () => {
               </button>
               <button
                 type="button"
-                className="w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+                className={createPinButtonStyles}
                 onClick={() => {
                   importNFTHandler();
                 }}

@@ -250,7 +250,7 @@ const HomeLayout = ({ children }) => {
   return (
     <div className="flex bg-gradient-to-r from-secondTheme to-themeColor md:flex-row flex-col h-screen transition-height duration-75 ease-out">
       <div className="hidden md:flex h-screen flex-initial">
-        <Sidebar user={user && user} connectToMetamask={connectToMetamask} />
+        <Sidebar user={user && user} connectToMetamask={connectToMetamask} loggingIn={loggingIn}/>
       </div>
       <div className="flex md:hidden flex-row">
         <div className="p-2 w-full flex flex-row justify-between items-center shadow-md">
@@ -285,6 +285,7 @@ const HomeLayout = ({ children }) => {
               setToggleSidebar={setToggleSidebar}
               user={user && user}
               connectToMetamask={connectToMetamask}
+              loggingIn={loggingIn}
             />
           </div>
         )}
