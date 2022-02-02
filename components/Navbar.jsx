@@ -6,6 +6,8 @@ import { AiOutlineLoading3Quarters, AiOutlineLogin } from "react-icons/ai";
 import Image from "next/image";
 import { feedPathArray, getImage } from "../utils/data";
 
+const navButtons = "bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+
 const Navbar = ({ connectToMetamask, loggingIn }) => {
   const { user } = useSelector((state) => state.userReducer);
   const router = useRouter();
@@ -119,7 +121,7 @@ const Navbar = ({ connectToMetamask, loggingIn }) => {
           ) : (
             <div
               onClick={connectToMetamask}
-              className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+              className={navButtons}
             >
               <AiOutlineLogin color="themeColor" fontSize={21} />
             </div>
@@ -127,7 +129,7 @@ const Navbar = ({ connectToMetamask, loggingIn }) => {
         ) : (
           <div
             onClick={connectToMetamask}
-            className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer"
+            className={navButtons}
           >
             <AiOutlineLoading3Quarters
               onClick={(e) => {
@@ -140,7 +142,7 @@ const Navbar = ({ connectToMetamask, loggingIn }) => {
           </div>
         )}
         <Link href="/create-pin">
-          <div className="bg-textColor text-secondTheme rounded-lg w-12 h-12 md:w-14 md:h-12 flex justify-center items-center shadow-lg hover:drop-shadow-lg hover:cursor-pointer">
+          <div className={navButtons}>
             <IoMdAdd color="themeColor" fontSize={21} />
           </div>
         </Link>
