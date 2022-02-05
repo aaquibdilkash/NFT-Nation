@@ -105,6 +105,7 @@ const createUser = catchAsyncErrors(async (req, res) => {
   //   console.log("flused all keys in redis")
   // });
 
+  // flushing old data
   redisClient.del("/api/users?page=1", () => {
     console.log("users page 1 redis refreshed")
   })
