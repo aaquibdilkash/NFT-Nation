@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit, AiOutlineLoading3Quarters } from "react-icons/ai";
-import { getImage, getUserName } from "../../utils/data";
+import { getImage, getUserName, sendNotifications } from "../../utils/data";
 import {
   errorMessage,
+  fetchingProfileLoadingMessage,
   followErrorMessage,
   followSuccessMessage,
   loginMessage,
@@ -93,6 +94,26 @@ const UserProfilePage = () => {
         user: user?._id,
       })
       .then((res) => {
+
+        if(!alreadyFollowed) {
+          let to = [userId, ...user?.followers]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+
+          const obj = {
+            type: "New Follow",
+            byUser: user?._id,
+            toUser: userId,
+            to
+          }
+
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e, "DDDDDDDDDDddddd")
+          })
+        }
         setFollowing(false);
         toast.success(
           alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
@@ -147,7 +168,7 @@ const UserProfilePage = () => {
       setAlreadyFollowed(user?.followings?.find((item) => item === userId));
   }, [user, currentProfile]);
 
-  if (loading) return <Spinner message="Loading profile..." />;
+  if (loading) return <Spinner message={fetchingProfileLoadingMessage} />;
 
   const {
     _id,

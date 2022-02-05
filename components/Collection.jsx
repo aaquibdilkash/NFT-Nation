@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { buttonStyle, getImage, getUserName } from "../utils/data";
+import { buttonStyle, getImage, getUserName, sendNotifications } from "../utils/data";
 import {
   followErrorMessage,
   followSuccessMessage,
@@ -80,6 +80,26 @@ const Collection = ({ collection }) => {
         user: user?._id,
       })
       .then((res) => {
+
+        if(!alreadyFollowed) {
+          let to = [createdBy?._id, ...user?.followers]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+          const obj = {
+            type: "New Follow",
+            byUser: user?._id,
+            toUser: createdBy?._id,
+            to
+          }
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e)
+          })
+        }
+
+
         setFollowing(false);
         toast.success(
           alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
@@ -123,6 +143,29 @@ const Collection = ({ collection }) => {
         user: user?._id,
       })
       .then((res) => {
+
+        if (!alreadySaved) {
+          let to = [...user?.followers, createdBy?._id];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
+          const obj = {
+            type: "New Save",
+            byUser: user?._id,
+            pinCollection: _id,
+            to,
+          };
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e);
+            }
+          );
+        }
+
         setSavingPost(false);
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
         setSavedLenth((prev) => (alreadySaved ? prev - 1 : prev + 1));

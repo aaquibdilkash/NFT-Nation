@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
-import { buttonStyle, getImage, getUserName } from "../../utils/data";
+import { buttonStyle, getImage, getUserName, sendNotifications, tabButtonStyles } from "../../utils/data";
 import {
   commentAddErrorMessage,
   commentAddSuccessMessage,
   errorMessage,
+  fetchingCollectionLoadingMessage,
+  fetchingCommentsLoadingMessage,
   loginMessage,
   saveErrorMessage,
   shareInfoMessage,
@@ -18,14 +20,17 @@ import Image from "next/image";
 import { FaShareAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
-import { AiFillHeart, AiOutlineEdit, AiOutlineHeart, AiOutlineLoading3Quarters } from "react-icons/ai";
+import {
+  AiFillHeart,
+  AiOutlineEdit,
+  AiOutlineHeart,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 import { COLLECTION_SET } from "../../redux/constants/UserTypes";
 import CollectionEdit from "../../components/CollectionEdit";
 import { MdDeleteForever } from "react-icons/md";
 import moment from "moment";
 
-const tabButtonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
 
 const CollectionDetail = () => {
   const router = useRouter();
@@ -41,6 +46,7 @@ const CollectionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [deletingComment, setDeletingComment] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Fetching Comments...");
   const [alreadySaved, setAlreadySaved] = useState(false);
@@ -65,24 +71,23 @@ const CollectionDetail = () => {
   } = collection;
 
   const deleteComment = (id) => {
-    setSideLoading(true)
-    setLoadingMessage("Deleting Comment...")
+    setDeletingComment(id);
     axios
       .delete(`/api/collections/comments/${collectionId}/${id}`)
       .then((res) => {
         fetchCollectionComments();
-        setSideLoading(false)
+        setDeletingComment("");
       })
       .catch((e) => {
         toast.error(errorMessage);
-        setSideLoading(false)
+        setDeletingComment("");
         // console.log(e);
       });
   };
 
   const fetchCollectionComments = () => {
     setSideLoading(true);
-    setLoadingMessage("Fetching Comments...")
+    setLoadingMessage(fetchingCommentsLoadingMessage);
     axios
       .get(`/api/collections/comments/${collectionId}`)
       .then((res) => {
@@ -160,6 +165,25 @@ const CollectionDetail = () => {
           // setRefresh((prev) => !prev);
           fetchCollectionComments();
           toast.success(commentAddSuccessMessage);
+
+          let to = [...collectionComments.map(item => item?.user?._id), ...user?.followers, createdBy?._id]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+
+          const obj = {
+            type: "New Comment",
+            byUser: user?._id,
+            pinCollection: _id,
+            to
+          }
+
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e, "DDDDDDDDDDddddd")
+          })
+
         })
         .catch((e) => {
           setAddingComment(false);
@@ -174,16 +198,42 @@ const CollectionDetail = () => {
       return;
     }
 
-    if(savingPost) {
-      return
+    if (savingPost) {
+      return;
     }
-    
+
     setSavingPost(true);
     axios
       .put(`/api/collections/save/${_id}`, {
         user: user?._id,
       })
       .then((res) => {
+
+        if (!alreadySaved) {
+          let to = [...user?.followers, createdBy?._id];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
+
+          const obj = {
+            type: "New Save",
+            byUser: user?._id,
+            pinCollection: _id,
+            to,
+          };
+
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd");
+            }
+          );
+        }
+
+
         setSavingPost(false);
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
         setSavedLenth((prev) => (alreadySaved ? prev - 1 : prev + 1));
@@ -197,7 +247,7 @@ const CollectionDetail = () => {
   };
 
   if (loading) {
-    return <Spinner message="Showing Collection..." />;
+    return <Spinner message={fetchingCollectionLoadingMessage} />;
   }
 
   return (
@@ -233,16 +283,16 @@ const CollectionDetail = () => {
       {collection && !collectionEditing && (
         <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
           <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
-              <Image
-                unoptimized
-                placeholder="blur"
-                blurDataURL="/favicon.png"
-                alt={title}
-                className="shadow-lg rounded-lg"
-                height={500}
-                width={480}
-                src={getImage(image)}
-              />
+            <Image
+              unoptimized
+              placeholder="blur"
+              blurDataURL="/favicon.png"
+              alt={title}
+              className="shadow-lg rounded-lg"
+              height={500}
+              width={480}
+              src={getImage(image)}
+            />
 
             <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
               <div className="flex flex-wrap justify-center lg:gap-2">
@@ -266,10 +316,12 @@ const CollectionDetail = () => {
                 ].map((item, index) => {
                   if (item?.condition)
                     return (
-                      <button className="mt-1" key={index} onClick={() => item?.func()}>
-                        <span
-                          className={`${buttonStyle} text-xl`}
-                        >
+                      <button
+                        className="mt-1"
+                        key={index}
+                        onClick={() => item?.func()}
+                      >
+                        <span className={`${buttonStyle} text-xl`}>
                           {item?.text}
                         </span>
                       </button>
@@ -301,13 +353,13 @@ const CollectionDetail = () => {
                       {item?.user?._id && (
                         <Link href={`/user-profile/${item?.user?._id}`}>
                           <div>
-                              <Image
-                                height={45}
-                                width={45}
-                                src={getImage(item?.user?.image)}
-                                className="w-12 h-12 rounded-full cursor-pointer"
-                                alt="user-profile"
-                              />
+                            <Image
+                              height={45}
+                              width={45}
+                              src={getImage(item?.user?.image)}
+                              className="w-12 h-12 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
                           </div>
                         </Link>
                       )}
@@ -319,13 +371,23 @@ const CollectionDetail = () => {
                       </div>
                       {item?.user?._id === user?._id && (
                         <div className="flex flex-col ml-auto">
-                          <MdDeleteForever
-                            onClick={() => {
-                              deleteComment(item?._id);
-                            }}
-                            size={25}
-                            className="cursor-pointer text-[#ff7f7f]"
-                          />
+                          {deletingComment !== item?._id ? (
+                            <MdDeleteForever
+                              onClick={() => {
+                                deleteComment(item?._id);
+                              }}
+                              size={25}
+                              className="cursor-pointer text-[#ff7f7f]"
+                            />
+                          ) : (
+                            <AiOutlineLoading3Quarters
+                              onClick={(e) => {
+                                e.stopPropagation()
+                              }}
+                              size={25}
+                              className="animate-spin cursor-pointer text-[#ff7f7f]"
+                            />
+                          )}
                         </div>
                       )}
                     </div>
@@ -336,13 +398,13 @@ const CollectionDetail = () => {
                   {user?._id && (
                     <Link href={`/user-profile/${user?._id}`}>
                       <div>
-                          <Image
-                            height={45}
-                            width={45}
-                            src={getImage(user?.image)}
-                            className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                            alt="user-profile"
-                          />
+                        <Image
+                          height={45}
+                          width={45}
+                          src={getImage(user?.image)}
+                          className="w-14 h-14 rounded-full cursor-pointer pt-2"
+                          alt="user-profile"
+                        />
                       </div>
                     </Link>
                   )}
@@ -358,13 +420,23 @@ const CollectionDetail = () => {
                     className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
                     onClick={addComment}
                   >
-                    {addingComment ? "Doing..." : "Done"}
+                    {!addingComment ? (
+                      "Comment"
+                    ) : (
+                      <AiOutlineLoading3Quarters
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // savePin();
+                        }}
+                        className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                        size={20}
+                      />
+                    )}
                   </button>
                 </div>
               )}
             </div>
           </div>
-
 
           <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
             {createdBy?._id && (
@@ -386,7 +458,6 @@ const CollectionDetail = () => {
             )}
           </div>
 
-          
           <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
             <p>{`${title}`}</p>
           </h1>
@@ -395,37 +466,35 @@ const CollectionDetail = () => {
           </p>
 
           <div className="flex flex-wrap justify-center">
-          {
-              [
-                {
-                  text: `Created ${moment(createdAt).fromNow()}`
-                },
-                {
-                  text: `NFTs: ${collection?.pins?.length}`
-                },
-                {
-                  text: `Owners: ${ownersCount}`
-                },
-                {
-                  text: `on Auction: ${onAuctionCount}`
-                },
-                {
-                  text: `On Sale: ${onSaleCount}`
-                },
-                {
-                  text: `Volume: ${volume}`
-                },
-                {
-                  text: `Change: ${change}%`
-                },
-              ].map((item, index) => {
-                return (
-                  <div key={index} className="font-bold text-sm mr-2 mb-1">
+            {[
+              {
+                text: `Created ${moment(createdAt).fromNow()}`,
+              },
+              {
+                text: `NFTs: ${collection?.pins?.length}`,
+              },
+              {
+                text: `Owners: ${ownersCount}`,
+              },
+              {
+                text: `on Auction: ${onAuctionCount}`,
+              },
+              {
+                text: `On Sale: ${onSaleCount}`,
+              },
+              {
+                text: `Volume: ${volume}`,
+              },
+              {
+                text: `Change: ${change}%`,
+              },
+            ].map((item, index) => {
+              return (
+                <div key={index} className="font-bold text-sm mr-2 mb-1">
                   <span className={buttonStyle}>{item?.text}</span>
-                  </div>
-                )
-              })
-            }
+                </div>
+              );
+            })}
           </div>
           <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
             <button className={tabButtonStyles}>
@@ -434,38 +503,37 @@ const CollectionDetail = () => {
                   {savedLength}
                 </p>
                 {!savingPost ? (
-                <span>
-                  {!alreadySaved ? (
-                    <AiOutlineHeart
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        saveCollection();
-                      }}
-                      className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                      size={25}
-                    />
-                  ) : (
-                    <AiFillHeart
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        saveCollection();
-                      }}
-                      className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                      size={25}
-                    />
-                  )}
-                </span>
-              ) : (
-                <AiOutlineLoading3Quarters
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // savePin();
-                      }}
-                      className="animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                      size={20}
-                    />
-              )
-            }
+                  <span>
+                    {!alreadySaved ? (
+                      <AiOutlineHeart
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          saveCollection();
+                        }}
+                        className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        size={25}
+                      />
+                    ) : (
+                      <AiFillHeart
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          saveCollection();
+                        }}
+                        className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        size={25}
+                      />
+                    )}
+                  </span>
+                ) : (
+                  <AiOutlineLoading3Quarters
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={20}
+                  />
+                )}
               </div>
             </button>
             <button className={tabButtonStyles}>
@@ -503,7 +571,7 @@ const CollectionDetail = () => {
               text: "Customize Collection",
               query: {
                 type: "pins",
-                createdBy: true,
+                createdBy: true
               },
               condition: user?._id === createdBy?._id,
             },
@@ -527,8 +595,11 @@ const CollectionDetail = () => {
                       { shallow: true }
                     );
                   }}
-                  className={`${buttonStyle} ${activeBtn === item?.name ? `` : `bg-transparent text-[#000000]`}`}
-
+                  className={`${buttonStyle} ${
+                    activeBtn === item?.name
+                      ? ``
+                      : `bg-transparent text-[#000000]`
+                  }`}
                 >
                   {item?.text}
                 </button>

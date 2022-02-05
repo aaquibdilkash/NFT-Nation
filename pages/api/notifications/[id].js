@@ -1,15 +1,15 @@
 import dbConnect from "../../../config/dbConnect"
 import nc from "next-connect"
-import { deleteMessage, getMessage, updateMessage } from "../../../controllers/messageController"
+import { deleteNotification, getNotification, updateNotification } from "../../../controllers/notificationController"
 
 dbConnect()
 
 const handler = nc()
 
-handler.get(getMessage)
+handler.get(getNotification)
 
-handler.put(updateMessage)
+handler.put(updateNotification)
 
-handler.delete(deleteMessage)
+handler.delete(deleteNotification)
 
 export default handler;

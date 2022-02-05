@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 // import { create as ipfsHttpClient } from "ipfs-http-client";
-import { AiOutlineCloudUpload } from "react-icons/ai";
+import { AiOutlineCloudUpload, AiOutlineLoading3Quarters } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import {
+  formButtonStyles,
   getImage,
   getUserName,
   pinFileToIPFS,
   removePinFromIPFS,
+  sendNotifications,
 } from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
@@ -16,9 +18,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import {
+  collectionCreatedSuccessMessage,
+  collectionUpdatedSuccessMessage,
   duplicateFileInfoMessage,
   errorMessage,
   fileUploadErrorMessage,
+  fillFieldsInfoMessage,
 } from "../utils/messages";
 import { useRouter } from "next/router";
 import { sidebarCategories } from "../utils/sidebarCategories";
@@ -32,6 +37,7 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [destination, setDestination] = useState(
     "https://nft-nation.vercel.app"
   );
@@ -120,6 +126,8 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
       return;
     }
 
+    setSaving(true);
+
     if (collectionId) {
       const obj = {
         title,
@@ -131,6 +139,8 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
       axios
         .put(`/api/collections/${collectionId}`, obj)
         .then((res) => {
+          setSaving(false);
+
           dispatch({
             type: COLLECTION_SET,
             payload: res.data.collection,
@@ -151,10 +161,11 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
             );
           }
 
-          toast.success("Collection Updated Successfuly!");
+          toast.success(collectionUpdatedSuccessMessage);
           setCollectionEditing(false);
         })
         .catch((e) => {
+          setSaving(false);
           toast.error(errorMessage);
           // console.log("Error in updating profile: ", e);
         });
@@ -170,11 +181,29 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
       axios
         .post(`/api/collections`, obj)
         .then((res) => {
-          toast.success("Collection Created Successfuly!");
+          setSaving(false);
+          toast.success(collectionCreatedSuccessMessage);
           localStorage.removeItem("unPinCollectionHash");
           setCollectionEditing(false);
+
+          let to = [...user?.followers]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+          const obj = {
+            type: "New Collection",
+            byUser: user?._id,
+            pinCollection: res?.data?.collection?._id,
+            to
+          }
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e, "DDDDDDDDDDddddd")
+          })
         })
         .catch((e) => {
+          setSaving(false);
           toast.error(errorMessage);
           // console.log("Error in updating profile: ", e);
         });
@@ -196,7 +225,7 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
     <div className="flex flex-col justify-center items-center mt-0 lg:h-4/5">
       {fields && (
         <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
-          Please add all fields.
+          {fillFieldsInfoMessage}
         </p>
       )}
       <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-auto  w-full">
@@ -241,7 +270,9 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
                   alt="uploaded-pic"
                   className="h-full w-full rounded-lg drop-shadow-lg"
                 />
-                <button
+                {
+                  !saving && (
+                    <button
                   type="button"
                   className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                   onClick={() => {
@@ -285,6 +316,8 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
                 >
                   <MdDelete />
                 </button>
+                  )
+                }
               </div>
             )}
           </div>
@@ -360,16 +393,27 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
                 onClick={() => {
                   setCollectionEditing((prev) => !prev);
                 }}
-                className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
+                className={formButtonStyles}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={saveCollection}
-                className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
+                className={formButtonStyles}
               >
-                Save Collection
+                {!saving ? (
+                  `Save`
+                ) : (
+                  <AiOutlineLoading3Quarters
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="mx-5 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={24}
+                  />
+                )}
               </button>
             </div>
           </div>

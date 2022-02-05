@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   buttonStyle,
   etherAddress,
+  fetcher,
   getEventData,
   getImage,
   getIpfsImage,
@@ -18,6 +19,8 @@ import {
   getUserName,
   isValidAmount,
   parseAmount,
+  sendNotifications,
+  tabButtonStyles,
 } from "../../utils/data";
 import {
   approvalLoadingMessage,
@@ -31,6 +34,9 @@ import {
   createAuctionLoadingMessage,
   createSaleLoadingMessage,
   errorMessage,
+  fetchingCommentsLoadingMessage,
+  fetchingHistoryLoadingMessage,
+  fetchingNFTLoadingMessage,
   finalErrorMessage,
   finalProcessingErrorMessage,
   finalSuccessMessage,
@@ -59,6 +65,7 @@ import {
   tokenSaleErrorMessage,
   tokenSaleSuccessMessage,
   validAmountErrorMessage,
+  waitLoadingMessage,
   withrawBidLoadingMessage,
 } from "../../utils/messages";
 import { useRouter } from "next/router";
@@ -76,9 +83,7 @@ import {
 import moment from "moment";
 import { MdDeleteForever } from "react-icons/md";
 import { GIFTING_USER_SET } from "../../redux/constants/UserTypes";
-
-const tabButtonStyles =
-  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
+import useSWR from "swr";
 
 const PinDetail = () => {
   const router = useRouter();
@@ -96,6 +101,7 @@ const PinDetail = () => {
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [deletingComment, setDeletingComment] = useState("");
   const [addingSellPrice, setAddingSellPrice] = useState(false);
   const [addingBidPrice, setAddingBidPrice] = useState(false);
   const [savingPost, setSavingPost] = useState(false);
@@ -212,7 +218,7 @@ const PinDetail = () => {
   // }, []);
 
   const fetchPinHistory = () => {
-    setLoadingMessage("Fetching History...");
+    setLoadingMessage(fetchingHistoryLoadingMessage);
     setSideLoading(true);
     axios
       .get(`/api/pins/history/${pinId}`)
@@ -228,7 +234,7 @@ const PinDetail = () => {
   };
 
   const fetchPinComments = () => {
-    setLoadingMessage("Fetching Comments...");
+    setLoadingMessage(fetchingCommentsLoadingMessage);
     setSideLoading(true);
     axios
       .get(`/api/pins/comments/${pinId}`)
@@ -244,16 +250,27 @@ const PinDetail = () => {
   };
 
   const deleteComment = (id) => {
+    setDeletingComment(id);
     axios
       .delete(`/api/pins/comments/${pinId}/${id}`)
       .then((res) => {
+        setDeletingComment("");
         fetchPinComments();
       })
       .catch((e) => {
+        setDeletingComment("");
         toast.error(errorMessage);
         // console.log(e);
       });
   };
+
+
+  const { data,  error } = useSWR(`/api/pins/${pinId}`, fetcher, {
+    refreshInterval: 15000,
+    onSuccess: (data, key, config) => {
+      setPinDetail(data?.pin)
+    }
+  })
 
   const fetchPinDetails = () => {
     setPinDetail(null);
@@ -291,9 +308,17 @@ const PinDetail = () => {
 
   useEffect(() => {
     pinId && fetchPinDetails();
-    pinId && fetchPinComments();
-    pinId && fetchPinHistory();
+    // pinId && fetchPinComments();
+    // pinId && fetchPinHistory();
   }, [pinId, refresh]);
+
+  useEffect(() => {
+    if(tab === "comments") {
+      fetchPinComments(true)
+    } else if (tab === "history") {
+      fetchPinHistory()
+    }
+  }, [tab])
 
   const updatePin = (body) => {
     axios
@@ -344,7 +369,7 @@ const PinDetail = () => {
           query: {
             pinId,
             type: "users",
-            page: 1
+            page: 1,
           },
         },
         undefined,
@@ -402,6 +427,34 @@ const PinDetail = () => {
     };
     transferPin(transferObj);
 
+    // ownership transfer as a gift notification
+    try {
+      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "NFT Gifted",
+        byUser: user?._id,
+        toUser: giftingUser?._id,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
     // upadate pin in the database
     updatePin({
       ...eventData,
@@ -453,6 +506,35 @@ const PinDetail = () => {
       price,
     };
     transferPin(transferObj);
+
+    // ownership transfer notification
+    try {
+      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "NFT Sold",
+        toUser: user?._id,
+        byUser: postedBy?._id,
+        price,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
 
     // upadate pin in the database
     updatePin({
@@ -513,6 +595,34 @@ const PinDetail = () => {
       toast.error(tokenSaleErrorMessage);
       setLoading(false);
       return;
+    }
+
+    // sale created notification
+    try {
+      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Up For Sale",
+        byUser: user?._id,
+        price: inputPrice,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
     }
 
     updatePin({
@@ -649,6 +759,33 @@ const PinDetail = () => {
       return;
     }
 
+    // notify auction created
+    try {
+      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Up For Auction",
+        byUser: user?._id,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
     updatePin({
       ...eventData,
       postedBy: user?._id,
@@ -704,6 +841,36 @@ const PinDetail = () => {
       transferPin(transferObj);
     }
 
+    // notify auctionEnded or ownership transferred
+    try {
+      let to = [...bids.map((item) => item?.user), ...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Auction Ended",
+        byUser: user?._id,
+        ...(bids?.length ? {toUser: newOwner?._id} : {}),
+        ...(bids?.length ? {price} : {}),
+        pin: _id,
+        to,
+      };
+
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
     updatePin({
       ...eventData,
       postedBy: newOwner?._id,
@@ -744,6 +911,33 @@ const PinDetail = () => {
       return;
     }
 
+    try {
+      // notify sale ended
+      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Sale Ended",
+        byUser: user?._id,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
     updatePin({
       ...eventData,
       postedBy: user?._id,
@@ -770,6 +964,31 @@ const PinDetail = () => {
           setComment("");
           fetchPinComments();
           toast.success(commentAddSuccessMessage);
+
+          let to = [
+            ...pinComments.map((item) => item?.user?._id),
+            ...user?.followers, createdBy?._id, postedBy?._id
+          ];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
+
+          const obj = {
+            type: "New Comment",
+            byUser: user?._id,
+            pin: _id,
+            to,
+          };
+
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd");
+            }
+          );
         })
         .catch((e) => {
           setAddingComment(false);
@@ -787,6 +1006,29 @@ const PinDetail = () => {
         setRefresh((prev) => !prev);
         setLoading(false);
         toast.success(finalSuccessMessage);
+
+        let to = [...bids.map((item) => item?.user?._id), ...user?.followers, createdBy?._id, postedBy?._id];
+        to = [...new Set(to)];
+        to = to.filter((item) => item !== user?._id);
+        to = to.map((item) => ({ user: item }));
+
+        const obj = {
+          type: "New Bid",
+          byUser: user?._id,
+          price: body?.bid,
+          pin: _id,
+          to,
+        };
+
+        sendNotifications(
+          obj,
+          (res) => {
+            // console.log(res);
+          },
+          (e) => {
+            // console.log(e, "DDDDDDDDDDddddd");
+          }
+        );
       })
       .catch((e) => {
         setLoading(false);
@@ -825,6 +1067,32 @@ const PinDetail = () => {
       })
       .then((res) => {
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
+
+        if (!alreadySaved) {
+          let to = [...user?.followers, createdBy?._id, postedBy?._id];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
+
+          const obj = {
+            type: "New Save",
+            byUser: user?._id,
+            pin: _id,
+            to,
+          };
+
+
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd");
+            }
+          );
+        }
+
         setSavedLenth((prev) => (alreadySaved ? prev - 1 : prev + 1));
         setAlreadySaved((prev) => !prev);
         setSavingPost(false);
@@ -894,16 +1162,11 @@ const PinDetail = () => {
   ];
 
   if (!pinDetail) {
-    return <Spinner message="Showing pin..." />;
+    return <Spinner message={fetchingNFTLoadingMessage} />;
   }
 
   if (loading) {
-    return (
-      <Spinner
-        title={loadingMessage}
-        message={`Please Do Not Leave This Page...`}
-      />
-    );
+    return <Spinner title={loadingMessage} message={waitLoadingMessage} />;
   }
 
   return (
@@ -1084,13 +1347,23 @@ const PinDetail = () => {
                       </div>
                       {item?.user?._id === user?._id && (
                         <div className="flex flex-col ml-auto">
-                          <MdDeleteForever
-                            onClick={() => {
-                              deleteComment(item?._id);
-                            }}
-                            size={25}
-                            className="cursor-pointer text-[#ff7f7f]"
-                          />
+                          {deletingComment !== item?._id ? (
+                            <MdDeleteForever
+                              onClick={() => {
+                                deleteComment(item?._id);
+                              }}
+                              size={25}
+                              className="cursor-pointer text-[#ff7f7f]"
+                            />
+                          ) : (
+                            <AiOutlineLoading3Quarters
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              size={25}
+                              className="animate-spin cursor-pointer text-[#ff7f7f]"
+                            />
+                          )}
                         </div>
                       )}
                     </div>
@@ -1172,7 +1445,18 @@ const PinDetail = () => {
                     className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
                     onClick={addComment}
                   >
-                    {addingComment ? "Doing..." : "Done"}
+                    {!addingComment ? (
+                      "Comment"
+                    ) : (
+                      <AiOutlineLoading3Quarters
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // savePin();
+                        }}
+                        className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                        size={20}
+                      />
+                    )}
                   </button>
                 </div>
               )}

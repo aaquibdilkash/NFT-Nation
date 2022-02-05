@@ -51,12 +51,12 @@ const Feed = (props) => {
   }${feed && user?._id ? `&feed=${user?._id}` : ``}${
     category ? `&category=${category}` : ``
   }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${
-    bids ? `&bids=${userId}` : ``
-  }${commented ? `&commented=${userId}` : ``}${
+    bids ? `&bids.user=${userId}` : ``
+  }${commented ? `&comments.user=${userId}` : ``}${
     saved ? `&saved=${userId}` : ``
   }${auctionEnded ? `&auctionEnded=${auctionEnded}` : ``}${
     pinId ? `&ne=${pinId}` : ``
-  }${collection ? `&collection=${collectionId}` : ``}${
+  }${collection ? `&pinCollection=${collectionId}` : ``}${
     postedBy ? `&postedBy=${userId ?? user?._id}` : ``
   }${createdBy ? `&createdBy=${userId ?? user?._id}` : ``}${
     sort ? `&sort=${sort}` : ``
@@ -64,16 +64,16 @@ const Feed = (props) => {
 
   const collectionLink = `/api/collections?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${category ? `&category=${category}` : ``}${
-    commented ? `&commented=${userId}` : ``
+  }${feed && user?._id ? `&feed=${user?._id}` : ``}${category ? `&category=${category}` : ``}${
+    commented ? `&comments.user=${userId}` : ``
   }${saved ? `&saved=${userId}` : ``}${
     createdBy ? `&createdBy=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
   const userLink = `/api/users?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${followers ? `&followers=${userId}` : ``}${
-    followings ? `&followings=${userId}` : ``
+  }${feed && user?._id ? `&feed=${user?._id}` : ``}${followers ? `&followings=${userId}` : ``}${
+    followings ? `&followers=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 
   const link =
@@ -96,14 +96,11 @@ const Feed = (props) => {
       })
       .then((res) => {
         const { data, resultPerPage, filteredDataCount } = res.data;
-        (page ? parseInt(page) === 1 : true)
-          ? setDataArray(data)
-          : setDataArray((prev) => [...prev, ...data]);
+        (!page || parseInt(page) == 1) ? setDataArray(data) : setDataArray((prev) => [...prev, ...data]);
         setLoading(false);
         dispatch({
           type: HAS_MORE,
-          payload:
-            (page ? parseInt(page) : 1) * resultPerPage < filteredDataCount,
+          payload: (page ? parseInt(page) : 1) * resultPerPage < filteredDataCount,
         });
         dispatch({
           type: CHANGE_PAGE,
@@ -115,6 +112,7 @@ const Feed = (props) => {
         } else {
           setLoading(false);
           toast.error(errorMessage);
+          console.log(e)
         }
       });
   };
@@ -124,6 +122,15 @@ const Feed = (props) => {
 
     return () => source.cancel("Operation Cancelled By The User!");
   }, [router, refresh, currentProfile]);
+
+  useEffect(() => {
+    !user?._id && feed && router.push({
+      pathname: "/",
+      query: {},
+    }, undefined, {
+      shallow: true
+    })
+  }, [user])
 
   // useEffect(() => {
   //   (page ? parseInt(page) === 1 : true)
@@ -141,12 +148,13 @@ const Feed = (props) => {
 
   // }, [router, refresh, currentProfile]);
 
-  if (loading && (!page || page == 1)) {
+  const showCategory = category?.length ? category : "new"
+  const showType = type?.length ? type : "pins"
+
+  if (loading) {
     return (
       <Spinner
-        message={`We are adding ${category ?? "new"} ${
-          type ?? "pins"
-        } to your feed...`}
+        message={`We are adding ${showCategory} ${showType} to your feed...`}
       />
     );
   }
@@ -156,7 +164,7 @@ const Feed = (props) => {
       <>
         {dataArray.length === 0 && (
           <div className="mt-10 text-center text-xl font-bold">
-            {`No ${type ?? "pins"} Found!`}
+            {`No ${showCategory} ${showType} Found!`}
           </div>
         )}
       </>
@@ -166,14 +174,12 @@ const Feed = (props) => {
   return (
     <>
       <div className="">
-        {dataArray?.length > 0 && (
-          <MasonryLayout comp={dataArray} type={type ?? "pins"} />
-        )}
+        {/* {dataArray?.length > 0 && ( */}
+          <MasonryLayout comp={dataArray} type={showType} />
+        {/* )} */}
         {hasMore && (
           <Spinner
-            message={`We are adding more ${category ?? "new"} ${
-              type ?? "pins"
-            } to your feed...`}
+            message={`We are adding more ${showCategory} ${showType} to your feed...`}
           />
         )}
       </div>

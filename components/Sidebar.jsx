@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { FaArtstation, FaHome, FaUserAstronaut } from "react-icons/fa";
-import { IoIosAperture, IoIosArrowForward } from "react-icons/io";
+import { IoIosAperture, IoIosArrowForward, IoMdNotifications } from "react-icons/io";
 import { AiFillCloseCircle, AiOutlineLoading3Quarters, AiOutlineLogin } from "react-icons/ai";
-import { feedPathArray, getImage, getUserName, isSubset } from "../utils/data";
+import { feedPathArray, fetcher, getImage, getUserName, isSubset } from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import useSWR from "swr";
+import axios from "axios";
 
 const isNotActiveStyle =
   "font-semibold transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center px-5 gap-3 text-gray-500  hover:font-extrabold hover:text-textColor transition-all duration-200 ease-in-out capitalize hover:cursor-pointer";
@@ -23,6 +25,10 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
   const handleCloseSidebar = () => {
     setToggleSidebar(false);
   };
+
+  const { data,  error } = useSWR(() => user?._id ? `/api/notifications?to.user=${user?._id}&to.status=unread` : null , fetcher, {
+    refreshInterval: 15000
+  })
 
   return (
     <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
@@ -88,12 +94,25 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
               My Feed
             </div>
           )}
+          {user?._id && (
+            <Link href={`/notifications`} >
+            <div
+              onClick={() => {
+                handleCloseSidebar();
+              }}
+              className={pathname == `/notifications` ? isActiveStyle : isNotActiveStyle}
+            >
+              <IoMdNotifications className="" size={25} />
+              {`Notifications${data?.filteredDataCount > 0 ? ` (${data?.filteredDataCount})` : ``}`}
+            </div>
+            </Link>
+          )}
           <Link href={`/ico`} >
             <div
               onClick={() => {
                 handleCloseSidebar();
               }}
-              className={asPath == `/ico` ? isActiveStyle : isNotActiveStyle}
+              className={pathname == `/ico` ? isActiveStyle : isNotActiveStyle}
             >
               <IoIosAperture className="" size={25} />
               NNT ICO

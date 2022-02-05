@@ -9,6 +9,7 @@ import {
   getIpfsImage,
   getMaxBid,
   getUserName,
+  sendNotifications,
 } from "../utils/data";
 import {
   addToCollectionSuccessMessage,
@@ -34,6 +35,7 @@ const Pin = ({ pin }) => {
 
   const {
     postedBy,
+    createdBy,
     image,
     _id,
     title,
@@ -87,6 +89,29 @@ const Pin = ({ pin }) => {
         user: user?._id,
       })
       .then((res) => {
+
+        if (!alreadySaved) {
+          let to = [...user?.followers, createdBy?._id, postedBy?._id];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);          
+          to = to.map((item) => ({ user: item }));
+          const obj = {
+            type: "New Save",
+            byUser: user?._id,
+            pin: _id,
+            to,
+          };
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd");
+            }
+          );
+        }
+
         setSavingPost(false);
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
         setSavedLenth((prev) => (alreadySaved ? prev - 1 : prev + 1));
@@ -133,6 +158,25 @@ const Pin = ({ pin }) => {
         user: user?._id,
       })
       .then((res) => {
+
+        if(!alreadyFollowed) {
+          let to = [postedBy?._id, ...user?.followers]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+          const obj = {
+            type: "New Follow",
+            byUser: user?._id,
+            toUser: postedBy?._id,
+            to
+          }
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e, "DDDDDDDDDDddddd")
+          })
+        }
+
         setFollowing(false);
         toast.success(
           alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
@@ -177,6 +221,30 @@ const Pin = ({ pin }) => {
     axios
       .put(`/api/collections/pins/${collection?._id}/${_id}`)
       .then((res) => {
+
+        if (!alreadyAdded) {
+          let to = [...user?.followers, createdBy?._id, postedBy?._id];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
+          const obj = {
+            type: "Collection Updated",
+            byUser: user?._id,
+            pin: _id,
+            pinCollection: collection?._id,
+            to,
+          };
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd");
+            }
+          );
+        }
+
         setAddingPost(false);
         toast.success(
           alreadyAdded
@@ -202,9 +270,9 @@ const Pin = ({ pin }) => {
         setAlreadyAdded((prev) => !prev);
       })
       .catch((e) => {
-        console.log(e);
+        // console.log(e);
         setAddingPost(false);
-        toast.error(errorMessage);
+        toast.error(e?.response?.data?.error);
       });
   };
 

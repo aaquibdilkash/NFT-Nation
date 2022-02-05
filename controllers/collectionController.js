@@ -10,42 +10,29 @@ const DEFAULT_EXPIRATION = 3600;
 
 const allCollections = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
-
+  
   try {
     const data = await redisClient.get(req?.url);
-
+    
     if (data) {
-      return res.status(200).json(JSON.parse(data));
+      // return res.status(200).json(JSON.parse(data));
     }
   } catch (e) {
     console.log(e);
   }
-
-  // redisClient.get(`collections${JSON.stringify(req.query)}`, (err, data) => {
-  //   if (err) {
-  //     console.error(err);
-  //   } else {
-  //     if(data) {
-  //       return res.status(200).json(JSON.parse(data));
-  //     }
-  //   }
-  // });
-
+  
   const resultPerPage = 8;
   const collectionsCount = await Collection.countDocuments();
-
+  
   const searchPagination = new SearchPagination(
     Collection.find().populate("createdBy").select("-pins"),
     req.query
-  )
+    )
     .search("collections")
     .filter()
-    .saved()
-    .bids()
-    .commented()
     .notin()
     .sorted();
-
+        
   if (req.query.feed) {
     const user = await User.findById(req.query.feed);
     searchPagination.feed("collections", [...user?.followings, req.query.feed]);
@@ -158,10 +145,11 @@ const updateCollectionData = async (id) => {
 };
 
 const createCollection = catchAsyncErrors(async (req, res) => {
-  await Collection.create(req.body);
+  let collection = await Collection.create(req.body);
 
   res.status(200).json({
     success: true,
+    collection
   });
 
   // redisClient.flushall('ASYNC', () => {
@@ -215,7 +203,7 @@ const deleteCollection = catchAsyncErrors(async (req, res) => {
 const addPinToCollection = catchAsyncErrors(async (req, res) => {
   const [collectionId, pinId] = req.query.id;
 
-  let pin = await Pin.findById(pinId);
+  let pin = await Pin.findById(pinId).select("+pinCollection");
 
   if (!pin) {
     return res.status(404).json({
@@ -224,12 +212,13 @@ const addPinToCollection = catchAsyncErrors(async (req, res) => {
     });
   }
 
-  // if (pin.pinCollection) {
-  //   return res.status(404).json({
-  //     success: false,
-  //     error: "Pin is already a part of another collection",
-  //   });
-  // }
+
+  if (!(!pin?.pinCollection || pin?.pinCollection?.toString() === collectionId)) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin is already a part of another collection",
+    });
+  }
 
   let collection = await Collection.findById(collectionId);
 
@@ -240,20 +229,29 @@ const addPinToCollection = catchAsyncErrors(async (req, res) => {
     });
   }
 
+
+  if (pin?.createdBy?.toString() !==  collection?.createdBy?.toString()) {
+    return res.status(404).json({
+      success: false,
+      error: "You must be both the minter of the NFT and the creator of the collection",
+    });
+  }
+
   let pins;
   if (collection?.pins?.find((item) => item?.toString() === pinId)) {
     pins = collection?.pins?.filter((item) => item != pinId);
     collection.pins = pins;
-    // pin.pinCollection = null
+    pin.pinCollection = null
   } else {
     collection.pins.unshift(pinId);
-    // pin.pinCollection = collectionId
+    pin.pinCollection = collectionId
   }
+
 
   collection.pinsCount = collection.pins.length;
 
   await collection.save({ validateBeforeSave: false });
-  // await pin.save({ validateBeforeSave: false });
+  await pin.save({ validateBeforeSave: false });
 
   res.status(200).json({
     success: true,

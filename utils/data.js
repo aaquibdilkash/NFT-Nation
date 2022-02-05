@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export const etherAddress = "0x0000000000000000000000000000000000000000";
 
@@ -24,6 +25,11 @@ export const parseAmount = (amount) => {
 
 export const buttonStyle = "text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer shadow-xl drop-shadow-lg";
 
+export const formButtonStyles = "w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
+
+export const tabButtonStyles =
+  "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
+
 export const toHex = (num) => {
   return "0x" + num.toString(16);
 };
@@ -44,6 +50,10 @@ export const getMaxBid = (bids) => {
 
 export const getUserBid = (bids, user) => {
   return bids?.find((item) => item?.user?._id === user);
+};
+
+export const getNotificationStatus = (to, user) => {
+  return to?.find((item) => item?.user === user);
 };
 
 export const getUserName = (string) => {
@@ -176,3 +186,15 @@ export const removePinFromIPFS = async (
       //handle error here
     });
 };
+
+export const sendNotifications = (obj, success = () => {}, failure = () => {}) => {
+  axios.post(`/api/notifications`, obj).then((res) => {
+    success(res)
+    // toast.success("notification sent!")
+  }).catch((e) => {
+    failure(e)
+    // toast.error("notifications could not be Sent")
+  })
+}
+
+export const fetcher = url => axios.get(url).then(res => res.data)

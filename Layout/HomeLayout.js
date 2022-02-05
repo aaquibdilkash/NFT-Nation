@@ -18,6 +18,7 @@ import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { nftmarketaddress } from "../config";
 import { toast } from "react-toastify";
+import { loginErrorMessage, loginSuccessMessage } from "../utils/messages";
 // import Footer from "../components/Footer";
 
 const HomeLayout = ({ children }) => {
@@ -169,7 +170,7 @@ const HomeLayout = ({ children }) => {
     axios
       .post("/api/users", obj)
       .then((res) => {
-        toast.success("Logged In Successfuly!");
+        toast.success(loginSuccessMessage);
         setLoggingIn(false)
         dispatch({
           type: USER_GET_SUCCESS,
@@ -178,7 +179,7 @@ const HomeLayout = ({ children }) => {
       })
       .catch((e) => {
         setLoggingIn(false)
-        toast.error("Something went wrong while logging you in!");
+        toast.error(loginErrorMessage);
         // console.log(e);
       });
   };
@@ -213,6 +214,7 @@ const HomeLayout = ({ children }) => {
   //   })
 
   // }, [])
+  
 
   useEffect(() => {
     setToggleSidebar(false);

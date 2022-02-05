@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
-import { buttonStyle, getImage, getUserName } from "../utils/data";
+import { buttonStyle, getImage, getUserName, sendNotifications } from "../utils/data";
 import {
   followErrorMessage,
   followSuccessMessage,
@@ -65,6 +65,27 @@ const User = ({ userProfile }) => {
         user: user?._id,
       })
       .then((res) => {
+
+        if(!alreadyFollowed) {
+          let to = [_id, ...user?.followers]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+
+          const obj = {
+            type: "New Follow",
+            toUser: _id,
+            byUser: user?._id,
+            to
+          }
+
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e, "DDDDDDDDDDddddd")
+          })
+        }
+
         setFollowing(false);
         toast.success(
           alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage

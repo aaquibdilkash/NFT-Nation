@@ -2,7 +2,6 @@ import Pin from "../models/pin";
 import User from "../models/user";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
-import Collection from "../models/collection";
 import redisClient from "./redis";
 // import Redis from "ioredis"
 
@@ -15,7 +14,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
     const data = await redisClient.get(req?.url);
 
     if (data) {
-      return res.status(200).json(JSON.parse(data));
+      // return res.status(200).json(JSON.parse(data));
     }
   } catch (e) {
     console.log(e);
@@ -40,20 +39,12 @@ const allPins = catchAsyncErrors(async (req, res) => {
   )
     .search("pins")
     .filter()
-    .saved()
-    .bids()
-    .commented()
     .notin()
     .sorted();
 
   if (req.query.feed) {
     const user = await User.findById(req.query.feed);
     searchPagination.feed("pins", [...user?.followings, req.query.feed]);
-  }
-
-  if (req.query.collection) {
-    const collection = await Collection.findById(req.query.collection);
-    searchPagination.collection(collection?.pins);
   }
 
   let pins = await searchPagination.query;
@@ -123,10 +114,11 @@ const isPinExist = catchAsyncErrors(async (req, res) => {
 });
 
 const createPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.create(req.body);
+  let pin = await Pin.create(req.body);
 
   res.status(200).json({
     success: true,
+    pin
   });
 
   // redisClient.flushall('ASYNC', () => {

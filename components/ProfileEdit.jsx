@@ -1,17 +1,35 @@
 import { useEffect, useState } from "react";
 // import { create as ipfsHttpClient } from "ipfs-http-client";
-import { AiOutlineCloudUpload } from "react-icons/ai";
+import {
+  AiOutlineCloudUpload,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
-import { getImage, getUserName, pinFileToIPFS, removePinFromIPFS } from "../utils/data";
+import {
+  formButtonStyles,
+  getImage,
+  getUserName,
+  pinFileToIPFS,
+  removePinFromIPFS,
+} from "../utils/data";
 import Spinner from "../components/Spinner";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { CURRENT_PROFILE_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
+import {
+  CURRENT_PROFILE_SET,
+  USER_GET_SUCCESS,
+} from "../redux/constants/UserTypes";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { duplicateFileInfoMessage, errorMessage, fileUploadErrorMessage } from "../utils/messages";
+import {
+  duplicateFileInfoMessage,
+  errorMessage,
+  fileUploadErrorMessage,
+  fillFieldsInfoMessage,
+  profileUpdatedSuccessMessage,
+} from "../utils/messages";
 
 // const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
 
@@ -21,6 +39,7 @@ const ProfileEdit = ({ setEditing }) => {
   const [userName, setUserName] = useState("");
   const [about, setAbout] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [fields, setFields] = useState();
   const [fileUrl, setFileUrl] = useState("");
   const [prevFileUrl, setPrevFileUrl] = useState(null);
@@ -37,14 +56,13 @@ const ProfileEdit = ({ setEditing }) => {
             localStorage.removeItem("unPinProfileHash");
           },
           (e) => {
-            console.log(e)
+            console.log(e);
           }
         );
       } else {
         localStorage.removeItem("unPinProfileHash");
       }
     }
-
   }, []);
 
   const uploadImage = async (e) => {
@@ -69,14 +87,14 @@ const ProfileEdit = ({ setEditing }) => {
           selectedFile,
           setProgress,
           (hash, isDuplicate) => {
-            if(isDuplicate) {
-              toast.info(duplicateFileInfoMessage)
+            if (isDuplicate) {
+              toast.info(duplicateFileInfoMessage);
               setImageLoading(false);
-              return
+              return;
             }
             setFileUrl(hash);
-            if(hash !== user?.image) {
-              localStorage.setItem("unPinProfileHash", hash)
+            if (hash !== user?.image) {
+              localStorage.setItem("unPinProfileHash", hash);
             }
             setImageLoading(false);
           },
@@ -105,6 +123,9 @@ const ProfileEdit = ({ setEditing }) => {
 
       return;
     }
+
+    setSaving(true);
+
     const obj = {
       userName,
       about,
@@ -114,10 +135,11 @@ const ProfileEdit = ({ setEditing }) => {
     axios
       .put(`/api/users/${user?._id}`, obj)
       .then((res) => {
-        toast.success("Profile Updated Successfuly!");
+        toast.success(profileUpdatedSuccessMessage);
         // localStorage.removeItem("unPinProfileHash");
+        setSaving(false);
 
-        if(res.data.user.image !== prevFileUrl) {
+        if (res.data.user.image !== prevFileUrl) {
           // localStorage.setItem("unPinProfileHash", prevFileUrl)
           removePinFromIPFS(
             prevFileUrl,
@@ -125,8 +147,8 @@ const ProfileEdit = ({ setEditing }) => {
               localStorage.removeItem("unPinProfileHash");
             },
             (e) => {
-              localStorage.setItem("unPinProfileHash", prevFileUrl)
-              console.log(e)
+              localStorage.setItem("unPinProfileHash", prevFileUrl);
+              console.log(e);
             }
           );
         }
@@ -142,24 +164,25 @@ const ProfileEdit = ({ setEditing }) => {
         setEditing(false);
       })
       .catch((e) => {
-        toast.error("Something went wrong!");
+        setSaving(false);
+        toast.error(errorMessage);
         // console.log("Error in updating profile: ", e);
       });
   };
 
   useEffect(() => {
-    const {userName, about, image} = user
-    setUserName(userName)
-    setAbout(about)
-    setFileUrl(image)
-    setPrevFileUrl(image)
-  }, [user])
+    const { userName, about, image } = user;
+    setUserName(userName);
+    setAbout(about);
+    setFileUrl(image);
+    setPrevFileUrl(image);
+  }, [user]);
 
   return (
     <div className="flex flex-col justify-center items-center mt-0 lg:h-4/5">
       {fields && (
         <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
-          Please add all fields.
+          {fillFieldsInfoMessage}
         </p>
       )}
       <div className="rounded-lg flex lg:flex-row flex-col justify-center items-center bg-secondTheme lg:p-5 p-3 lg:w-auto  w-full">
@@ -167,7 +190,10 @@ const ProfileEdit = ({ setEditing }) => {
           <div className=" flex justify-center items-center flex-col border-2 border-dotted border-gray-300 p-3 w-full h-420">
             {imageLoading && (
               <div className="flex flex-col items-center justify-center h-full w-full px-16 mx-16">
-                <Spinner title={progress ? `Uploading...`: ``} message={progress ? `${progress}%`: ``} />
+                <Spinner
+                  title={progress ? `Uploading...` : ``}
+                  message={progress ? `${progress}%` : ``}
+                />
               </div>
             )}
             {wrongImageType && <p>It&apos;s wrong file type.</p>}
@@ -203,29 +229,35 @@ const ProfileEdit = ({ setEditing }) => {
                   alt="uploaded-pic"
                   className="h-full w-full rounded-lg drop-shadow-lg"
                 />
-                <button
-                  type="button"
-                  className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
-                  onClick={() => {
-                    if(fileUrl !== user?.image) {
-                      setProgress(0);
-                      setImageLoading(true)
-                      removePinFromIPFS(fileUrl, () => {
-                        setImageLoading(false)
-                        setFileUrl(null)
-                        localStorage.removeItem("unPinProfileHash")
-                      }, () => {
-                        toast.error(errorMessage)
-                        setImageLoading(false)
-                      })
-                    } else {
-                      setFileUrl(null)
-                      setProgress(0);
-                    }
-                  }}
-                >
-                  <MdDelete />
-                </button>
+                {!saving && (
+                  <button
+                    type="button"
+                    className="absolute bottom-3 right-3 p-3 rounded-full bg-secondTheme text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                    onClick={() => {
+                      if (fileUrl !== user?.image) {
+                        setProgress(0);
+                        setImageLoading(true);
+                        removePinFromIPFS(
+                          fileUrl,
+                          () => {
+                            setImageLoading(false);
+                            setFileUrl(null);
+                            localStorage.removeItem("unPinProfileHash");
+                          },
+                          () => {
+                            toast.error(errorMessage);
+                            setImageLoading(false);
+                          }
+                        );
+                      } else {
+                        setFileUrl(null);
+                        setProgress(0);
+                      }
+                    }}
+                  >
+                    <MdDelete />
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -271,16 +303,27 @@ const ProfileEdit = ({ setEditing }) => {
                 onClick={() => {
                   setEditing(false);
                 }}
-                className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
+                className={formButtonStyles}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={updateProfile}
-                className="drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme font-bold p-3 rounded-full w-auto outline-none"
+                className={formButtonStyles}
               >
-                Save Profile
+                {!saving ? (
+                  `Save`
+                ) : (
+                  <AiOutlineLoading3Quarters
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="mx-5 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={24}
+                  />
+                )}
               </button>
             </div>
           </div>

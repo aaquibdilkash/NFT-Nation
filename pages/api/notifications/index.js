@@ -1,13 +1,13 @@
 import dbConnect from "../../../config/dbConnect"
 import nc from "next-connect"
-import { allMessages, createMessage } from "../../../controllers/messageController"
+import { allNotifications, createNotification } from "../../../controllers/notificationController"
 
 dbConnect()
 
 const handler = nc()
 
-handler.get(allMessages)
+handler.get(allNotifications)
 
-handler.post(createMessage)
+handler.post(createNotification)
 
 export default handler;

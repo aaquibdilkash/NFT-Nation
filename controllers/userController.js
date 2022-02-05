@@ -13,7 +13,7 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     const data = await redisClient.get(req?.url);
 
     if (data) {
-      return res.status(200).json(JSON.parse(data));
+      // return res.status(200).json(JSON.parse(data));
     }
   } catch (e) {
     console.log(e);
@@ -36,16 +36,6 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     .search("user")
     .filter()
     .sorted();
-
-  if (req.query.followers || req.query.followings) {
-    if (req.query.followings) {
-      let user = await User?.findById(req.query.followings);
-      searchPagination.follow("followings", user?.followings);
-    } else {
-      let user = await User?.findById(req.query.followers);
-      searchPagination.follow("followers", user?.followers);
-    }
-  }
 
   if(req.query.feed) {
     const user = await User.findById(req.query.feed)
