@@ -32,7 +32,7 @@ const messageSchema = new mongoose.Schema({
     type: String,
   },
   postedBy: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },

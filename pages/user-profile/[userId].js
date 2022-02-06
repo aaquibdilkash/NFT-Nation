@@ -50,7 +50,7 @@ const UserProfilePage = () => {
     axios
       .get(`/api/users/${userId}`)
       .then((res) => {
-        const { followers, followings, address } = res?.data?.user;
+        const { followers, followings, _id } = res?.data?.user;
 
         dispatch({
           type: CURRENT_PROFILE_SET,
@@ -66,7 +66,7 @@ const UserProfilePage = () => {
             pathname: pathname,
             query: {
               userId,
-              owner: address,
+              postedBy: _id,
             },
           },
           undefined,
@@ -174,7 +174,6 @@ const UserProfilePage = () => {
     _id,
     userName,
     about,
-    address,
     image,
     createdAt,
     followers,
@@ -224,7 +223,7 @@ const UserProfilePage = () => {
           text: "Owned NFTs",
           condition: true,
           query: {
-            owner: address,
+            postedBy: _id,
           },
         },
         {
@@ -232,7 +231,7 @@ const UserProfilePage = () => {
           text: "On Sale NFTs",
           condition: true,
           query: {
-            seller: address,
+            onSale: true,
             auctionEnded: true,
           },
         },
@@ -241,7 +240,7 @@ const UserProfilePage = () => {
           text: "On Auction NFTs",
           condition: true,
           query: {
-            seller: address,
+            onSale: false,
             auctionEnded: false,
           },
         },

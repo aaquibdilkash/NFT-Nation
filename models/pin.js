@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema({
   user: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
@@ -18,7 +18,7 @@ const commentSchema = new mongoose.Schema({
 
 const historySchema = new mongoose.Schema({
   user: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
@@ -29,6 +29,53 @@ const historySchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+});
+
+const bidSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    ref: "User",
+    required: true,
+  },
+  bid: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const offerSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    ref: "User",
+    required: true,
+  },
+  offer: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const attributesSchema = new mongoose.Schema({
+  trait_type: {
+    type: String,
+    default: ""
+  },
+  display_type: {
+    type: String,
+    default: ""
+  },
+  value: {
+    type: String,
+    default: ""
   },
 });
 
@@ -47,7 +94,12 @@ const pinSchema = new mongoose.Schema({
   },
   price: {
     type: String,
-    required: [true, "Please enter the price."],
+    default: "0.0",
+    trim: true,
+  },
+  currentBid: {
+    type: String,
+    default: "0.0",
     trim: true,
   },
   title: {
@@ -74,21 +126,13 @@ const pinSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  seller: {
-    type: String,
-    required: true,
-  },
-  owner: {
-    type: String,
-    required: true,
-  },
   postedBy: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
   createdBy: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
@@ -100,7 +144,7 @@ const pinSchema = new mongoose.Schema({
   },
   saved: [
     {
-      type: mongoose.Schema.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },
@@ -113,39 +157,34 @@ const pinSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  bids: [{
-    user: {
-      type: mongoose.Schema.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    bid: {
-      type: String,
-      required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-  }],
+  onSale: {
+    type: Boolean,
+    default: false,
+  },
+  bids: {
+    type: [bidSchema],
+    select: false
+  },
+  bidsCount: {
+    type: Number,
+    default: 0
+  },
+  offers: {
+    type: [offerSchema],
+    select: false
+  },
+  offersCount: {
+    type: Number,
+    default: 0
+  },
   history: {
     type: [historySchema],
-    select: true
+    select: false
   },
-  attributes: [{
-    trait_type: {
-      type: String,
-      // required: true,
-    },
-    display_type: {
-      type: String,
-      // required: true,
-    },
-    value: {
-      type: String,
-      // required: true,
-    },
-  }],
+  attributes: {
+    type: [attributesSchema],
+    select: false
+  },
   comments: { type: [commentSchema], select:false},
   commentsCount: {
     type: Number,

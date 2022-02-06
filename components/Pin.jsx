@@ -7,7 +7,6 @@ import {
   etherAddress,
   getImage,
   getIpfsImage,
-  getMaxBid,
   getUserName,
   sendNotifications,
 } from "../utils/data";
@@ -47,19 +46,18 @@ const Pin = ({ pin }) => {
     tokenId,
     nftContract,
     price,
-    seller,
     saved,
-    owner,
     commentsCount,
-    bids,
+    currentBid,
     auctionEnded,
+    onSale
   } = pin;
 
   const priceShowCondition =
-    price !== "0.0" && owner === etherAddress && auctionEnded;
+    price !== "0.0" && onSale && auctionEnded;
 
   const highestBidShowCondition =
-    price === "0.0" && owner === etherAddress && !auctionEnded;
+    price === "0.0" && !onSale && !auctionEnded;
 
   const router = useRouter();
   const { query } = router;
@@ -358,8 +356,7 @@ const Pin = ({ pin }) => {
               {priceShowCondition
                 ? `${price} MATIC`
                 : `Current Bid: ${
-                    bids?.length
-                      ? `${getMaxBid(bids)?.bid} Matic`
+                    currentBid !== "0.0" ? `${currentBid} Matic`
                       : `No Bids Yet`
                   }`}
             </span>

@@ -1,8 +1,11 @@
-import User from "../models/user";
 import Pin from "../models/pin";
+import Collection from "../models/collection";
+import User from "../models/user";
+import Message from "../models/message";
+import Blog from "../models/blog";
+import Notification from "../models/notification";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
-import Collection from "../models/collection";
 import redisClient from "./redis";
 // import Redis from "ioredis"
 
@@ -25,7 +28,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
   const collectionsCount = await Collection.countDocuments();
   
   const searchPagination = new SearchPagination(
-    Collection.find().populate("createdBy").select("-pins"),
+    Collection.find().populate("createdBy", "_id userName image").select("-pins"),
     req.query
     )
     .search("collections")
@@ -72,7 +75,7 @@ const allCollections = catchAsyncErrors(async (req, res) => {
 
 const getCollection = catchAsyncErrors(async (req, res) => {
   const collection = await Collection.findById(req.query.id).populate(
-    "createdBy"
+    "createdBy", "_id userName image"
   );
 
   if (!collection) {
@@ -94,7 +97,7 @@ const getCollection = catchAsyncErrors(async (req, res) => {
 });
 
 const updateCollectionData = async (id) => {
-  let collection = await Collection.findById(id).populate("pins");
+  let collection = await Collection.findById(id).populate("pins", "postedBy price auctionEnded history");
 
   if (!collection) {
     return res.status(404).json({
@@ -290,7 +293,7 @@ const getCommentsCollection = catchAsyncErrors(async (req, res) => {
 
   const collection = await Collection.findById(pinId)
     .select("comments")
-    .populate("comments.user");
+    .populate("comments.user", "_id userName image");
 
   if (!collection) {
     return res.status(404).json({

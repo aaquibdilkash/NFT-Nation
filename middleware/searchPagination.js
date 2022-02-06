@@ -12,10 +12,8 @@ class SearchPagination {
               // { _id: this.queryStr.keyword },
               { title: { $regex: this.queryStr.keyword, $options: "i" } },
               { about: { $regex: this.queryStr.keyword, $options: "i" } },
-              { seller: { $regex: this.queryStr.keyword, $options: "i" } },
               { tokenId: { $regex: this.queryStr.keyword, $options: "i" } },
               { nftContract: { $regex: this.queryStr.keyword, $options: "i" } },
-              { owner: { $regex: this.queryStr.keyword, $options: "i" } },
               {
                 "postedBy.userName": {
                   $regex: this.queryStr.keyword,
@@ -23,13 +21,13 @@ class SearchPagination {
                 },
               },
               {
-                "postedBy.address": {
+                "postedBy._id": {
                   $regex: this.queryStr.keyword,
                   $options: "i",
                 },
               },
               {
-                "createdBy.address": {
+                "createdBy._id": {
                   $regex: this.queryStr.keyword,
                   $options: "i",
                 },
@@ -55,7 +53,7 @@ class SearchPagination {
                 },
               },
               {
-                "createdBy.address": {
+                "createdBy._id": {
                   $regex: this.queryStr.keyword,
                   $options: "i",
                 },
@@ -67,7 +65,7 @@ class SearchPagination {
               // { _id: this.queryStr.keyword },
               { userName: { $regex: this.queryStr.keyword, $options: "i" } },
               { about: { $regex: this.queryStr.keyword, $options: "i" } },
-              { address: { $regex: this.queryStr.keyword, $options: "i" } },
+              { _id: { $regex: this.queryStr.keyword, $options: "i" } },
             ],
           }
       : {};

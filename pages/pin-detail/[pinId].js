@@ -14,7 +14,6 @@ import {
   getEventData,
   getImage,
   getIpfsImage,
-  getMaxBid,
   getUserBid,
   getUserName,
   isValidAmount,
@@ -23,6 +22,7 @@ import {
   tabButtonStyles,
 } from "../../utils/data";
 import {
+  acceptOfferLoadingMessage,
   approvalLoadingMessage,
   buyLoadingMessage,
   cancelAuctionLoadingMessage,
@@ -34,9 +34,12 @@ import {
   createAuctionLoadingMessage,
   createSaleLoadingMessage,
   errorMessage,
+  fetchingBidsLoadingMessage,
   fetchingCommentsLoadingMessage,
   fetchingHistoryLoadingMessage,
   fetchingNFTLoadingMessage,
+  fetchingOffersLoadingMessage,
+  fetchingPropertiesLoadingMessage,
   finalErrorMessage,
   finalProcessingErrorMessage,
   finalSuccessMessage,
@@ -44,8 +47,14 @@ import {
   giftUserSelectInfoMessage,
   loginMessage,
   makeBidLoadingMessage,
+  makeOfferLoadingMessage,
+  pendingOffersInfoMessage,
+  rejectAllOffersLoadingMessage,
+  rejectOfferLoadingMessage,
   saveErrorMessage,
   shareInfoMessage,
+  tokenAllOfferRejectSuccessMessage,
+  tokenAllOffersRejectErrorMessage,
   tokenApproveErrorMessage,
   tokenApproveSuccessMessage,
   tokenAuctionEndErrorMessage,
@@ -60,19 +69,33 @@ import {
   tokenBuySuccessMessage,
   tokenGiftErrorMessage,
   tokenGiftSuccessMessage,
+  tokenOfferAcceptErrorMessage,
+  tokenOfferAcceptSuccessMessage,
+  tokenOfferErrorMessage,
+  tokenOfferRejectErrorMessage,
+  tokenOfferRejectSuccessMessage,
+  tokenOfferSuccessMessage,
+  tokenOfferWithdrawErrorMessage,
+  tokenOfferWithdrawSuccessMessage,
   tokenSaleCancelErrorMessage,
   tokenSaleCancelSuccessMessage,
   tokenSaleErrorMessage,
   tokenSaleSuccessMessage,
   validAmountErrorMessage,
   waitLoadingMessage,
+  withdrawOfferLoadingMessage,
   withrawBidLoadingMessage,
 } from "../../utils/messages";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { FaShareAlt } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaCross,
+  FaCrosshairs,
+  FaShareAlt,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import {
@@ -81,7 +104,7 @@ import {
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
 import moment from "moment";
-import { MdDeleteForever } from "react-icons/md";
+import { MdCancel, MdDeleteForever } from "react-icons/md";
 import { GIFTING_USER_SET } from "../../redux/constants/UserTypes";
 import useSWR from "swr";
 
@@ -97,6 +120,9 @@ const PinDetail = () => {
   const [pinDetail, setPinDetail] = useState();
   const [pinComments, setPinComments] = useState([]);
   const [pinHistory, setPinHistory] = useState([]);
+  const [pinProperties, setPinProperties] = useState([]);
+  const [pinBids, setPinBids] = useState([]);
+  const [pinOffers, setPinOffers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [inputPrice, setInputPrice] = useState("");
@@ -116,9 +142,7 @@ const PinDetail = () => {
     _id,
     title,
     about,
-    seller,
-    owner,
-    bids,
+    currentBid,
     saved,
     commentsCount,
     nftContract,
@@ -126,6 +150,7 @@ const PinDetail = () => {
     tokenId,
     price,
     auctionEnded,
+    onSale,
     properties,
     history,
     category,
@@ -137,9 +162,7 @@ const PinDetail = () => {
     _id: "",
     title: "",
     about: "",
-    seller: "",
-    owner: "",
-    bids: [],
+    currentBid: "",
     saved: [],
     commentsCount: 0,
     nftContract: "",
@@ -149,6 +172,7 @@ const PinDetail = () => {
     category: "",
     image: "",
     auctionEnded: true,
+    onSale: false,
     properties: [],
     history: [],
     postedBy: {},
@@ -157,65 +181,97 @@ const PinDetail = () => {
   };
 
   const executeMarketSaleCondition =
-    price !== "0.0" &&
-    owner === etherAddress &&
-    seller !== user?.address &&
-    auctionEnded;
+    price !== "0.0" && onSale && postedBy?._id !== user?._id && auctionEnded;
 
   const createMarketSaleCondition =
-    price === "0.0" &&
-    owner === user?.address &&
-    seller === etherAddress &&
-    auctionEnded;
+    price === "0.0" && postedBy?._id === user?._id && !onSale && auctionEnded;
 
   const cancelMarketSaleCondition =
-    price !== "0.0" &&
-    seller === user?.address &&
-    owner === etherAddress &&
-    auctionEnded;
+    price !== "0.0" && postedBy?._id === user?._id && onSale && auctionEnded;
 
   const createMarketAuctionCondition =
-    price === "0.0" &&
-    owner === user?.address &&
-    seller === etherAddress &&
-    auctionEnded;
+    price === "0.0" && postedBy?._id === user?._id && !onSale && auctionEnded;
 
   const executeMarketAuctionEndCondition =
-    price === "0.0" &&
-    seller === user?.address &&
-    owner === etherAddress &&
-    !auctionEnded;
+    price === "0.0" && postedBy?._id === user?._id && !onSale && !auctionEnded;
 
   const makeAuctionBidCondition =
-    seller !== user?.address &&
-    owner === etherAddress &&
-    !bids?.find((bid) => bid.user?._id === user?._id) &&
+    postedBy?._id !== user?._id &&
+    !onSale &&
+    !pinBids?.find((bid) => bid.user?._id === user?._id) &&
     !auctionEnded;
 
   const withdrawAuctionBidCondition =
-    seller !== user?.address &&
-    owner === etherAddress &&
-    bids?.find((bid) => bid.user?._id === user?._id) &&
+    postedBy?._id !== user?._id &&
+    !onSale &&
+    pinBids?.find((bid) => bid.user?._id === user?._id) &&
     !auctionEnded;
 
-  const priceShowCondition =
-    price !== "0.0" && owner === etherAddress && auctionEnded;
+  const makeOfferCondition =
+    postedBy?._id !== user?._id &&
+    !onSale &&
+    !pinOffers?.find((bid) => bid.user?._id === user?._id) &&
+    auctionEnded;
 
-  const highestBidShowCondition =
-    price === "0.0" && owner === etherAddress && !auctionEnded;
+  const withdrawOfferCondition =
+    postedBy?._id !== user?._id &&
+    !onSale &&
+    pinOffers?.find((bid) => bid.user?._id === user?._id) &&
+    auctionEnded;
 
-  // useEffect(() => {
-  //   const listener = () => {
-  //     setTimeout(() => {
-  //       setRefresh((prev) => !prev);
-  //     }, 5000);
-  //   };
+  const priceShowCondition = price !== "0.0" && onSale && auctionEnded;
 
-  //   marketContract &&
-  //     marketContract?.events?.UpdatedMarketItem({}, (error, event) => {
-  //       listener();
-  //     });
-  // }, []);
+  const highestBidShowCondition = price === "0.0" && !onSale && !auctionEnded;
+
+  const offersShowCondition = price === "0.0" && !onSale && auctionEnded;
+
+  const fetchPinProperties = () => {
+    setLoadingMessage(fetchingPropertiesLoadingMessage);
+    setSideLoading(true);
+    axios
+      .get(`/api/pins/properties/${pinId}`)
+      .then((res) => {
+        setPinProperties(res?.data?.attributes);
+        setSideLoading(false);
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
+        setSideLoading(false);
+        // console.log(e);
+      });
+  };
+
+  const fetchPinBids = () => {
+    setLoadingMessage(fetchingBidsLoadingMessage);
+    setSideLoading(true);
+    axios
+      .get(`/api/pins/bids/${pinId}`)
+      .then((res) => {
+        setPinBids(res?.data?.bids);
+        setSideLoading(false);
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
+        setSideLoading(false);
+        // console.log(e);
+      });
+  };
+
+  const fetchPinOffers = () => {
+    setLoadingMessage(fetchingOffersLoadingMessage);
+    setSideLoading(true);
+    axios
+      .get(`/api/pins/offers/${pinId}`)
+      .then((res) => {
+        setPinOffers(res?.data?.offers);
+        setSideLoading(false);
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
+        setSideLoading(false);
+        // console.log(e);
+      });
+  };
 
   const fetchPinHistory = () => {
     setLoadingMessage(fetchingHistoryLoadingMessage);
@@ -264,13 +320,12 @@ const PinDetail = () => {
       });
   };
 
-
-  const { data,  error } = useSWR(`/api/pins/${pinId}`, fetcher, {
-    refreshInterval: 15000,
-    onSuccess: (data, key, config) => {
-      setPinDetail(data?.pin)
-    }
-  })
+  // const { data, error } = useSWR(`/api/pins/${pinId}`, fetcher, {
+  //   refreshInterval: 15000,
+  //   onSuccess: (data, key, config) => {
+  //     setPinDetail(data?.pin);
+  //   },
+  // });
 
   const fetchPinDetails = () => {
     setPinDetail(null);
@@ -308,17 +363,26 @@ const PinDetail = () => {
 
   useEffect(() => {
     pinId && fetchPinDetails();
-    // pinId && fetchPinComments();
-    // pinId && fetchPinHistory();
+    pinId && fetchPinComments();
+    pinId && fetchPinBids();
+    pinId && fetchPinHistory();
+    pinId && fetchPinOffers();
+    pinId && fetchPinProperties();
   }, [pinId, refresh]);
 
   useEffect(() => {
-    if(tab === "comments") {
-      fetchPinComments(true)
+    if (tab === "comments") {
+      fetchPinComments(true);
     } else if (tab === "history") {
-      fetchPinHistory()
+      fetchPinHistory();
+    } else if (tab === "offers") {
+      fetchPinOffers();
+    } else if (tab === "bids") {
+      fetchPinBids();
+    } else if (tab === "properties") {
+      fetchPinProperties();
     }
-  }, [tab])
+  }, [tab]);
 
   const updatePin = (body) => {
     axios
@@ -356,6 +420,12 @@ const PinDetail = () => {
   const giftMarketItem = async () => {
     if (!user?._id) {
       toast.info(loginMessage);
+      return;
+    }
+
+    if (pinOffers?.length) {
+      toast.info(pendingOffersInfoMessage);
+      setTab("offers");
       return;
     }
 
@@ -401,12 +471,8 @@ const PinDetail = () => {
     // execute Market Sale function
     try {
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      console.log(nftaddress, itemId, giftingUser?.address);
-      transaction = await contract.giftMarketItem(
-        nftaddress,
-        itemId,
-        giftingUser?.address
-      );
+      console.log(nftaddress, itemId, giftingUser?._id);
+      transaction = await contract.giftMarketItem(itemId, giftingUser?._id);
       setLoadingMessage(giftLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenGiftSuccessMessage);
@@ -429,7 +495,13 @@ const PinDetail = () => {
 
     // ownership transfer as a gift notification
     try {
-      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      let to = [
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
       to = [...new Set(to)];
       to = to.filter((item) => item !== user?._id);
       to = to.map((item) => ({ user: item }));
@@ -485,7 +557,7 @@ const PinDetail = () => {
       );
       const auctionPrice = parseAmount(price);
       // const auctionPrice = ethers.utils.parseUnits(price, "ether");
-      const transaction = await contract.executeMarketSale(nftaddress, itemId, {
+      const transaction = await contract.executeMarketSale(itemId, {
         value: auctionPrice,
       });
       setLoadingMessage(buyLoadingMessage);
@@ -509,7 +581,13 @@ const PinDetail = () => {
 
     // ownership transfer notification
     try {
-      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      let to = [
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
       to = [...new Set(to)];
       to = to.filter((item) => item !== user?._id);
       to = to.map((item) => ({ user: item }));
@@ -550,6 +628,12 @@ const PinDetail = () => {
       return;
     }
 
+    if (pinOffers?.length) {
+      toast.info(pendingOffersInfoMessage);
+      setTab("offers");
+      return;
+    }
+
     if (!isValidAmount(inputPrice)) {
       toast.info(validAmountErrorMessage);
       return;
@@ -579,11 +663,7 @@ const PinDetail = () => {
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
       // const auctionPrice = ethers.utils.parseUnits(inputPrice, "ether");
       const auctionPrice = parseAmount(inputPrice);
-      transaction = await contract.createMarketSale(
-        nftaddress,
-        itemId,
-        auctionPrice
-      );
+      transaction = await contract.createMarketSale(itemId, auctionPrice);
       setLoadingMessage(createSaleLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenSaleSuccessMessage);
@@ -599,7 +679,13 @@ const PinDetail = () => {
 
     // sale created notification
     try {
-      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      let to = [
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
       to = [...new Set(to)];
       to = to.filter((item) => item !== user?._id);
       to = to.map((item) => ({ user: item }));
@@ -722,6 +808,12 @@ const PinDetail = () => {
       return;
     }
 
+    if (pinOffers?.length) {
+      toast.info(pendingOffersInfoMessage);
+      setTab("offers");
+      return;
+    }
+
     setLoading(true);
     setLoadingMessage(confirmLoadingMessage);
     const web3Modal = new Web3Modal();
@@ -744,7 +836,7 @@ const PinDetail = () => {
     try {
       setLoadingMessage(confirmLoadingMessage);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      transaction = await contract.createMarketAuction(nftaddress, itemId);
+      transaction = await contract.createMarketAuction(itemId);
       setLoadingMessage(createAuctionLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenAuctionSuccessMessage);
@@ -761,7 +853,13 @@ const PinDetail = () => {
 
     // notify auction created
     try {
-      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      let to = [
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
       to = [...new Set(to)];
       to = to.filter((item) => item !== user?._id);
       to = to.map((item) => ({ user: item }));
@@ -812,10 +910,7 @@ const PinDetail = () => {
         Market.abi,
         signer
       );
-      const transaction = await contract.executeMarketAuctionEnd(
-        nftaddress,
-        itemId
-      );
+      const transaction = await contract.executeMarketAuctionEnd(itemId);
       setLoadingMessage(cancelAuctionLoadingMessage);
       const tx = await transaction.wait();
       console.log(tx);
@@ -823,7 +918,7 @@ const PinDetail = () => {
       const event = tx.events[2];
       var eventData = getEventData(event);
       console.log(eventData);
-      var newOwner = bids?.length ? getMaxBid(bids)?.user : user;
+      var newOwner = eventData?.postedBy;
     } catch (e) {
       console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
       toast.error(tokenAuctionEndErrorMessage);
@@ -832,10 +927,10 @@ const PinDetail = () => {
     }
 
     // transfer asset
-    if (bids?.length) {
+    if (newOwner !== user?._id) {
       const transferObj = {
-        user: newOwner?._id,
-        price,
+        user: newOwner,
+        price: currentBid,
       };
 
       transferPin(transferObj);
@@ -843,7 +938,14 @@ const PinDetail = () => {
 
     // notify auctionEnded or ownership transferred
     try {
-      let to = [...bids.map((item) => item?.user), ...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      let to = [
+        ...pinBids.map((item) => item?.user),
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
       to = [...new Set(to)];
       to = to.filter((item) => item !== user?._id);
       to = to.map((item) => ({ user: item }));
@@ -851,12 +953,11 @@ const PinDetail = () => {
       const obj = {
         type: "Auction Ended",
         byUser: user?._id,
-        ...(bids?.length ? {toUser: newOwner?._id} : {}),
-        ...(bids?.length ? {price} : {}),
+        ...(newOwner !== user?._id ? { toUser: newOwner?._id } : {}),
+        ...(newOwner !== user?._id ? { price } : {}),
         pin: _id,
         to,
       };
-
 
       sendNotifications(
         obj,
@@ -873,9 +974,335 @@ const PinDetail = () => {
 
     updatePin({
       ...eventData,
-      postedBy: newOwner?._id,
+      currentBid: "0.0",
       bids: [],
       destination: "https://nft-nation.vercel.app",
+    });
+  };
+
+  const rejectAllMarketItemOffers = async () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    try {
+      const contract = new ethers.Contract(
+        nftmarketaddress,
+        Market.abi,
+        signer
+      );
+      const transaction = await contract.rejectAllOffers(itemId);
+      setLoadingMessage(rejectAllOffersLoadingMessage);
+      const tx = await transaction.wait();
+      console.log(tx);
+      toast.success(tokenAllOfferRejectSuccessMessage);
+      const event = tx.events[0];
+      var eventData = getEventData(event);
+      console.log(eventData);
+      var newOwner = eventData?.postedBy;
+    } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+      toast.error(tokenAllOffersRejectErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    // notify offers rejected
+    try {
+      let to = [
+        ...pinOffers.map((item) => item?.user),
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Offers Rejected",
+        byUser: user?._id,
+        ...(newOwner !== user?._id ? { toUser: newOwner?._id } : {}),
+        ...(newOwner !== user?._id ? { price } : {}),
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
+    updatePin({
+      ...eventData,
+    });
+  };
+
+  const acceptMarketItemOffer = async (offeringAddress, offer) => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    // get approval
+    try {
+      var contract = new ethers.Contract(nftaddress, NFT.abi, signer);
+      var transaction = await contract.approve(nftmarketaddress, tokenId);
+      setLoadingMessage(approvalLoadingMessage);
+      await transaction.wait();
+      toast.success(tokenApproveSuccessMessage);
+    } catch (e) {
+      toast.error(tokenApproveErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const contract = new ethers.Contract(
+        nftmarketaddress,
+        Market.abi,
+        signer
+      );
+      const transaction = await contract.acceptOffer(itemId, offeringAddress);
+      setLoadingMessage(acceptOfferLoadingMessage);
+      const tx = await transaction.wait();
+      console.log(tx);
+      toast.success(tokenOfferAcceptSuccessMessage);
+      const event = tx.events[2];
+      var eventData = getEventData(event);
+      console.log(eventData);
+      var newOwner = eventData?.postedBy;
+    } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+      toast.error(tokenOfferAcceptErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    // transfer asset
+    const transferObj = {
+      user: newOwner,
+      price: offer,
+    };
+
+    transferPin(transferObj);
+
+    // notify auctionEnded or ownership transferred
+    try {
+      let to = [
+        ...pinOffers.map((item) => item?.user),
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Offer Accepted",
+        byUser: user?._id,
+        toUser: offeringAddress,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
+    updatePin({
+      ...eventData,
+    });
+  };
+
+  const rejectMarketItemOffer = async (offeringAddress) => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    try {
+      let contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+      const transaction = await contract.rejectOffer(itemId, offeringAddress);
+      setLoadingMessage(rejectOfferLoadingMessage);
+      const tx = await transaction.wait();
+      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+      toast.success(tokenOfferRejectSuccessMessage);
+      const event = tx.events[0];
+      var eventData = getEventData(event);
+      console.log(eventData);
+    } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^");
+      toast.error(tokenOfferRejectErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    // notify auctionEnded or ownership transferred
+    try {
+      let to = [
+        ...pinOffers.map((item) => item?.user),
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
+      to = [...new Set(to)];
+      to = to.filter((item) => item !== user?._id);
+      to = to.map((item) => ({ user: item }));
+
+      const obj = {
+        type: "Offer Rejected",
+        byUser: user?._id,
+        toUser: offeringAddress,
+        pin: _id,
+        to,
+      };
+
+      sendNotifications(
+        obj,
+        (res) => {
+          // console.log(res);
+        },
+        (e) => {
+          // console.log(e, "DDDDDDDDDDddddd");
+        }
+      );
+    } catch (e) {
+      console.log(e, "DDDDDDDDDDDDDDDDDDDdd");
+    }
+
+    withdrawOfferRequest({
+      user: offeringAddress,
+    });
+  };
+
+  const makeMarketItemOffer = async () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    if (!isValidAmount(inputPrice)) {
+      toast.info(validAmountErrorMessage);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    try {
+      const contract = new ethers.Contract(
+        nftmarketaddress,
+        Market.abi,
+        signer
+      );
+
+      const auctionBid = parseAmount(inputPrice);
+      const transaction = await contract.makeOffer(itemId, {
+        value: auctionBid,
+      });
+      setLoadingMessage(makeOfferLoadingMessage);
+      const tx = await transaction.wait();
+      console.log(tx.events, "DDDDDDD");
+      toast.success(tokenOfferSuccessMessage);
+      const event = tx.events[0];
+      var eventData = getEventData(event);
+      console.log(eventData);
+    } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^");
+      toast.error(tokenOfferErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    makeOfferRequest({
+      user: user?._id,
+      offer: inputPrice,
+    });
+  };
+
+  const withdrawMarketItemOffer = async () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    setLoading(true);
+    setLoadingMessage(confirmLoadingMessage);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+
+    try {
+      let contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
+      const transaction = await contract.withdrawOffer(itemId);
+      setLoadingMessage(withdrawOfferLoadingMessage);
+      const tx = await transaction.wait();
+      console.log(tx.events, "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+      toast.success(tokenOfferWithdrawSuccessMessage);
+      const event = tx.events[0];
+      var eventData = getEventData(event);
+      console.log(eventData);
+    } catch (e) {
+      console.log(e, "^^^^^^^^^^^^^^^^^^^^^");
+      toast.error(tokenOfferWithdrawErrorMessage);
+      setLoading(false);
+      return;
+    }
+
+    withdrawOfferRequest({
+      user: user?._id,
     });
   };
 
@@ -898,7 +1325,7 @@ const PinDetail = () => {
         Market.abi,
         signer
       );
-      const transaction = await contract.cancelMarketSale(nftaddress, itemId);
+      const transaction = await contract.cancelMarketSale(itemId);
       setLoadingMessage(cancelSaleLoadingMessage);
       const tx = await transaction.wait();
       toast.success(tokenSaleCancelSuccessMessage);
@@ -913,7 +1340,13 @@ const PinDetail = () => {
 
     try {
       // notify sale ended
-      let to = [...pinComments.map((item) => item?.user), ...saved, ...user?.followers, createdBy?._id, postedBy?._id];
+      let to = [
+        ...pinComments.map((item) => item?.user),
+        ...saved,
+        ...user?.followers,
+        createdBy?._id,
+        postedBy?._id,
+      ];
       to = [...new Set(to)];
       to = to.filter((item) => item !== user?._id);
       to = to.map((item) => ({ user: item }));
@@ -967,7 +1400,9 @@ const PinDetail = () => {
 
           let to = [
             ...pinComments.map((item) => item?.user?._id),
-            ...user?.followers, createdBy?._id, postedBy?._id
+            ...user?.followers,
+            createdBy?._id,
+            postedBy?._id,
           ];
           to = [...new Set(to)];
           to = to.filter((item) => item !== user?._id);
@@ -1007,7 +1442,12 @@ const PinDetail = () => {
         setLoading(false);
         toast.success(finalSuccessMessage);
 
-        let to = [...bids.map((item) => item?.user?._id), ...user?.followers, createdBy?._id, postedBy?._id];
+        let to = [
+          ...pinBids.map((item) => item?.user?._id),
+          ...user?.followers,
+          createdBy?._id,
+          postedBy?._id,
+        ];
         to = [...new Set(to)];
         to = to.filter((item) => item !== user?._id);
         to = to.map((item) => ({ user: item }));
@@ -1050,6 +1490,65 @@ const PinDetail = () => {
       });
   };
 
+  const makeOfferRequest = (body) => {
+    axios
+      .post(`/api/pins/offers/${pinId}`, body)
+      .then(() => {
+        setAddingBidPrice(false);
+        setInputPrice("");
+        setRefresh((prev) => !prev);
+        setLoading(false);
+        toast.success(finalSuccessMessage);
+
+        let to = [
+          ...pinComments.map((item) => item?.user?._id),
+          ...saved,
+          ...user?.followers,
+          createdBy?._id,
+          postedBy?._id,
+        ];
+        to = [...new Set(to)];
+        to = to.filter((item) => item !== user?._id);
+        to = to.map((item) => ({ user: item }));
+
+        const obj = {
+          type: "New Offer",
+          byUser: user?._id,
+          price: body?.offer,
+          pin: _id,
+          to,
+        };
+
+        sendNotifications(
+          obj,
+          (res) => {
+            // console.log(res);
+          },
+          (e) => {
+            // console.log(e, "DDDDDDDDDDddddd");
+          }
+        );
+      })
+      .catch((e) => {
+        setLoading(false);
+        toast.error(finalProcessingErrorMessage);
+      });
+  };
+
+  const withdrawOfferRequest = (body) => {
+    axios
+      .put(`/api/pins/offers/${pinId}`, body)
+      .then(() => {
+        setRefresh((prev) => !prev);
+        setLoading(false);
+        toast.success(finalSuccessMessage);
+      })
+      .catch((e) => {
+        setLoading(false);
+        toast.error(finalProcessingErrorMessage);
+      });
+  };
+
   const savePin = () => {
     if (!user?._id) {
       toast.info(loginMessage);
@@ -1080,7 +1579,6 @@ const PinDetail = () => {
             pin: _id,
             to,
           };
-
 
           sendNotifications(
             obj,
@@ -1134,8 +1632,8 @@ const PinDetail = () => {
     },
     {
       text: `End Auction${
-        bids?.length
-          ? ` (Current Bid: ${getMaxBid(bids).bid} Matic)`
+        currentBid !== "0.0"
+          ? ` (Current Bid: ${currentBid} Matic)`
           : ` (No Bids Yet)`
       }`,
       condition: executeMarketAuctionEndCondition,
@@ -1143,8 +1641,8 @@ const PinDetail = () => {
     },
     {
       text: `Make a Bid${
-        bids?.length
-          ? ` (Current Bid: ${getMaxBid(bids).bid} Matic)`
+        currentBid !== "0.0"
+          ? ` (Current Bid: ${currentBid} Matic)`
           : ` (No Bids Yet)`
       }`,
       condition: makeAuctionBidCondition,
@@ -1154,10 +1652,111 @@ const PinDetail = () => {
     },
     {
       text: `Withdraw Bid (Your Bid: ${
-        getUserBid(bids, user?._id)?.bid
+        getUserBid(pinBids, user?._id)?.bid
       } Matic)`,
       condition: withdrawAuctionBidCondition,
       function: withdrawAuctionBid,
+    },
+  ];
+
+  const tabArray = [
+    {
+      name: "properties",
+      text: `Properties${
+        pinProperties?.length ? ` (${pinProperties?.length})` : ``
+      }`,
+      condition: true,
+      loadingCondition:
+        tab === "properties" && !pinProperties?.length && sideLoading,
+      emptyCondition:
+        tab === "properties" && !pinProperties?.length && !sideLoading,
+      emptyText: "No Properties...",
+      func: () => setTab("properties"),
+    },
+    {
+      name: "comments",
+      text: `Comments${pinComments?.length ? ` (${pinComments?.length})` : ``}`,
+      condition: true,
+      loadingCondition:
+        tab === "comments" && !pinComments?.length && sideLoading,
+      emptyText: "No Comments Yet, Be the first one to comment...",
+      emptyCondition:
+        tab === "comments" && !pinComments?.length && !sideLoading,
+      input: {
+        condition: tab === "comments",
+        placeholder: "Add a Comment",
+        value: comment,
+        loadingCondition: addingComment,
+        buttonText: "Comment",
+        onChangeFunc: (val) => setComment(val),
+        onClickFunc: () => addComment(),
+      },
+      func: () => setTab("comments"),
+    },
+    {
+      name: "bids",
+      text: `Bids${pinBids?.length ? ` (${pinBids?.length})` : ``}`,
+      condition: highestBidShowCondition,
+      loadingCondition: tab === "bids" && !pinBids?.length && sideLoading,
+      emptyCondition: tab === "bids" && !pinBids?.length && !sideLoading,
+      emptyText: "No Bids Yet, Be the first one to make a Bid...",
+      input: {
+        condition: tab === "bids" && makeAuctionBidCondition,
+        placeholder: "Add a Bid Amount",
+        value: inputPrice,
+        loadingCondition: false,
+        buttonText: "Make Bid",
+        onChangeFunc: (val) => setInputPrice(val),
+        onClickFunc: () => makeAuctionBid(),
+      },
+      withdraw: {
+        condition: tab === "bids" && withdrawAuctionBidCondition,
+        text: "Withdraw Your Bid",
+        func: () => withdrawAuctionBid(),
+      },
+      func: () => setTab("bids"),
+    },
+    {
+      name: "offers",
+      text: `Offers${pinOffers?.length ? ` (${pinOffers?.length})` : ``}`,
+      condition: offersShowCondition,
+      loadingCondition: tab === "offers" && !pinOffers?.length && sideLoading,
+      emptyCondition: tab === "offers" && !pinOffers?.length && !sideLoading,
+      emptyText: "No Offers Yet...",
+      input: {
+        condition: tab === "offers" && makeOfferCondition,
+        placeholder: "Add an Offer Price",
+        value: inputPrice,
+        loadingCondition: false,
+        buttonText: "Make Offer",
+        onChangeFunc: (val) => setInputPrice(val),
+        onClickFunc: () => makeMarketItemOffer(),
+      },
+      withdraw: {
+        condition: tab === "offers" && withdrawOfferCondition,
+        text: `Withdraw Offer (Your Offer: ${
+          getUserBid(pinOffers, user?._id)?.offer
+        } Matic)`,
+        func: () => withdrawMarketItemOffer(),
+      },
+      owner: {
+        condition:
+          tab === "offers" &&
+          pinOffers?.length > 0 &&
+          postedBy?._id === user?._id,
+        text: `Reject All Offers`,
+        func: () => rejectAllMarketItemOffers(),
+      },
+      func: () => setTab("offers"),
+    },
+    {
+      name: "history",
+      text: `History`,
+      condition: true,
+      loadingCondition: tab === "history" && !pinHistory?.length && sideLoading,
+      emptyCondition: tab === "history" && !pinHistory?.length && !sideLoading,
+      emptyText: "No History...",
+      func: () => setTab("history"),
     },
   ];
 
@@ -1200,36 +1799,7 @@ const PinDetail = () => {
 
             <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
               <div className="flex flex-wrap justify-center lg:gap-2">
-                {[
-                  {
-                    name: "properties",
-                    text: `Properties${
-                      properties?.length ? ` (${properties?.length})` : ``
-                    }`,
-                    condition: true,
-                    func: () => setTab("properties"),
-                  },
-                  {
-                    name: "comments",
-                    text: `Comments${
-                      pinComments?.length ? ` (${pinComments?.length})` : ``
-                    }`,
-                    condition: true,
-                    func: () => setTab("comments"),
-                  },
-                  {
-                    name: "bids",
-                    text: `Bids${bids?.length ? ` (${bids?.length})` : ``}`,
-                    condition: highestBidShowCondition,
-                    func: () => setTab("bids"),
-                  },
-                  {
-                    name: "history",
-                    text: `History`,
-                    condition: true,
-                    func: () => setTab("history"),
-                  },
-                ].map((item, index) => {
+                {tabArray.map((item, index) => {
                   if (item?.condition)
                     return (
                       <button
@@ -1246,47 +1816,53 @@ const PinDetail = () => {
               </div>
 
               <div className="max-h-370 h-370 overflow-y-scroll">
-                {tab === "properties" && (
-                  <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No Properties...`}</h2>
-                )}
-                {tab === "properties" &&
-                  false &&
-                  pinComments?.map((item) => (
-                    <div
-                      key={`${item?._id}`}
-                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
-                    >
-                      {item?.user?._id && (
-                        <Link href={`/user-profile/${item?.user?._id}`}>
-                          <div>
-                            <Image
-                              height={40}
-                              width={40}
-                              src={getImage(item?.user?.image)}
-                              className="w-10 h-10 rounded-full cursor-pointer"
-                              alt="user-profile"
-                            />
-                          </div>
-                        </Link>
-                      )}
-                      <div className="flex flex-col">
-                        <p className="font-bold">
-                          {getUserName(item?.user?.userName)}
-                        </p>
-                        <p className="font-semibold">{item.comment}</p>
-                      </div>
-                    </div>
-                  ))}
+                {tabArray.map((item, index) => {
+                  if (item?.emptyCondition)
+                    return (
+                      <h2
+                        key={index}
+                        className="flex justify-center items-center h-370 mt-0 text-xl font-bold"
+                      >
+                        {item?.emptyText}
+                      </h2>
+                    );
+                })}
 
-                {tab === "bids" && !bids?.length && (
-                  <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No Bids Yet, Be the first one to make a Bid...`}</h2>
-                )}
+                {tabArray.map((item, index) => {
+                  if (item?.loadingCondition)
+                    return (
+                      <div key={index}>
+                        <Spinner title={loadingMessage} />
+                      </div>
+                    );
+                })}
+
+
+                {tab === "properties" &&
+                  pinProperties.length > 0 && (
+                    <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
+                    {
+                        pinProperties?.map((item, index) => (
+                          <div
+                            key={index}
+                            className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-2 items-center bg-secondTheme rounded-lg justify-center text-center shadow-xl drop-shadow-xl"
+                          >
+                            <div className="flex flex-col py-4" key={index}>
+                              <h1 className="font-bold text-md">{item?.value}</h1>
+                              <h3 className="font-semibold text-sm">{`(${item?.trait_type})`}</h3>
+                            </div>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  )
+                  }
 
                 {tab === "bids" &&
-                  bids?.length > 0 &&
-                  bids?.map((item) => (
+                  pinBids?.length > 0 &&
+                  pinBids?.map((item, index) => (
                     <div
-                      key={`${item?._id}`}
+                      key={index}
                       className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
@@ -1311,19 +1887,63 @@ const PinDetail = () => {
                     </div>
                   ))}
 
-                {tab === "comments" && !pinComments?.length && !sideLoading && (
-                  <h2 className="flex justify-center items-center h-370 text-xl font-bold">{`No Comments Yet, Be the first one to comment...`}</h2>
-                )}
-
-                {tab === "comments" && !pinComments?.length && sideLoading && (
-                  <Spinner title={loadingMessage} />
-                )}
+                {tab === "offers" &&
+                  pinOffers?.length > 0 &&
+                  pinOffers?.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                    >
+                      {item?.user?._id && (
+                        <Link href={`/user-profile/${item?.user?._id}`}>
+                          <div>
+                            <Image
+                              height={45}
+                              width={45}
+                              src={getImage(item?.user?.image)}
+                              className="w-12 h-12 rounded-full cursor-pointer"
+                              alt="user-profile"
+                            />
+                          </div>
+                        </Link>
+                      )}
+                      <div className="flex flex-col">
+                        <p className="font-bold">
+                          {getUserName(item?.user?.userName)}
+                        </p>
+                        <p className="font-bold">{`${item.offer} Matic`}</p>
+                      </div>
+                      {postedBy?._id === user?._id && (
+                        <div className="flex ml-auto gap-2">
+                          <FaCheckCircle
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              acceptMarketItemOffer(
+                                item?.user?._id,
+                                item?.offer
+                              );
+                            }}
+                            size={25}
+                            className="cursor-pointer text-[#009387]"
+                          />
+                          <MdCancel
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              rejectMarketItemOffer(item?.user?._id);
+                            }}
+                            size={25}
+                            className="cursor-pointer text-[#a83f39]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
 
                 {tab === "comments" &&
                   pinComments.length > 0 &&
-                  pinComments?.map((item) => (
+                  pinComments?.map((item, index) => (
                     <div
-                      key={`${item?._id}`}
+                      key={index}
                       className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
@@ -1353,7 +1973,7 @@ const PinDetail = () => {
                                 deleteComment(item?._id);
                               }}
                               size={25}
-                              className="cursor-pointer text-[#ff7f7f]"
+                              className="cursor-pointer text-[#a83f39]"
                             />
                           ) : (
                             <AiOutlineLoading3Quarters
@@ -1369,15 +1989,11 @@ const PinDetail = () => {
                     </div>
                   ))}
 
-                {tab === "history" && !pinHistory?.length && !sideLoading && (
-                  <h2 className="flex justify-center items-center h-370 mt-0 text-xl font-bold">{`No History...`}</h2>
-                )}
-
                 {tab === "history" &&
                   pinHistory?.length > 0 &&
                   pinHistory?.map((item, index) => (
                     <div
-                      key={`${item?._id}`}
+                      key={index}
                       className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
@@ -1418,48 +2034,87 @@ const PinDetail = () => {
                   ))}
               </div>
 
-              {tab === "comments" && (
-                <div className="flex flex-wrap mt-6 gap-3">
-                  {user?._id && (
-                    <Link href={`/user-profile/${user?._id}`}>
-                      <div>
-                        <Image
-                          height={45}
-                          width={45}
-                          src={getImage(user?.image)}
-                          className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                          alt="user-profile"
-                        />
-                      </div>
-                    </Link>
-                  )}
-                  <input
-                    className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
-                    type="text"
-                    placeholder="Add a comment"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                    onClick={addComment}
-                  >
-                    {!addingComment ? (
-                      "Comment"
-                    ) : (
-                      <AiOutlineLoading3Quarters
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // savePin();
-                        }}
-                        className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                        size={20}
+              {tabArray.map((item, index) => {
+                if (item?.input?.condition)
+                  return (
+                    <div key={index} className="flex flex-wrap mt-6 gap-3">
+                      {user?._id && (
+                        <Link href={`/user-profile/${user?._id}`}>
+                          <div>
+                            <Image
+                              height={45}
+                              width={45}
+                              src={getImage(user?.image)}
+                              className="w-14 h-14 rounded-full cursor-pointer pt-2"
+                              alt="user-profile"
+                            />
+                          </div>
+                        </Link>
+                      )}
+                      <input
+                        className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
+                        type="text"
+                        placeholder={item?.input?.placeholder}
+                        value={item?.input?.value}
+                        onChange={(e) =>
+                          item?.input?.onChangeFunc(e.target.value)
+                        }
                       />
-                    )}
-                  </button>
-                </div>
-              )}
+                      <button
+                        type="button"
+                        className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                        onClick={() => item?.input?.onClickFunc()}
+                      >
+                        {!item?.input?.loadingCondition ? (
+                          `${item?.input?.buttonText}`
+                        ) : (
+                          <AiOutlineLoading3Quarters
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // savePin();
+                            }}
+                            className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                            size={20}
+                          />
+                        )}
+                      </button>
+                    </div>
+                  );
+              })}
+
+              {tabArray.map((item, index) => {
+                if (item?.withdraw?.condition)
+                  return (
+                    <div
+                      key={index}
+                      className="flex flex-wrap mt-6 gap-3 justify-center"
+                    >
+                      <button
+                        type="button"
+                        className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                        onClick={() => item?.withdraw?.func()}
+                      >
+                        {item?.withdraw?.text}
+                      </button>
+                    </div>
+                  );
+
+                if (item?.owner?.condition)
+                  return (
+                    <div
+                      key={index}
+                      className="flex flex-wrap mt-6 gap-3 justify-center"
+                    >
+                      <button
+                        type="button"
+                        className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                        onClick={() => item?.owner?.func()}
+                      >
+                        {item?.owner?.text}
+                      </button>
+                    </div>
+                  );
+              })}
             </div>
           </div>
 
@@ -1524,8 +2179,8 @@ const PinDetail = () => {
                   {priceShowCondition
                     ? `On Sale (Price: ${price} Matic)`
                     : `On Auction ${
-                        bids?.length
-                          ? ` (Current Bid: ${getMaxBid(bids)?.bid} Matic)`
+                        currentBid !== "0.0"
+                          ? ` (Current Bid: ${currentBid} Matic)`
                           : ` (No Bids Yet)`
                       }`}
                 </span>

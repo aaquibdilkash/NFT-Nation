@@ -27,7 +27,7 @@ const HomeLayout = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pathname, query } = router;
-  const { page, keyword, category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented, type } = query;
+  const { page, keyword, category, postedBy, onSale, bids, saved, auctionEnded, feed, pinId, sort, commented, type } = query;
   const { user, marketContract, refresh, hasMore, changePage } = useSelector(
     (state) => state.userReducer
   );
@@ -164,7 +164,7 @@ const HomeLayout = ({ children }) => {
   const login = (address) => {
     setLoggingIn(true)
     const obj = {
-      address: address,
+      _id: address,
       userName: address,
     };
     axios
@@ -229,7 +229,7 @@ const HomeLayout = ({ children }) => {
       undefined,
       { shallow: true }
     );
-  }, [category, owner, seller, bids, saved, auctionEnded, feed, pinId, sort, commented, type, keyword]);
+  }, [category, bids, postedBy, onSale, saved, auctionEnded, feed, pinId, sort, commented, type, keyword]);
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;

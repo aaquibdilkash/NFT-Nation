@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema({
   to: [
     {
       user: {
-        type: mongoose.Schema.ObjectId,
+        type: String,
         ref: "User",
         required: true,
       },
@@ -23,12 +23,12 @@ const notificationSchema = new mongoose.Schema({
     },
   ],
   byUser: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     default: null,
   },
   toUser: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     default: null,
   },

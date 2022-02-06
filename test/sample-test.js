@@ -92,8 +92,8 @@ describe("NFTMarket", async () => {
     // }))
     // console.log('items Market items: ', items)
 
-    // await market.cancelSale(nftContractAddress, 1)
-    // await market.cancelSale(nftContractAddress, 2)
+    // await market.cancelSale(1)
+    // await market.cancelSale(2)
 
     // items = await market.fetchMarketItems()
     // items = await Promise.all(items.map(async i => {

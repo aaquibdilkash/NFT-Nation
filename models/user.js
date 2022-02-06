@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    required: true,
+    unique: true
+  },
   userName: {
     type: String,
     maxlength: [64, "userName field cannot exceeds 42 characters"],
     required: [true, "Please enter userName"],
-    unique: true
-  },
-  address: {
-    type: String,
-    required: [true, "Please enter address"],
     unique: true
   },
   image: {
@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   followers: [
     {
-      type: mongoose.Schema.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },
@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   },
   followings: [
     {
-      type: mongoose.Schema.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },
@@ -44,11 +44,11 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
 
-  refer: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-    // required: true,
-  },
+  // refer: {
+  //   type: mongoose.Schema.ObjectId,
+  //   ref: "User",
+  //   required: true,
+  // },
   // nftMinted: {
   //   type: Number,
   //   default: 0
@@ -69,6 +69,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-});
+}, { _id: false });
 
 export default mongoose.models.User || mongoose.model("User", userSchema);

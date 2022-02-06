@@ -9,8 +9,7 @@ import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import { errorMessage } from "../utils/messages";
 
-const Feed = (props) => {
-  // const { data, filteredDataCount, resultPerPage } = props.data;
+const Feed = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [dataArray, setDataArray] = useState([]);
@@ -27,8 +26,7 @@ const Feed = (props) => {
     page,
     keyword,
     category,
-    owner,
-    seller,
+    onSale,
     bids,
     saved,
     auctionEnded,
@@ -50,7 +48,7 @@ const Feed = (props) => {
     keyword ? `&keyword=${keyword}` : ``
   }${feed && user?._id ? `&feed=${user?._id}` : ``}${
     category ? `&category=${category}` : ``
-  }${owner ? `&owner=${owner}` : ``}${seller ? `&seller=${seller}` : ``}${
+  }${onSale ? `&onSale=${userId}` : ``}${
     bids ? `&bids.user=${userId}` : ``
   }${commented ? `&comments.user=${userId}` : ``}${
     saved ? `&saved=${userId}` : ``
@@ -131,22 +129,6 @@ const Feed = (props) => {
       shallow: true
     })
   }, [user])
-
-  // useEffect(() => {
-  //   (page ? parseInt(page) === 1 : true)
-  //     ? setDataArray(data)
-  //     : setDataArray((prev) => [...prev, ...data]);
-  //   setLoading(false);
-  //   dispatch({
-  //     type: HAS_MORE,
-  //     payload: (page ? parseInt(page) : 1) * resultPerPage < filteredDataCount,
-  //   });
-  //   dispatch({
-  //     type: CHANGE_PAGE,
-  //     payload: true,
-  //   });
-
-  // }, [router, refresh, currentProfile]);
 
   const showCategory = category?.length ? category : "new"
   const showType = type?.length ? type : "pins"

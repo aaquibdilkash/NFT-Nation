@@ -332,7 +332,6 @@ const CreatePin = () => {
       about,
       category,
       image: fileUrl,
-      postedBy: user?._id,
       createdBy: user?._id,
       attributes,
       history: [
@@ -407,7 +406,6 @@ const CreatePin = () => {
       about,
       category,
       image: fileUrl,
-      postedBy: user?._id,
       createdBy: user?._id,
       attributes,
       history: [
@@ -437,6 +435,7 @@ const CreatePin = () => {
       setLoadingMessage(mintLoadingMessage);
       var tx = await transaction.wait();
       toast.success(tokenMintSuccessMessage);
+      console.log(tx, "DDDDDDDDDDDDDDDDDDDDd")
       var event = tx.events[0];
       var tokenId = event.args[2].toNumber();
     } catch (e) {
@@ -470,7 +469,6 @@ const CreatePin = () => {
       about,
       category,
       image: fileUrl,
-      postedBy: user?._id,
       createdBy: user?._id,
       attributes,
       history: [
@@ -544,8 +542,7 @@ const CreatePin = () => {
       // const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider)
       try {
         const owner = await contract.ownerOf(tokenId);
-        console.log(owner, user?.address, owner === user?.address);
-        if (owner !== user?.address) {
+        if (owner !== user?._id) {
           toast.error(ownershipVerificationErrorMessage);
           setLoading(false);
           return;
@@ -605,7 +602,6 @@ const CreatePin = () => {
       about: description,
       category,
       image,
-      postedBy: user?._id,
       createdBy: user?._id,
       history: [
         {

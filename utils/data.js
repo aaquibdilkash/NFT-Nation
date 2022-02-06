@@ -39,6 +39,9 @@ export const isValidAmount = (number) => {
 };
 
 export const getMaxBid = (bids) => {
+  if(!bids?.length) {
+    return "0.0"
+  }
   return bids?.reduce((prev, current) => {
     if (+current.bid > +prev.bid) {
       return current;
@@ -93,12 +96,13 @@ export const getEventData = (event) => {
     itemId,
     nftContract,
     tokenId,
-    seller,
+    onSale,
     owner,
     price,
     highestBidder,
     highestBid,
     pendingBidders,
+    pendingOffers,
     auctionEnded,
   ] = event?.args;
 
@@ -106,12 +110,13 @@ export const getEventData = (event) => {
     itemId: itemId.toString(),
     nftContract: nftContract.toString(),
     tokenId: tokenId.toString(),
-    seller: seller.toString(),
-    owner: owner.toString(),
+    onSale,
+    postedBy: owner.toString(),
     price: ethers.utils.formatEther(price).toString(),
     highestBidder: highestBidder.toString(),
     highestBid: ethers.utils.formatEther(highestBid).toString(),
     pendingBidders: pendingBidders,
+    offers: pendingOffers,
     auctionEnded: Boolean(auctionEnded),
   };
 };

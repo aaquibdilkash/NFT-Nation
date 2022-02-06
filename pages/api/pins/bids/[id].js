@@ -6,6 +6,8 @@ dbConnect()
 
 const handler = nc()
 
+handler.get(getBidsPin)
+
 handler.post(makeAuctionBid)
 
 handler.put(withdrawAuctionBid)

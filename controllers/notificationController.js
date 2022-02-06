@@ -1,4 +1,8 @@
+import Pin from "../models/pin";
+import Collection from "../models/collection";
 import User from "../models/user";
+import Message from "../models/message";
+import Blog from "../models/blog";
 import Notification from "../models/notification";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
@@ -8,7 +12,7 @@ const allNotifications = catchAsyncErrors(async (req, res) => {
   const notificationsCount = await Notification.countDocuments();
 
   
-  const searchPagination = new SearchPagination(Notification.find().populate("byUser toUser pin pinCollection"), req.query).filter().sorted()
+  const searchPagination = new SearchPagination(Notification.find().populate("byUser", "_id image userName").populate("toUser", "_id image userName").populate("pin", "_id image title").populate("pinCollection", "_id image title"), req.query).filter().sorted()
   // .search()
     
   let notifications = await searchPagination.query;

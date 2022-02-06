@@ -1,5 +1,9 @@
+import Pin from "../models/pin";
+import Collection from "../models/collection";
 import User from "../models/user";
-import catchAsyncErrors from "../middleware/catchAsyncErrors";
+import Message from "../models/message";
+import Blog from "../models/blog";
+import Notification from "../models/notification";import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import redisClient from "./redis";
 // import Redis from "ioredis"
@@ -90,7 +94,7 @@ const getUser = catchAsyncErrors(async (req, res) => {
 });
 
 const createUser = catchAsyncErrors(async (req, res) => {
-  let user = await User.findOne({ address: req.body.address });
+  let user = await User.findById(req.body._id);
 
   if (!user) {
     user = await User.create(req.body);
@@ -151,8 +155,9 @@ const deleteUser = catchAsyncErrors(async (req, res) => {
 });
 
 const followUser = catchAsyncErrors(async (req, res) => {
-  let followee = await User.findById(req.query.id);
-  let follower = await User.findById(req.body.user);
+  // let followee = await User.findById(req.query.id);
+  // let follower = await User.findById(req.body.user);
+  let [followee, follower] = await Promise.all([await User.findById(req.query.id), await User.findById(req.body.user)])
 
   if (!followee) {
     return res.status(404).json({
@@ -180,8 +185,9 @@ const followUser = catchAsyncErrors(async (req, res) => {
   followee.followersCount = followee.followers.length;
   follower.followingsCount = follower.followings.length;
 
-  await followee.save({ validateBeforeSave: false });
-  await follower.save({ validateBeforeSave: false });
+  // await followee.save({ validateBeforeSave: false });
+  // await follower.save({ validateBeforeSave: false });
+  await Promise.all([followee.save({ validateBeforeSave: false }), follower.save({ validateBeforeSave: false })])
 
   res.status(200).json({
     success: true,

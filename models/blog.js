@@ -25,13 +25,13 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   postedBy: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
   saved: [
     {
-      type: mongoose.Schema.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },
@@ -44,7 +44,7 @@ const blogSchema = new mongoose.Schema({
   comments: [
     {
       user: {
-        type: mongoose.Schema.ObjectId,
+        type: String,
         ref: "User",
         required: true,
       },

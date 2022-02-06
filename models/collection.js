@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema({
   user: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
@@ -42,7 +42,7 @@ const collectionSchema = new mongoose.Schema({
     required: true,
   },
   createdBy: {
-    type: mongoose.Schema.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },
@@ -59,7 +59,7 @@ const collectionSchema = new mongoose.Schema({
   },
   saved: [
     {
-      type: mongoose.Schema.ObjectId,
+      type: String,
       ref: "User",
       required: true,
     },
