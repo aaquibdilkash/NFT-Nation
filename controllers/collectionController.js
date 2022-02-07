@@ -1,6 +1,6 @@
-import Pin from "../models/pin";
 import Collection from "../models/collection";
 import User from "../models/user";
+import Pin from "../models/pin";
 import Message from "../models/message";
 import Blog from "../models/blog";
 import Notification from "../models/notification";
@@ -206,7 +206,8 @@ const deleteCollection = catchAsyncErrors(async (req, res) => {
 const addPinToCollection = catchAsyncErrors(async (req, res) => {
   const [collectionId, pinId] = req.query.id;
 
-  let pin = await Pin.findById(pinId).select("+pinCollection");
+  // let pin = await Pin.findById(pinId).select("+pinCollection");
+  let [pin, collection] = await Promise.all([await Pin.findById(pinId).select("+pinCollection"), await Collection.findById(collectionId)])
 
   if (!pin) {
     return res.status(404).json({
@@ -223,7 +224,7 @@ const addPinToCollection = catchAsyncErrors(async (req, res) => {
     });
   }
 
-  let collection = await Collection.findById(collectionId);
+  // let collection = await Collection.findById(collectionId);
 
   if (!collection) {
     return res.status(404).json({
@@ -253,8 +254,9 @@ const addPinToCollection = catchAsyncErrors(async (req, res) => {
 
   collection.pinsCount = collection.pins.length;
 
-  await collection.save({ validateBeforeSave: false });
-  await pin.save({ validateBeforeSave: false });
+  await Promise.all([collection.save({ validateBeforeSave: false }), pin.save({ validateBeforeSave: false })])
+  // await collection.save({ validateBeforeSave: false });
+  // await pin.save({ validateBeforeSave: false });
 
   res.status(200).json({
     success: true,

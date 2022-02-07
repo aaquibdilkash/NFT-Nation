@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import {
@@ -159,6 +159,14 @@ const Notifications = () => {
         return `${getUserName(byUser?.userName)} commented on the ${pin ? `NFT "${pin?.title}"` : `Collection "${pinCollection?.title}"`}.`
       case "New Bid":
         return `${getUserName(byUser?.userName)} made bid of ${price} Matic on NFT "${pin?.title}".`
+      case "New Offer":
+        return `${getUserName(byUser?.userName)} made an offer of ${price} Matic on NFT "${pin?.title}" to ${getUserName(toUser?.userName)}.`
+      case "Offer Accepted":
+        return `${getUserName(byUser?.userName)} accepted an offer of ${price} Matic on NFT "${pin?.title}" from ${getUserName(toUser?.userName)}.`
+      case "Offer Rejected":
+        return `${getUserName(byUser?.userName)} rejected an offer of ${price} Matic on NFT "${pin?.title}" from ${getUserName(toUser?.userName)}.`
+      case "Offers Rejected":
+        return `${getUserName(byUser?.userName)} rejcted all the offers on NFT "${pin?.title}".`
       case "New Follow":
         return `${getUserName(byUser?.userName)} started following ${getUserName(toUser?.userName)}.`
       case "Up For Sale":
@@ -280,7 +288,7 @@ const Notifications = () => {
                         createdAt,
                       } = item;
                       return (
-                        <>
+                        <React.Fragment key={index}>
                           <tr
                             key={index}
                             className="border-b border-gray-200 hover:bg-[#f4f4f4]"
@@ -483,7 +491,7 @@ const Notifications = () => {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </React.Fragment>
                       );
                     })}
                 </tbody>

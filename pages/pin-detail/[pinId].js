@@ -11,6 +11,7 @@ import {
   buttonStyle,
   etherAddress,
   fetcher,
+  getCurrentBid,
   getEventData,
   getImage,
   getIpfsImage,
@@ -24,6 +25,7 @@ import {
 import {
   acceptOfferLoadingMessage,
   approvalLoadingMessage,
+  bidAmountInfoMessage,
   buyLoadingMessage,
   cancelAuctionLoadingMessage,
   cancelSaleLoadingMessage,
@@ -143,6 +145,7 @@ const PinDetail = () => {
     title,
     about,
     currentBid,
+    startingBid,
     saved,
     commentsCount,
     nftContract,
@@ -163,6 +166,7 @@ const PinDetail = () => {
     title: "",
     about: "",
     currentBid: "",
+    startingBid: "",
     saved: [],
     commentsCount: 0,
     nftContract: "",
@@ -274,8 +278,8 @@ const PinDetail = () => {
   };
 
   const fetchPinHistory = () => {
-    setLoadingMessage(fetchingHistoryLoadingMessage);
     setSideLoading(true);
+    setLoadingMessage(fetchingHistoryLoadingMessage);
     axios
       .get(`/api/pins/history/${pinId}`)
       .then((res) => {
@@ -320,12 +324,12 @@ const PinDetail = () => {
       });
   };
 
-  // const { data, error } = useSWR(`/api/pins/${pinId}`, fetcher, {
-  //   refreshInterval: 15000,
-  //   onSuccess: (data, key, config) => {
-  //     setPinDetail(data?.pin);
-  //   },
-  // });
+  const { data, error } = useSWR(`/api/pins/${pinId}`, fetcher, {
+    refreshInterval: 15000,
+    onSuccess: (data, key, config) => {
+      setPinDetail(data?.pin);
+    },
+  });
 
   const fetchPinDetails = () => {
     setPinDetail(null);
@@ -372,7 +376,7 @@ const PinDetail = () => {
 
   useEffect(() => {
     if (tab === "comments") {
-      fetchPinComments(true);
+      fetchPinComments();
     } else if (tab === "history") {
       fetchPinHistory();
     } else if (tab === "offers") {
@@ -380,7 +384,7 @@ const PinDetail = () => {
     } else if (tab === "bids") {
       fetchPinBids();
     } else if (tab === "properties") {
-      fetchPinProperties();
+      // fetchPinProperties();
     }
   }, [tab]);
 
@@ -389,6 +393,7 @@ const PinDetail = () => {
       .put(`/api/pins/${_id}`, body)
       .then((res) => {
         setAddingSellPrice(false);
+        setAddingBidPrice(false)
         setInputPrice("");
         setRefresh((prev) => !prev);
         dispatch({
@@ -400,8 +405,9 @@ const PinDetail = () => {
       })
       .catch((e) => {
         toast.error(finalErrorMessage);
-        setAddingSellPrice(false);
-        setInputPrice("");
+        // setAddingSellPrice(false);
+        // setAddingBidPrice(false)
+        // setInputPrice("");
         setLoading(false);
       });
   };
@@ -530,8 +536,6 @@ const PinDetail = () => {
     // upadate pin in the database
     updatePin({
       ...eventData,
-      postedBy: giftingUser?._id,
-      destination: "https://nft-nation.vercel.app",
     });
   };
 
@@ -617,8 +621,6 @@ const PinDetail = () => {
     // upadate pin in the database
     updatePin({
       ...eventData,
-      postedBy: user?._id,
-      destination: "https://nft-nation.vercel.app",
     });
   };
 
@@ -713,8 +715,6 @@ const PinDetail = () => {
 
     updatePin({
       ...eventData,
-      postedBy: user?._id,
-      destination: "https://nft-nation.vercel.app",
     });
   };
 
@@ -726,6 +726,11 @@ const PinDetail = () => {
 
     if (!isValidAmount(inputPrice)) {
       toast.info(validAmountErrorMessage);
+      return;
+    }
+    
+    if (inputPrice <= getCurrentBid(currentBid, startingBid)) {
+      toast.info(bidAmountInfoMessage);
       return;
     }
 
@@ -814,6 +819,11 @@ const PinDetail = () => {
       return;
     }
 
+    if (!isValidAmount(inputPrice)) {
+      toast.info(validAmountErrorMessage);
+      return;
+    }
+
     setLoading(true);
     setLoadingMessage(confirmLoadingMessage);
     const web3Modal = new Web3Modal();
@@ -886,8 +896,7 @@ const PinDetail = () => {
 
     updatePin({
       ...eventData,
-      postedBy: user?._id,
-      destination: "https://nft-nation.vercel.app",
+      startingBid: inputPrice,
     });
   };
 
@@ -954,7 +963,7 @@ const PinDetail = () => {
         type: "Auction Ended",
         byUser: user?._id,
         ...(newOwner !== user?._id ? { toUser: newOwner?._id } : {}),
-        ...(newOwner !== user?._id ? { price } : {}),
+        ...(newOwner !== user?._id ? { currentBid } : {}),
         pin: _id,
         to,
       };
@@ -974,9 +983,9 @@ const PinDetail = () => {
 
     updatePin({
       ...eventData,
-      currentBid: "0.0",
+      startingBid: "0.0",
+      // currentBid: "0.0",
       bids: [],
-      destination: "https://nft-nation.vercel.app",
     });
   };
 
@@ -1032,8 +1041,6 @@ const PinDetail = () => {
       const obj = {
         type: "Offers Rejected",
         byUser: user?._id,
-        ...(newOwner !== user?._id ? { toUser: newOwner?._id } : {}),
-        ...(newOwner !== user?._id ? { price } : {}),
         pin: _id,
         to,
       };
@@ -1112,7 +1119,7 @@ const PinDetail = () => {
 
     transferPin(transferObj);
 
-    // notify auctionEnded or ownership transferred
+    // notify offer Accepted
     try {
       let to = [
         ...pinOffers.map((item) => item?.user),
@@ -1129,7 +1136,7 @@ const PinDetail = () => {
       const obj = {
         type: "Offer Accepted",
         byUser: user?._id,
-        toUser: offeringAddress,
+        toUser: newOwner,
         pin: _id,
         to,
       };
@@ -1373,8 +1380,6 @@ const PinDetail = () => {
 
     updatePin({
       ...eventData,
-      postedBy: user?._id,
-      destination: "https://nft-nation.vercel.app",
     });
   };
 
@@ -1514,6 +1519,7 @@ const PinDetail = () => {
         const obj = {
           type: "New Offer",
           byUser: user?._id,
+          toUser: postedBy?._id,
           price: body?.offer,
           pin: _id,
           to,
@@ -1618,6 +1624,7 @@ const PinDetail = () => {
       condition: createMarketSaleCondition,
       function: () => {
         setAddingSellPrice((prev) => !prev);
+        setAddingBidPrice(false)
       },
     },
     {
@@ -1628,35 +1635,31 @@ const PinDetail = () => {
     {
       text: `Put On Auction`,
       condition: createMarketAuctionCondition,
-      function: createMarketAuction,
-    },
-    {
-      text: `End Auction${
-        currentBid !== "0.0"
-          ? ` (Current Bid: ${currentBid} Matic)`
-          : ` (No Bids Yet)`
-      }`,
-      condition: executeMarketAuctionEndCondition,
-      function: executeMarketAuctionEnd,
-    },
-    {
-      text: `Make a Bid${
-        currentBid !== "0.0"
-          ? ` (Current Bid: ${currentBid} Matic)`
-          : ` (No Bids Yet)`
-      }`,
-      condition: makeAuctionBidCondition,
       function: () => {
-        setAddingBidPrice((prev) => !prev);
+        setAddingBidPrice((prev) => !prev)
+        setAddingSellPrice(false)
       },
     },
     {
-      text: `Withdraw Bid (Your Bid: ${
-        getUserBid(pinBids, user?._id)?.bid
-      } Matic)`,
-      condition: withdrawAuctionBidCondition,
-      function: withdrawAuctionBid,
+      text: `End Auction (Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic)`,
+      condition: executeMarketAuctionEndCondition,
+      function: executeMarketAuctionEnd,
     },
+    // {
+    //   text: `Make a Bid (Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic)`,
+    //   condition: makeAuctionBidCondition,
+    //   function: () => {
+    //     // setAddingBidPrice((prev) => !prev);
+    //     setTab("bids")
+    //   },
+    // },
+    // {
+    //   text: `Withdraw Bid (Your Bid: ${
+    //     getUserBid(pinBids, user?._id)?.bid
+    //   } Matic)`,
+    //   condition: withdrawAuctionBidCondition,
+    //   function: withdrawAuctionBid,
+    // },
   ];
 
   const tabArray = [
@@ -1711,7 +1714,9 @@ const PinDetail = () => {
       },
       withdraw: {
         condition: tab === "bids" && withdrawAuctionBidCondition,
-        text: "Withdraw Your Bid",
+        text: `Withdraw Your Bid (Your Bid: ${
+          getUserBid(pinBids, user?._id)?.bid
+        } Matic)`,
         func: () => withdrawAuctionBid(),
       },
       func: () => setTab("bids"),
@@ -2178,11 +2183,7 @@ const PinDetail = () => {
                 <span className={buttonStyle}>
                   {priceShowCondition
                     ? `On Sale (Price: ${price} Matic)`
-                    : `On Auction ${
-                        currentBid !== "0.0"
-                          ? ` (Current Bid: ${currentBid} Matic)`
-                          : ` (No Bids Yet)`
-                      }`}
+                    : `On Auction (Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic)`}
                 </span>
               </div>
             )}
@@ -2311,9 +2312,9 @@ const PinDetail = () => {
                     </Link>
                   )}
                   <input
-                    className=" flex-1 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
+                    className=" flex-0.5 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
                     type="text"
-                    placeholder="Enter Price..."
+                    placeholder={(addingSellPrice && !addingBidPrice) ? `Price For Sale...` : `Starting Bid For Auction...`}
                     maxLength={10}
                     value={inputPrice}
                     onChange={(e) => setInputPrice(e.target.value)}
@@ -2322,8 +2323,7 @@ const PinDetail = () => {
                     type="button"
                     className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
                     onClick={() => {
-                      addingSellPrice && createMarketSale();
-                      addingBidPrice && makeAuctionBid();
+                      (addingSellPrice && !addingBidPrice) ? createMarketSale() : createMarketAuction()
                     }}
                   >
                     {`Confirm`}

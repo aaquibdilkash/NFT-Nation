@@ -8,7 +8,7 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 1337,
-      allowUnlimitedContractSize: true,
+      // allowUnlimitedContractSize: true,
     },
     mumbai: {
       url: `https://polygon-mumbai.g.alchemy.com/v2/${PROJECT_ID}`,
@@ -30,7 +30,7 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
+        runs: 1337
       }
     }
   },

@@ -100,7 +100,7 @@ contract NFTMarket is ReentrancyGuard {
     {
         require(
             IERC721(nftContract).ownerOf(tokenId) == msg.sender,
-            "You Must Be The Owner Of This NFT To Create A Market Item"
+            "Ownership Not Verified"
         );
 
         address payable[] memory emptyArray;
@@ -130,15 +130,15 @@ contract NFTMarket is ReentrancyGuard {
         uint256 tokenId,
         uint256 price
     ) public nonReentrant {
-        require(price > 0, "Price Must Be Greater Than Zero");
+        require(price > 0, "InValid Price");
 
         require(
             IERC721(nftContract).ownerOf(tokenId) == msg.sender,
-            "You Must Be The Owner Of This NFT To Create A Sale"
+            "Ownership Not Verified"
         );
         require(
             IERC721(nftContract).getApproved(tokenId) == address(this),
-            "Market Didn't Get Approval"
+            "Need Approval"
         );
 
         address payable[] memory emptyArray;
@@ -211,12 +211,12 @@ contract NFTMarket is ReentrancyGuard {
 
         require(
             IERC721(nftContract).ownerOf(token_id) == msg.sender,
-            "You Must Be The Owner Of This NFT To Create A Sale"
+            "Ownership Not Verified"
         );
 
         require(
             IERC721(nftContract).getApproved(token_id) == address(this),
-            "Market Didn't Get Approval"
+            "Need Approval"
         );
 
         address payable[] memory emptyArray;
@@ -250,12 +250,12 @@ contract NFTMarket is ReentrancyGuard {
 
         require(
             IERC721(nftContract).ownerOf(token_id) == msg.sender,
-            "You Must Be The Owner This NFT To Create An Auction"
+            "Ownership Not Verified"
         );
 
         require(
             IERC721(nftContract).getApproved(token_id) == address(this),
-            "Market Didn't Get Approval"
+            "Need Approval"
         );
 
         address payable[] memory emptyArray;
@@ -285,20 +285,12 @@ contract NFTMarket is ReentrancyGuard {
     ) public nonReentrant {
 
         require(
-            IERC721(idToMarketItem[itemId].nftContract).ownerOf(idToMarketItem[itemId].tokenId) == msg.sender,
-            "You Must Be The Owner Of This NFT To Gift"
+            IERC721(idToMarketItem[itemId].nftContract).ownerOf(idToMarketItem[itemId].tokenId) == msg.sender && idToMarketItem[itemId].owner == msg.sender,
+            "Ownership Not Verified"
         );
         require(
             IERC721(idToMarketItem[itemId].nftContract).getApproved(idToMarketItem[itemId].tokenId) == address(this),
-            "Market Didn't Get Approval"
-        );
-        require(
-            idToMarketItem[itemId].owner == msg.sender,
-            "You Must Be The Owner Of This NFT To Gift"
-        );
-        require(
-            giftingAddress != address(0),
-            "Gifting Address Should be Valid"
+            "Need Approval"
         );
 
         IERC721(idToMarketItem[itemId].nftContract).safeTransferFrom(
@@ -322,7 +314,7 @@ contract NFTMarket is ReentrancyGuard {
 
         require(
             msg.value == idToMarketItem[itemId].price,
-            "Please Submit The Asking Price In Order To Complete The Purchase"
+            "InValid Price"
         );
 
         payable(idToMarketItem[itemId].owner).transfer(
@@ -345,7 +337,7 @@ contract NFTMarket is ReentrancyGuard {
     {
         require(
             !idToMarketItem[itemId].auctionEnded,
-            "Auction For This NFT Has Already Ended"
+            "Auction Already Ended"
         );
         // require(
         //     idToMarketItem[itemId].owner == msg.sender,
@@ -409,19 +401,29 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     function makeAuctionBid(uint256 itemId) public payable nonReentrant {
-        require(
-            !idToMarketItem[itemId].auctionEnded,
-            "Auction For This NFT Has Ended"
-        );
-        require(
-            pendingReturns[itemId][msg.sender] == 0,
-            "You Already Have a Bid For This NFT"
-        );
 
         address prevHighestBidder = idToMarketItem[itemId].highestBidder;
         uint256 prevHighestBid = idToMarketItem[itemId].highestBid;
 
-        if (msg.value > prevHighestBid) {
+        require(
+            !idToMarketItem[itemId].auctionEnded,
+            "Auction Ended"
+        );
+        require(
+            pendingReturns[itemId][msg.sender] == 0,
+            "Already Existing Bid"
+        );
+
+        require(
+            msg.sender != idToMarketItem[itemId].owner,
+            "Invalid Bidder"
+        );
+
+        require(
+            msg.value > prevHighestBid,
+            "Invalid Bid"
+        );
+
             idToMarketItem[itemId].highestBidder = payable(msg.sender);
             idToMarketItem[itemId].highestBid = msg.value;
 
@@ -434,10 +436,6 @@ contract NFTMarket is ReentrancyGuard {
                 );
                 pendingReturns[itemId][prevHighestBidder] = prevHighestBid;
             }
-        } else {
-            pendingReturns[itemId][msg.sender] = msg.value;
-            idToMarketItem[itemId].pendingBidders.push(payable(msg.sender));
-        }
 
         emitEvent(itemId);
     }
@@ -445,13 +443,13 @@ contract NFTMarket is ReentrancyGuard {
     function withdrawAuctionBid(uint256 itemId) public nonReentrant {
         require(
             !idToMarketItem[itemId].auctionEnded,
-            "Auction For This NFT Has Ended"
+            "Auction Ended"
         );
 
         if (msg.sender != idToMarketItem[itemId].highestBidder) {
             require(
                 pendingReturns[itemId][msg.sender] > 0,
-                "You Don't Have Any Existing Bid To Withdraw On This NFT"
+                "Non Existing Bid"
             );
             uint256 paybackValue = pendingReturns[itemId][msg.sender];
             payable(msg.sender).transfer(paybackValue);
@@ -470,7 +468,7 @@ contract NFTMarket is ReentrancyGuard {
         } else {
             require(
                 idToMarketItem[itemId].highestBidder == msg.sender,
-                "You Don't Have Any Existing Bid To Withdraw On This NFT"
+                "Non Existing Bid"
             );
 
             uint256 prevHighestBid = idToMarketItem[itemId].highestBid;
@@ -520,11 +518,11 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     function makeOffer(uint256 itemId) public payable nonReentrant {
-        require(idToMarketItem[itemId].auctionEnded, "This NFT Is On Auction");
-        require(idToMarketItem[itemId].price == 0, "This NFT Is On Sale");
+        require(idToMarketItem[itemId].auctionEnded, "On Auction");
+        require(idToMarketItem[itemId].price == 0, "On Sale");
         require(
             pendingOffers[itemId][msg.sender] == 0,
-            "You Already Have an Offer For This NFT"
+            "Already Existing Offer"
         );
 
         pendingOffers[itemId][msg.sender] = msg.value;
@@ -534,11 +532,11 @@ contract NFTMarket is ReentrancyGuard {
     }
 
     function withdrawOffer(uint256 itemId) public nonReentrant {
-        require(idToMarketItem[itemId].auctionEnded, "This NFT Is On Auction");
-        require(idToMarketItem[itemId].price == 0, "This NFT Is On Sale");
+        require(idToMarketItem[itemId].auctionEnded, "On Auction");
+        require(idToMarketItem[itemId].price == 0, "On Sale");
         require(
             pendingOffers[itemId][msg.sender] > 0,
-            "You Don't Have Any Existing Offer To Withdraw On This NFT"
+            "Non Existing Offer"
         );
 
         uint256 paybackValue = pendingOffers[itemId][msg.sender];
@@ -565,7 +563,7 @@ contract NFTMarket is ReentrancyGuard {
     {
         require(
             idToMarketItem[itemId].owner == msg.sender,
-            "You Must Be The Owner Of This NFT To Reject The Offer"
+            "Ownership Not Verified"
         );
         // require(
         //     IERC721(idToMarketItem[itemId].nftContract).ownerOf(
@@ -573,11 +571,11 @@ contract NFTMarket is ReentrancyGuard {
         //     ) == msg.sender,
         //     "You Must Be The Owner Of This NFT To Reject The Offer"
         // );
-        require(idToMarketItem[itemId].auctionEnded, "This NFT Is On Auction");
-        require(idToMarketItem[itemId].price == 0, "This NFT Is On Sale");
+        require(idToMarketItem[itemId].auctionEnded, "On Auction");
+        require(idToMarketItem[itemId].price == 0, "On Sale");
         require(
             pendingOffers[itemId][_offeringAddress] > 0,
-            "This Address Don't Have Any Existing Offer To Reject On This NFT"
+            "Non Existing Offer"
         );
 
         uint256 paybackValue = pendingOffers[itemId][_offeringAddress];
@@ -679,21 +677,17 @@ contract NFTMarket is ReentrancyGuard {
     function rejectAllOffers(uint256 itemId) public nonReentrant {
         require(
             idToMarketItem[itemId].auctionEnded,
-            "This NFT is Currently on Auction."
+            "On Auction."
         );
         require(
             idToMarketItem[itemId].pendingOffers.length > 0,
-            "This NFT Doesn't Have Any Current Offers."
-        );
-        require(
-            idToMarketItem[itemId].owner == msg.sender,
-            "You Must Be The Owner Of This NFT To Cancel The Sale"
+            "No Existing Offers."
         );
         require(
             IERC721(idToMarketItem[itemId].nftContract).ownerOf(
                 idToMarketItem[itemId].tokenId
-            ) == msg.sender,
-            "You Must Be The Owner Of This NFT To Create A Market Item"
+            ) == msg.sender && idToMarketItem[itemId].owner == msg.sender,
+            "Ownership Not Verified"
         );
 
         address payable[] memory emptyArray;
@@ -727,7 +721,7 @@ contract NFTMarket is ReentrancyGuard {
     function cancelMarketSale(uint256 itemId) public nonReentrant {
         require(
             idToMarketItem[itemId].owner == msg.sender,
-            "You Must Be The Owner Of This NFT To Cancel The Sale"
+            "Ownership Not Verified"
         );
         // require(
         //     IERC721(idToMarketItem[itemId].nftContract).ownerOf(

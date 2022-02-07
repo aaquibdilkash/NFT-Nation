@@ -134,7 +134,7 @@ const User = ({ userProfile }) => {
   }, [user, currentProfile]);
 
   return (
-    <div className="bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl transform transition-all ease duration-500 m-4">
+    <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl transform transition-all ease duration-500 m-4">
       <div
         onClick={() => router.push(`/user-profile/${_id}`)}
         className="relative cursor-pointer w-25"

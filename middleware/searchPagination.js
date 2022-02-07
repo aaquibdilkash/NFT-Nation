@@ -9,7 +9,6 @@ class SearchPagination {
       ? type === "pins"
         ? {
             $or: [
-              // { _id: this.queryStr.keyword },
               { title: { $regex: this.queryStr.keyword, $options: "i" } },
               { about: { $regex: this.queryStr.keyword, $options: "i" } },
               { tokenId: { $regex: this.queryStr.keyword, $options: "i" } },
@@ -43,7 +42,6 @@ class SearchPagination {
         : type === "collections"
         ? {
             $or: [
-              // { _id: this.queryStr.keyword },
               { title: { $regex: this.queryStr.keyword, $options: "i" } },
               { about: { $regex: this.queryStr.keyword, $options: "i" } },
               {
@@ -62,7 +60,6 @@ class SearchPagination {
           }
         : {
             $or: [
-              // { _id: this.queryStr.keyword },
               { userName: { $regex: this.queryStr.keyword, $options: "i" } },
               { about: { $regex: this.queryStr.keyword, $options: "i" } },
               { _id: { $regex: this.queryStr.keyword, $options: "i" } },
@@ -102,10 +99,10 @@ class SearchPagination {
   sorted() {
     const sortMethod = this.queryStr.sort ?? "-createdAt";
     const keyword = sortMethod.includes("price")
-      ? { price: { $ne: "0.0" } }
+      ? { onSale: true, auctionEnded: true }
       : sortMethod.includes("bids")
-      ? { auctionEnded: false }
-      : {};
+      ? { auctionEnded: false, onSale: false }
+      : sortMethod.includes("offersCount") ? { auctionEnded: true, onSale: false } : {};
     this.query = this.query.find({ ...keyword }).sort(sortMethod);
     return this;
   }

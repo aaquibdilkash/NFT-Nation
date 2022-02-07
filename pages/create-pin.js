@@ -93,7 +93,7 @@ const CreatePin = () => {
   const [imageLoading, setImageLoading] = useState(false);
   const [destination, setDestination] = useState();
   const [category, setCategory] = useState();
-  const [fields, setFields] = useState();
+  // const [fields, setFields] = useState();
   const [fileUrl, setFileUrl] = useState("");
   const [sellOrAuct, setSellOrAuct] = useState("");
   const [wrongImageType, setWrongImageType] = useState(false);
@@ -205,17 +205,18 @@ const CreatePin = () => {
     if (
       !title ||
       !about ||
-      (sellOrAuct === "Mint NFT and Put on Sale" && !price.length) ||
+      (["Mint NFT and Put on Sale", "Mint NFT and Put on Auction"].includes(sellOrAuct) && !price.length) ||
       !fileUrl ||
       !category ||
       !sellOrAuct ||
       !checkAttributes()
     ) {
-      setFields(true);
+      // setFields(true);
 
-      setTimeout(() => {
-        setFields(false);
-      }, 2000);
+      // setTimeout(() => {
+      //   setFields(false);
+      // }, 2000);
+      toast.info(fillFieldsInfoMessage)
 
       return;
     }
@@ -405,6 +406,7 @@ const CreatePin = () => {
       title,
       about,
       category,
+      startingBid: price,
       image: fileUrl,
       createdBy: user?._id,
       attributes,
@@ -498,11 +500,12 @@ const CreatePin = () => {
     }
 
     if (!nftContract || !tokenId || !category) {
-      setFields(true);
+      // setFields(true);
 
-      setTimeout(() => {
-        setFields(false);
-      }, 2000);
+      // setTimeout(() => {
+      //   setFields(false);
+      // }, 2000);
+      toast.info(fillFieldsInfoMessage)
 
       return;
     }
@@ -676,11 +679,11 @@ const CreatePin = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex flex-col justify-center items-center mt-5 lg:h-4/5">
-        {fields && (
+        {/* {fields && (
           <p className="text-themeColor mb-5 text-xl transition-all duration-150 ease-in ">
             {fillFieldsInfoMessage}
           </p>
-        )}
+        )} */}
         {!importing && (
           <div className="rounded-lg flex lg:flex-col flex-col justify-center items-start bg-secondTheme lg:p-5 p-3 lg:w-3/5 w-full">
             <div className="rounded-lg p-3 flex flex-0.7 w-full">
@@ -847,13 +850,13 @@ const CreatePin = () => {
                     ))}
                   </select>
                 </div>
-                {sellOrAuct === "Mint NFT and Put on Sale" && (
+                {["Mint NFT and Put on Sale", "Mint NFT and Put on Auction"].includes(sellOrAuct) && (
                   <input
                     type="text"
                     value={price}
                     maxLength={10}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="Add a price for sale (in MATIC)"
+                    placeholder={sellOrAuct === "Mint NFT and Put on Sale" ? `Add A Price For Sale (in MATIC)` : `Add A Starting Bid For Auction (in MATIC)`}
                     className="outline-none mt-2 text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
                   />
                 )}
@@ -905,7 +908,7 @@ const CreatePin = () => {
                 })}
 
                 <div className="flex justify-end items-end mt-2 gap-2">
-                  {attributes?.length > 1 && (
+                  {attributes?.length > 0 && (
                     <button
                       type="button"
                       onClick={() => {

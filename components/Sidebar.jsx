@@ -7,7 +7,6 @@ import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import useSWR from "swr";
-import axios from "axios";
 
 const isNotActiveStyle =
   "font-semibold transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center px-5 gap-3 text-gray-500  hover:font-extrabold hover:text-textColor transition-all duration-200 ease-in-out capitalize hover:cursor-pointer";
@@ -48,7 +47,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
             />
           </div>
         </div>
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
           <div
             onClick={() => {
               router.push(
@@ -64,8 +63,8 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
             className={
               asPath === "/" ||
               (pathname === "/" &&
-                query?.page &&
-                Object.keys(query).length <= 1)
+                (query?.page || query?.type) &&
+                Object.keys(query).length <= 2)
                 ? isActiveStyle
                 : isNotActiveStyle
             }
@@ -119,8 +118,8 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
             </div>
             </Link>
 
-          <div className="flex flex-col gap-4">
-            <h3 className="mt-1 px-5 text-base 2xl:text-xl font-bold">
+          <div className="flex flex-col gap-3">
+            <h3 className="mt-1 px-5 text-lg font-bold">
               Discover Categories
             </h3>
             {sidebarCategories[`Discover Categories`].map((cat, index) => {
@@ -167,8 +166,8 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
             })}
           </div>
 
-          <div className="flex flex-col gap-4">
-            <h3 className="mt-1 px-5 text-base 2xl:text-xl font-bold">
+          <div className="flex flex-col gap-3">
+            <h3 className="mt-1 px-5 text-lg font-bold">
               Sort By
             </h3>
             {sidebarCategories[`Sort By`].map((cat, index) => {
@@ -181,7 +180,9 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
                     onClick={() => {
                       router.push(
                         {
-                          pathname: pathname,
+                          pathname: !feedPathArray.includes(pathname)
+                          ? "/"
+                          : pathname,
                           query: {
                             ...query,
                             ...query1.query,

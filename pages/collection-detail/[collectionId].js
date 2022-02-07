@@ -568,7 +568,7 @@ const CollectionDetail = () => {
             },
             {
               name: "Customize",
-              text: "Customize Collection",
+              text: "Add Minted NFTs",
               query: {
                 type: "pins",
                 createdBy: true

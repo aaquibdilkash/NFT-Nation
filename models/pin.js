@@ -102,6 +102,11 @@ const pinSchema = new mongoose.Schema({
     default: "0.0",
     trim: true,
   },
+  startingBid: {
+    type: String,
+    default: "0.0",
+    trim: true,
+  },
   title: {
     type: String,
     required: [true, "Please enter the title."],

@@ -55,6 +55,11 @@ export const getUserBid = (bids, user) => {
   return bids?.find((item) => item?.user?._id === user);
 };
 
+export const getCurrentBid = (currentBid = "0.0", startingBid = "0.0") => {
+  console.log(currentBid, startingBid, Math.max(currentBid, startingBid), "DDDDDDDDDDDDDDD")
+  return Math.max(currentBid, startingBid)
+}
+
 export const getNotificationStatus = (to, user) => {
   return to?.find((item) => item?.user === user);
 };
@@ -114,7 +119,7 @@ export const getEventData = (event) => {
     postedBy: owner.toString(),
     price: ethers.utils.formatEther(price).toString(),
     highestBidder: highestBidder.toString(),
-    highestBid: ethers.utils.formatEther(highestBid).toString(),
+    currentBid: ethers.utils.formatEther(highestBid).toString(),
     pendingBidders: pendingBidders,
     offers: pendingOffers,
     auctionEnded: Boolean(auctionEnded),

@@ -107,3 +107,4 @@ export const selectChoiceInfoMessage = `Please Select Your Choice!`
 export const enterValidNftAddressInfoMessage = `Please Enter A Valid NFT Contract Address!`
 export const enterValidTokenIdInfoMessage = `Please Enter A Valid Token ID!`
 export const pendingOffersInfoMessage = `Please Reject or Accept The Current Offers On This NFT!`
+export const bidAmountInfoMessage = `Your Bid Should Be Greater Than Current Bid!`

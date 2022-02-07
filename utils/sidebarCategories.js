@@ -18,7 +18,7 @@ import {
     FaUserAstronaut,
     FaVideo,
   } from "react-icons/fa";
-import { HiPhotograph } from "react-icons/hi";
+import { HiOutlineEmojiHappy, HiPhotograph } from "react-icons/hi";
 import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
   
   export const sidebarCategories = {
@@ -63,14 +63,14 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         },
         icon: <HiPhotograph className="" size={25} />,
       },
-      {
-        name: "Sports",
-        link: "/",
-        query: {
-          category: "Sports"
-        },
-        icon: <FaBaseballBall className="" size={25} />,
-      },
+      // {
+      //   name: "Sports",
+      //   link: "/",
+      //   query: {
+      //     category: "Sports"
+      //   },
+      //   icon: <FaBaseballBall className="" size={25} />,
+      // },
       {
         name: "Memes",
         link: "/",
@@ -164,6 +164,26 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
           },
         ],
         icon: <AiOutlineDollarCircle className="" size={25} />,
+      },
+      {
+        name: "Has Offers",
+        type: ["pins", undefined, ""],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-offersCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "offersCount"
+            }
+          },
+        ],
+        icon: <HiOutlineEmojiHappy className="" size={25} />,
       },
       {
         name: "Commented",

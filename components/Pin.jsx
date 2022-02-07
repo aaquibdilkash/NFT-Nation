@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import {
   buttonStyle,
-  etherAddress,
+  getCurrentBid,
   getImage,
   getIpfsImage,
   getUserName,
@@ -13,7 +13,6 @@ import {
 import {
   addToCollectionSuccessMessage,
   contractAddressCopiedMessage,
-  errorMessage,
   followErrorMessage,
   followSuccessMessage,
   loginMessage,
@@ -49,6 +48,8 @@ const Pin = ({ pin }) => {
     saved,
     commentsCount,
     currentBid,
+    startingBid,
+    offersCount,
     auctionEnded,
     onSale
   } = pin;
@@ -275,7 +276,7 @@ const Pin = ({ pin }) => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
+    <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
       <div
         onClick={() =>
           router.push(`/pin-detail/${_id}?type=pins&category=${category}`)
@@ -346,6 +347,11 @@ const Pin = ({ pin }) => {
           <p className="text-sm font-semibold">{about}</p>
         </div>
         <div className="flex flex-row px-2 py-1">
+          {offersCount > 0 && (
+            <span className={buttonStyle}>
+              {offersCount > 0 ? `Has ${offersCount} ${offersCount > 1 ? `Offers`: `Offer`}` : `Has No Offers`}
+            </span>
+          )}
           {(priceShowCondition || highestBidShowCondition) && (
             <span className={buttonStyle}>
               {priceShowCondition ? `On Sale` : `On Auction`}
@@ -355,10 +361,7 @@ const Pin = ({ pin }) => {
             <span className={buttonStyle}>
               {priceShowCondition
                 ? `${price} MATIC`
-                : `Current Bid: ${
-                    currentBid !== "0.0" ? `${currentBid} Matic`
-                      : `No Bids Yet`
-                  }`}
+                : `Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic`}
             </span>
           )}
         </div>
