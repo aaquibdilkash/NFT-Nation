@@ -379,7 +379,7 @@ const PinDetail = () => {
   }, [pinId, refresh]);
 
   useEffect(() => {
-    if(pinId) {
+    if (pinId) {
       if (tab === "comments") {
         fetchPinComments();
       } else if (tab === "history") {
@@ -399,7 +399,7 @@ const PinDetail = () => {
       .put(`/api/pins/${_id}`, body)
       .then((res) => {
         setAddingSellPrice(false);
-        setAddingBidPrice(false)
+        setAddingBidPrice(false);
         setInputPrice("");
         setRefresh((prev) => !prev);
         dispatch({
@@ -734,7 +734,7 @@ const PinDetail = () => {
       toast.info(validAmountErrorMessage);
       return;
     }
-    
+
     if (inputPrice <= getCurrentBid(currentBid, startingBid)) {
       toast.info(bidAmountInfoMessage);
       return;
@@ -1630,7 +1630,7 @@ const PinDetail = () => {
       condition: createMarketSaleCondition,
       function: () => {
         setAddingSellPrice((prev) => !prev);
-        setAddingBidPrice(false)
+        setAddingBidPrice(false);
       },
     },
     {
@@ -1642,12 +1642,15 @@ const PinDetail = () => {
       text: `Put On Auction`,
       condition: createMarketAuctionCondition,
       function: () => {
-        setAddingBidPrice((prev) => !prev)
-        setAddingSellPrice(false)
+        setAddingBidPrice((prev) => !prev);
+        setAddingSellPrice(false);
       },
     },
     {
-      text: `End Auction (Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic)`,
+      text: `End Auction (Current Bid: ${getCurrentBid(
+        currentBid,
+        startingBid
+      )} Matic)`,
       condition: executeMarketAuctionEndCondition,
       function: executeMarketAuctionEnd,
     },
@@ -1818,7 +1821,11 @@ const PinDetail = () => {
                         key={index}
                         onClick={() => item?.func()}
                       >
-                        <span className={`${buttonStyle} ${tab === item?.name ? `bg-[#009387]` : ``} text-xl`}>
+                        <span
+                          className={`${buttonStyle} ${
+                            tab === item?.name ? `bg-[#009387]` : ``
+                          } text-xl`}
+                        >
                           {item?.text}
                         </span>
                       </button>
@@ -1848,26 +1855,21 @@ const PinDetail = () => {
                     );
                 })}
 
-
-                {tab === "properties" &&
-                  pinProperties.length > 0 && (
-                    <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-                    {
-                        pinProperties?.map((item, index) => (
-                          <div
-                            key={index}
-                            className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-2 items-center bg-secondTheme rounded-lg justify-center text-center shadow-xl drop-shadow-xl"
-                          >
-                            <div className="flex flex-col py-4" key={index}>
-                              <h1 className="font-bold text-md">{item?.value}</h1>
-                              <h3 className="font-semibold text-sm">{`(${item?.trait_type})`}</h3>
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  )
-                  }
+                {tab === "properties" && pinProperties.length > 0 && (
+                  <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
+                    {pinProperties?.map((item, index) => (
+                      <div
+                        key={index}
+                        className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-2 items-center bg-secondTheme rounded-lg justify-center text-center shadow-xl drop-shadow-xl"
+                      >
+                        <div className="flex flex-col py-4" key={index}>
+                          <h1 className="font-bold text-md">{item?.value}</h1>
+                          <h3 className="font-semibold text-sm">{`(${item?.trait_type})`}</h3>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {tab === "bids" &&
                   pinBids?.length > 0 &&
@@ -2184,27 +2186,37 @@ const PinDetail = () => {
                 createdAt
               ).fromNow()}`}</span>
             </div>
-            {!(priceShowCondition || highestBidShowCondition) && (
-            <span className={buttonStyle}>
-              {offersCount > 0
-                ? `Has ${offersCount} ${offersCount > 1 ? `Offers` : `Offer`}`
-                : `No Offers Yet`}
-            </span>
-          )}
 
-          {highestBidShowCondition && (
-            <span className={buttonStyle}>
-              {bidsCount > 0
-                ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
-                : `No Bids Yet`}
-            </span>
-          )}
+            {!(priceShowCondition || highestBidShowCondition) && (
+              <div className="font-bold text-sm mr-2 mb-1">
+                <span className={buttonStyle}>
+                  {offersCount > 0
+                    ? `Has ${offersCount} ${
+                        offersCount > 1 ? `Offers` : `Offer`
+                      }`
+                    : `No Offers Yet`}
+                </span>
+              </div>
+            )}
+
+            {highestBidShowCondition && (
+              <div className="font-bold text-sm mr-2 mb-1">
+                <span className={buttonStyle}>
+                  {bidsCount > 0
+                    ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
+                    : `No Bids Yet`}
+                </span>
+              </div>
+            )}
             {(priceShowCondition || highestBidShowCondition) && (
               <div className="font-bold text-sm mr-2 mb-1">
                 <span className={buttonStyle}>
                   {priceShowCondition
                     ? `On Sale (Price: ${price} Matic)`
-                    : `On Auction (Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic)`}
+                    : `On Auction (Current Bid: ${getCurrentBid(
+                        currentBid,
+                        startingBid
+                      )} Matic)`}
                 </span>
               </div>
             )}
@@ -2335,7 +2347,11 @@ const PinDetail = () => {
                   <input
                     className=" flex-0.5 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
                     type="text"
-                    placeholder={(addingSellPrice && !addingBidPrice) ? `Price For Sale...` : `Starting Bid For Auction...`}
+                    placeholder={
+                      addingSellPrice && !addingBidPrice
+                        ? `Price For Sale...`
+                        : `Starting Bid For Auction...`
+                    }
                     maxLength={10}
                     value={inputPrice}
                     onChange={(e) => setInputPrice(e.target.value)}
@@ -2344,7 +2360,9 @@ const PinDetail = () => {
                     type="button"
                     className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
                     onClick={() => {
-                      (addingSellPrice && !addingBidPrice) ? createMarketSale() : createMarketAuction()
+                      addingSellPrice && !addingBidPrice
+                        ? createMarketSale()
+                        : createMarketAuction();
                     }}
                   >
                     {`Confirm`}
