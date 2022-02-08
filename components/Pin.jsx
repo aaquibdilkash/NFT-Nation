@@ -24,7 +24,11 @@ import {
 import axios from "axios";
 import { COLLECTION_SET, USER_GET_SUCCESS } from "../redux/constants/UserTypes";
 import Image from "next/image";
-import { AiFillHeart, AiOutlineHeart, AiOutlineLoading3Quarters } from "react-icons/ai";
+import {
+  AiFillHeart,
+  AiOutlineHeart,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 import { toast } from "react-toastify";
 import moment from "moment";
 
@@ -50,15 +54,14 @@ const Pin = ({ pin }) => {
     currentBid,
     startingBid,
     offersCount,
+    bidsCount,
     auctionEnded,
-    onSale
+    onSale,
   } = pin;
 
-  const priceShowCondition =
-    price !== "0.0" && onSale && auctionEnded;
+  const priceShowCondition = price !== "0.0" && onSale && auctionEnded;
 
-  const highestBidShowCondition =
-    price === "0.0" && !onSale && !auctionEnded;
+  const highestBidShowCondition = price === "0.0" && !onSale && !auctionEnded;
 
   const router = useRouter();
   const { query } = router;
@@ -78,8 +81,8 @@ const Pin = ({ pin }) => {
       return;
     }
 
-    if(savingPost) {
-      return
+    if (savingPost) {
+      return;
     }
 
     setSavingPost(true);
@@ -88,11 +91,10 @@ const Pin = ({ pin }) => {
         user: user?._id,
       })
       .then((res) => {
-
         if (!alreadySaved) {
           let to = [...user?.followers, createdBy?._id, postedBy?._id];
           to = [...new Set(to)];
-          to = to.filter((item) => item !== user?._id);          
+          to = to.filter((item) => item !== user?._id);
           to = to.map((item) => ({ user: item }));
           const obj = {
             type: "New Save",
@@ -147,8 +149,8 @@ const Pin = ({ pin }) => {
       return;
     }
 
-    if(following) {
-      return
+    if (following) {
+      return;
     }
 
     setFollowing(true);
@@ -157,23 +159,26 @@ const Pin = ({ pin }) => {
         user: user?._id,
       })
       .then((res) => {
-
-        if(!alreadyFollowed) {
-          let to = [postedBy?._id, ...user?.followers]
-          to = [...new Set(to)]
-          to = to.filter((item) => item !== user?._id)
-          to = to.map((item) => ({user: item}))
+        if (!alreadyFollowed) {
+          let to = [postedBy?._id, ...user?.followers];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
           const obj = {
             type: "New Follow",
             byUser: user?._id,
             toUser: postedBy?._id,
-            to
-          }
-          sendNotifications(obj, (res) => {
-            // console.log(res)
-          }, (e) => {
-            // console.log(e, "DDDDDDDDDDddddd")
-          })
+            to,
+          };
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res)
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd")
+            }
+          );
         }
 
         setFollowing(false);
@@ -212,15 +217,14 @@ const Pin = ({ pin }) => {
       return;
     }
 
-    if(addingPost) {
-      return
+    if (addingPost) {
+      return;
     }
 
     setAddingPost(true);
     axios
       .put(`/api/collections/pins/${collection?._id}/${_id}`)
       .then((res) => {
-
         if (!alreadyAdded) {
           let to = [...user?.followers, createdBy?._id, postedBy?._id];
           to = [...new Set(to)];
@@ -318,53 +322,70 @@ const Pin = ({ pin }) => {
                 }}
                 className={buttonStyle}
               >
-                {!following ? `${alreadyFollowed ? `UnFollow` : `Follow`}` : (
+                {!following ? (
+                  `${alreadyFollowed ? `UnFollow` : `Follow`}`
+                ) : (
                   <AiOutlineLoading3Quarters
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // savePin();
-                  }}
-                  className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                  size={15}
-                />
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // savePin();
+                    }}
+                    className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                    size={15}
+                  />
                 )}
               </span>
             )}
           </div>
         </div>
-          <Image
-            placeholder="blur"
-            blurDataURL="/favicon.png"
-            height={200}
-            width={180}
-            layout="responsive"
-            className="rounded-lg w-full"
-            src={getImage(image)}
-            alt={`${title}`}
-          />
+        <Image
+          placeholder="blur"
+          blurDataURL="/favicon.png"
+          height={200}
+          width={180}
+          layout="responsive"
+          className="rounded-lg w-full"
+          src={getImage(image)}
+          alt={`${title}`}
+        />
         <div className="p-6 pb-0">
           <h2 className="text-sm text-gray-800 font-semibold">{`#${tokenId} ${title}`}</h2>
           <p className="text-sm font-semibold">{about}</p>
         </div>
+
         <div className="flex flex-row px-2 py-1">
-          {offersCount > 0 && (
+          {!(priceShowCondition || highestBidShowCondition) && (
             <span className={buttonStyle}>
-              {offersCount > 0 ? `Has ${offersCount} ${offersCount > 1 ? `Offers`: `Offer`}` : `Has No Offers`}
+              {offersCount > 0
+                ? `Has ${offersCount} ${offersCount > 1 ? `Offers` : `Offer`}`
+                : `No Offers Yet`}
             </span>
           )}
-          {(priceShowCondition || highestBidShowCondition) && (
+
+          {highestBidShowCondition && (
             <span className={buttonStyle}>
-              {priceShowCondition ? `On Sale` : `On Auction`}
-            </span>
-          )}
-          {(priceShowCondition || highestBidShowCondition) && (
-            <span className={buttonStyle}>
-              {priceShowCondition
-                ? `${price} MATIC`
-                : `Current Bid: ${getCurrentBid(currentBid, startingBid)} Matic`}
+              {bidsCount > 0
+                ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
+                : `No Bids Yet`}
             </span>
           )}
         </div>
+
+        {(priceShowCondition || highestBidShowCondition) && (
+          <div className="flex flex-row px-2 pb-1">
+            <span className={buttonStyle}>
+              {priceShowCondition ? `On Sale` : `On Auction`}
+            </span>
+            <span className={buttonStyle}>
+              {priceShowCondition
+                ? `${price} MATIC`
+                : `Current Bid: ${getCurrentBid(
+                    currentBid,
+                    startingBid
+                  )} Matic`}
+            </span>
+          </div>
+        )}
 
         <div className="flex flex-row px-2 pb-1">
           <span
@@ -445,15 +466,14 @@ const Pin = ({ pin }) => {
                 </span>
               ) : (
                 <AiOutlineLoading3Quarters
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // savePin();
-                      }}
-                      className="animate-spin text-[#000000] drop-shadow-lg cursor-pointer"
-                      size={22}
-                    />
-              )
-            }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // savePin();
+                  }}
+                  className="animate-spin text-[#000000] drop-shadow-lg cursor-pointer"
+                  size={22}
+                />
+              )}
               <span>{savedLength}</span>
             </div>
             <div className="flex space-x-1 items-center">
@@ -466,17 +486,17 @@ const Pin = ({ pin }) => {
                   className={buttonStyle}
                 >
                   {!addingPost ? (
-                  `${alreadyAdded ? `Remove` : `Add`}`
-                ) : (
-                  <AiOutlineLoading3Quarters
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // savePin();
-                    }}
-                    className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                    size={15}
-                  />
-                )}
+                    `${alreadyAdded ? `Remove` : `Add`}`
+                  ) : (
+                    <AiOutlineLoading3Quarters
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // savePin();
+                      }}
+                      className="mx-6 font-bold animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                      size={15}
+                    />
+                  )}
                 </span>
               )}
             </div>

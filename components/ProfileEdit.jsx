@@ -29,6 +29,7 @@ import {
   fileUploadErrorMessage,
   fillFieldsInfoMessage,
   profileUpdatedSuccessMessage,
+  userNameTakenInfoMessage,
 } from "../utils/messages";
 
 // const ipfsClient = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0");
@@ -165,7 +166,11 @@ const ProfileEdit = ({ setEditing }) => {
       })
       .catch((e) => {
         setSaving(false);
-        toast.error(errorMessage);
+        if(e?.response?.data?.includes("E11000 duplicate key error")) {
+          toast.info(userNameTakenInfoMessage)
+        } else {
+          toast.error(errorMessage);
+        }
         // console.log("Error in updating profile: ", e);
       });
   };

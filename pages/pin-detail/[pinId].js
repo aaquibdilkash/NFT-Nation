@@ -145,6 +145,8 @@ const PinDetail = () => {
     title,
     about,
     currentBid,
+    bidsCount,
+    offersCount,
     startingBid,
     saved,
     commentsCount,
@@ -166,6 +168,8 @@ const PinDetail = () => {
     title: "",
     about: "",
     currentBid: "",
+    bidsCount: 0,
+    offersCount: 0,
     startingBid: "",
     saved: [],
     commentsCount: 0,
@@ -375,18 +379,20 @@ const PinDetail = () => {
   }, [pinId, refresh]);
 
   useEffect(() => {
-    if (tab === "comments") {
-      fetchPinComments();
-    } else if (tab === "history") {
-      fetchPinHistory();
-    } else if (tab === "offers") {
-      fetchPinOffers();
-    } else if (tab === "bids") {
-      fetchPinBids();
-    } else if (tab === "properties") {
-      // fetchPinProperties();
+    if(pinId) {
+      if (tab === "comments") {
+        fetchPinComments();
+      } else if (tab === "history") {
+        fetchPinHistory();
+      } else if (tab === "offers") {
+        fetchPinOffers();
+      } else if (tab === "bids") {
+        fetchPinBids();
+      } else if (tab === "properties") {
+        // fetchPinProperties();
+      }
     }
-  }, [tab]);
+  }, [tab, pinId]);
 
   const updatePin = (body) => {
     axios
@@ -1808,11 +1814,11 @@ const PinDetail = () => {
                   if (item?.condition)
                     return (
                       <button
-                        className="mt-1"
+                        className={`mt-1`}
                         key={index}
                         onClick={() => item?.func()}
                       >
-                        <span className={`${buttonStyle} text-xl`}>
+                        <span className={`${buttonStyle} ${tab === item?.name ? `bg-[#009387]` : ``} text-xl`}>
                           {item?.text}
                         </span>
                       </button>
@@ -2178,6 +2184,21 @@ const PinDetail = () => {
                 createdAt
               ).fromNow()}`}</span>
             </div>
+            {!(priceShowCondition || highestBidShowCondition) && (
+            <span className={buttonStyle}>
+              {offersCount > 0
+                ? `Has ${offersCount} ${offersCount > 1 ? `Offers` : `Offer`}`
+                : `No Offers Yet`}
+            </span>
+          )}
+
+          {highestBidShowCondition && (
+            <span className={buttonStyle}>
+              {bidsCount > 0
+                ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
+                : `No Bids Yet`}
+            </span>
+          )}
             {(priceShowCondition || highestBidShowCondition) && (
               <div className="font-bold text-sm mr-2 mb-1">
                 <span className={buttonStyle}>

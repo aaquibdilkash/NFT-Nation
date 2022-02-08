@@ -98,7 +98,7 @@ const markNotificationDeleted = catchAsyncErrors(async (req, res) => {
 
   let notification = await Notification.findById(notificationId);
 
-  console.log(userId, notificationId, notification?.to);
+  // console.log(userId, notificationId, notification?.to);
 
   if (!notification) {
     return res.status(404).json({

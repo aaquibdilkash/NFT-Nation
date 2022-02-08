@@ -20,6 +20,7 @@ import {
   } from "react-icons/fa";
 import { HiOutlineEmojiHappy, HiPhotograph } from "react-icons/hi";
 import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
+import { MdEmojiEmotions, MdEmojiEvents } from "react-icons/md";
   
   export const sidebarCategories = {
     "Discover Categories": [
@@ -146,7 +147,7 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
         icon: <AiFillDollarCircle className="" size={28} />,
       },
       {
-        name: "Auction Bid",
+        name: "Current Bid",
         type: ["pins", undefined, ""],
         link: "/",
         array: [
@@ -164,6 +165,26 @@ import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "r
           },
         ],
         icon: <AiOutlineDollarCircle className="" size={25} />,
+      },
+      {
+        name: "Auction Bids",
+        type: ["pins", undefined, ""],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-bidsCount"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "bidsCount"
+            }
+          },
+        ],
+        icon: <MdEmojiEvents className="" size={25} />,
       },
       {
         name: "Has Offers",

@@ -109,7 +109,7 @@ const Feed = () => {
         if (axios.isCancel(e)) {
         } else {
           setLoading(false);
-          toast.error(errorMessage);
+          // toast.error(errorMessage);
           console.log(e)
         }
       });

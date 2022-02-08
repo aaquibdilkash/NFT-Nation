@@ -66,7 +66,7 @@ const UserProfilePage = () => {
             pathname: pathname,
             query: {
               userId,
-              postedBy: _id,
+              postedBy: true,
             },
           },
           undefined,
@@ -223,7 +223,7 @@ const UserProfilePage = () => {
           text: "Owned NFTs",
           condition: true,
           query: {
-            postedBy: _id,
+            postedBy: true,
           },
         },
         {

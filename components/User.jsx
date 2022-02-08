@@ -14,6 +14,7 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import moment from "moment";
 import {
+  CURRENT_PROFILE_SET,
   GIFTING_USER_SET,
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
@@ -116,6 +117,15 @@ const User = ({ userProfile }) => {
           followers: filteredFollowers,
           followersCount: filteredFollowers.length,
         }));
+
+        // dispatch({
+        //   type: CURRENT_PROFILE_SET,
+        //   payload: {
+        //     ...currentProfile,
+        //     followers: filteredFollowers,
+        //     followersCount: filteredFollowers.length,
+        //   },
+        // });
 
         // setAlreadyFollowed((prev) => !prev);
       })

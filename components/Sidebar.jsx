@@ -178,6 +178,8 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
                   <div
                     key={index}
                     onClick={() => {
+
+                        console.log(JSON.stringify(query?.sort), JSON.stringify(array[1].query.sort), JSON.stringify(array[0].query.sort))
                       router.push(
                         {
                           pathname: !feedPathArray.includes(pathname)
@@ -194,8 +196,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
                       handleCloseSidebar();
                     }}
                     className={
-                      // isSubset(query, cat?.query)
-                      query?.sort?.includes(array[1].query.sort)
+                      [array[0].query.sort, array[1].query.sort].includes(query?.sort)
                         ? isActiveStyle
                         : isNotActiveStyle
                     }

@@ -205,7 +205,7 @@ const getCommentsPin = catchAsyncErrors(async (req, res) => {
     .select("comments")
     .populate("comments.user", "_id userName image");
 
-    console.log(pin, "DDDDDDDDDDDDDd")
+    // console.log(pin, "DDDDDDDDDDDDDd")
 
   if (!pin) {
     return res.status(404).json({

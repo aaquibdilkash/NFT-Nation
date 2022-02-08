@@ -23,7 +23,7 @@ export const parseAmount = (amount) => {
   return ethers.utils.parseUnits(amount, "ether")
 }
 
-export const buttonStyle = "text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer shadow-xl drop-shadow-lg";
+export const buttonStyle = "transition duration-200 ease transform hover:-translate-y-1 text-[#ffffff] text-xs font-bold rounded-lg bg-themeColor inline-block mt-0 ml-1 py-1.5 px-2 cursor-pointer shadow-xl drop-shadow-lg";
 
 export const formButtonStyles = "w-full transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg bg-themeColor text-secondTheme font-bold p-2 rounded-lg w-auto outline-none"
 
@@ -56,7 +56,6 @@ export const getUserBid = (bids, user) => {
 };
 
 export const getCurrentBid = (currentBid = "0.0", startingBid = "0.0") => {
-  console.log(currentBid, startingBid, Math.max(currentBid, startingBid), "DDDDDDDDDDDDDDD")
   return Math.max(currentBid, startingBid)
 }
 

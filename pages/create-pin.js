@@ -8,6 +8,7 @@ import { ethers } from "ethers";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import {
+  buttonStyle,
   formButtonStyles,
   getEventData,
   getImage,
@@ -64,6 +65,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import Head from "next/head";
 import { toast } from "react-toastify";
+import { FaInfoCircle } from "react-icons/fa";
 
 // const projectId = process.env.INFURA_PROJECT_ID
 // const projectSecret = process.env.INFURA_PROJECT_SECRET
@@ -939,6 +941,30 @@ const CreatePin = () => {
                   )}
                 </div>
 
+                <div className="flex flex-wrap md:flex-wrap justify-between mt-5 gap-2">
+                <div className="flex flex-col justify-center items-start  mt-5 gap-2">
+                  <div className="flex flex-row">
+                  <span
+                    className={buttonStyle}
+                  >
+                    <FaInfoCircle size={15} className="mr-2 inline"/>
+                    0% Minting Fee
+                  </span>
+                  <span
+                    className={buttonStyle}
+                  >
+                    <FaInfoCircle size={15} className="mr-2 inline"/>
+                    0% Buying Fee
+                  </span>
+                  </div>
+                  <span
+                    className={buttonStyle}
+                  >
+                    <FaInfoCircle size={15} className="mr-2 inline"/>
+                    1% Platform Fee Will Only Be Deducted When You Earn
+                  </span>
+                </div>
+
                 <div className="flex justify-end items-end mt-5 gap-2">
                   <button
                     type="button"
@@ -957,6 +983,7 @@ const CreatePin = () => {
                   >
                     Mint NFT
                   </button>
+                </div>
                 </div>
               </div>
             </div>
