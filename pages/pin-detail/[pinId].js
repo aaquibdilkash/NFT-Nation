@@ -328,7 +328,7 @@ const PinDetail = () => {
       });
   };
 
-  const { data, error } = useSWR(`/api/pins/${pinId}`, fetcher, {
+  const { data, error } = useSWR(() => pinId ? `/api/pins/${pinId}` : null, fetcher, {
     refreshInterval: 15000,
     onSuccess: (data, key, config) => {
       setPinDetail(data?.pin);
