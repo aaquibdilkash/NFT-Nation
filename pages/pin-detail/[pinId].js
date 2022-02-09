@@ -1515,6 +1515,7 @@ const PinDetail = () => {
 
           let to = [
             ...pinComments.map((item) => item?.user?._id),
+            ...commentReplies.map((item) => item?.user?._id),
             ...user?.followers,
             createdBy?._id,
             postedBy?._id,
@@ -1526,6 +1527,7 @@ const PinDetail = () => {
           const obj = {
             type: "New Reply",
             byUser: user?._id,
+            toUser: showCommentReplies?.user?._id,
             pin: _id,
             to,
           };

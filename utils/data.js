@@ -220,6 +220,8 @@ export const getNotificationDescription = (item) => {
       return `${getUserName(byUser?.userName)} saved the ${pin ? `NFT "${pin?.title}"` : `Collection "${pinCollection?.title}"`}.`
     case "New Comment":
       return `${getUserName(byUser?.userName)} commented on the ${pin ? `NFT "${pin?.title}"` : `Collection "${pinCollection?.title}"`}.`
+    case "New Reply":
+      return `${getUserName(byUser?.userName)} replied to ${getUserName(toUser?.userName)} on the ${pin ? `NFT "${pin?.title}"` : `Collection "${pinCollection?.title}"`}.`
     case "New Bid":
       return `${getUserName(byUser?.userName)} made bid of ${price} Matic on NFT "${pin?.title}".`
     case "New Offer":

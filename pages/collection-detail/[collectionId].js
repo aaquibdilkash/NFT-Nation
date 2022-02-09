@@ -281,6 +281,7 @@ const CollectionDetail = () => {
 
           let to = [
             ...collectionComments.map((item) => item?.user?._id),
+            ...commentReplies.map((item) => item?.user?._id),
             ...user?.followers,
             createdBy?._id,
           ];
@@ -289,8 +290,9 @@ const CollectionDetail = () => {
           to = to.map((item) => ({ user: item }));
 
           const obj = {
-            type: "New Comment",
+            type: "New Reply",
             byUser: user?._id,
+            toUser: showCommentReplies?.user?._id,
             pinCollection: _id,
             to,
           };
