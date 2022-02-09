@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
-import { buttonStyle, getImage, getUserName, sendNotifications, tabButtonStyles } from "../../utils/data";
+import {
+  buttonStyle,
+  getImage,
+  getUserName,
+  sendNotifications,
+  tabButtonStyles,
+} from "../../utils/data";
 import {
   commentAddErrorMessage,
   commentAddSuccessMessage,
@@ -17,7 +23,13 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import { FaBackspace, FaBackward, FaReply, FaReplyAll, FaShareAlt } from "react-icons/fa";
+import {
+  FaBackspace,
+  FaBackward,
+  FaReply,
+  FaReplyAll,
+  FaShareAlt,
+} from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import {
@@ -30,7 +42,7 @@ import { COLLECTION_SET } from "../../redux/constants/UserTypes";
 import CollectionEdit from "../../components/CollectionEdit";
 import { MdDeleteForever } from "react-icons/md";
 import moment from "moment";
-
+import CommentSection from "../../components/CommentSection";
 
 const CollectionDetail = () => {
   const router = useRouter();
@@ -90,7 +102,9 @@ const CollectionDetail = () => {
   const deleteCommentReply = (id) => {
     setDeletingComment(id);
     axios
-      .delete(`/api/collections/comments/reply/${collectionId}/${showCommentReplies?._id}/${id}`)
+      .delete(
+        `/api/collections/comments/reply/${collectionId}/${showCommentReplies?._id}/${id}`
+      )
       .then((res) => {
         fetchCollectionCommentReplies();
         setDeletingComment("");
@@ -123,7 +137,9 @@ const CollectionDetail = () => {
     setSideLoading(true);
     setLoadingMessage(fetchingCommentsLoadingMessage);
     axios
-      .get(`/api/collections/comments/reply/${collectionId}/${showCommentReplies?._id}`)
+      .get(
+        `/api/collections/comments/reply/${collectionId}/${showCommentReplies?._id}`
+      )
       .then((res) => {
         setCommentReplies(res?.data?.comments);
         setSideLoading(false);
@@ -172,13 +188,13 @@ const CollectionDetail = () => {
 
   useEffect(() => {
     user?._id && setAlreadySaved(saved?.find((item) => item === user?._id));
-    setShowCommentReplies({})
+    setShowCommentReplies({});
   }, [user, collection]);
 
   useEffect(() => {
     collectionId && fetchCollectionDetails();
     collectionId && fetchCollectionComments();
-    setShowCommentReplies({})
+    setShowCommentReplies({});
   }, [collectionId, refresh]);
 
   useEffect(() => {
@@ -206,24 +222,31 @@ const CollectionDetail = () => {
           fetchCollectionComments();
           toast.success(commentAddSuccessMessage);
 
-          let to = [...collectionComments.map(item => item?.user?._id), ...user?.followers, createdBy?._id]
-          to = [...new Set(to)]
-          to = to.filter((item) => item !== user?._id)
-          to = to.map((item) => ({user: item}))
+          let to = [
+            ...collectionComments.map((item) => item?.user?._id),
+            ...user?.followers,
+            createdBy?._id,
+          ];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
 
           const obj = {
             type: "New Comment",
             byUser: user?._id,
             pinCollection: _id,
-            to
-          }
+            to,
+          };
 
-          sendNotifications(obj, (res) => {
-            // console.log(res)
-          }, (e) => {
-            // console.log(e, "DDDDDDDDDDddddd")
-          })
-
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res)
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd")
+            }
+          );
         })
         .catch((e) => {
           setAddingComment(false);
@@ -242,10 +265,13 @@ const CollectionDetail = () => {
       setAddingComment(true);
 
       axios
-        .post(`/api/collections/comments/reply/${collectionId}/${showCommentReplies?._id}`, {
-          user: user?._id,
-          comment,
-        })
+        .post(
+          `/api/collections/comments/reply/${collectionId}/${showCommentReplies?._id}`,
+          {
+            user: user?._id,
+            comment,
+          }
+        )
         .then(() => {
           setAddingComment(false);
           setComment("");
@@ -253,24 +279,31 @@ const CollectionDetail = () => {
           fetchCollectionCommentReplies();
           toast.success(commentAddSuccessMessage);
 
-          let to = [...collectionComments.map(item => item?.user?._id), ...user?.followers, createdBy?._id]
-          to = [...new Set(to)]
-          to = to.filter((item) => item !== user?._id)
-          to = to.map((item) => ({user: item}))
+          let to = [
+            ...collectionComments.map((item) => item?.user?._id),
+            ...user?.followers,
+            createdBy?._id,
+          ];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
 
           const obj = {
             type: "New Comment",
             byUser: user?._id,
             pinCollection: _id,
-            to
-          }
+            to,
+          };
 
-          sendNotifications(obj, (res) => {
-            // console.log(res)
-          }, (e) => {
-            // console.log(e, "DDDDDDDDDDddddd")
-          })
-
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res)
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd")
+            }
+          );
         })
         .catch((e) => {
           setAddingComment(false);
@@ -295,7 +328,6 @@ const CollectionDetail = () => {
         user: user?._id,
       })
       .then((res) => {
-
         if (!alreadySaved) {
           let to = [...user?.followers, createdBy?._id];
           to = [...new Set(to)];
@@ -319,7 +351,6 @@ const CollectionDetail = () => {
             }
           );
         }
-
 
         setSavingPost(false);
         // toast.success(alreadySaved ? unsaveSuccessMessage : saveSuccessMessage);
@@ -382,7 +413,7 @@ const CollectionDetail = () => {
             />
 
             <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
-              <div className="flex flex-wrap justify-center lg:gap-2">
+              <div className="flex flex-wrap justify-center mb-2 lg:gap-2">
                 {[
                   {
                     name: "comments",
@@ -430,307 +461,75 @@ const CollectionDetail = () => {
                       // message={`Please Do Not Leave This Page...`}
                     />
                   )}
-                {tab === "comments" &&
-                  !showCommentReplies?._id &&
-                  collectionComments.length > 0 &&
-                  collectionComments?.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-2 bg-secondTheme rounded-lg"
-                    >
-                      {item?.user?._id && (
-                        <>
-                          <div className="flex gap-2">
-                            <Link
-                              onClick={() =>
-                                router.push(`/user-profile/${item?.user?._id}`)
-                              }
-                              href={`/user-profile/${item?.user?._id}`}
-                            >
-                              <div className="flex flex-row gap-2 items-center cursor-pointer">
-                                <Image
-                                  height={30}
-                                  width={30}
-                                  src={getImage(item?.user?.image)}
-                                  className="w-12 h-12 rounded-full"
-                                  alt="user-profile"
-                                />
-                                <p className="font-bold text-sm">
-                                  {getUserName(item?.user?.userName)}
-                                </p>
-                              </div>
-                            </Link>
-                            <div className="flex ml-auto items-center">
-                              <p className="font-bold text-xs">
-                                {moment(item?.createdAt).fromNow()}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-start ml-10">
-                        <p className="font-semibold text-sm">{item.comment}</p>
-                      </div>
-                      <div
-                        className="flex justify-center items-center cursor-pointer ml-10"
-                      >
-                        <div
-                          onClick={(e) => {
-                            setShowCommentReplies(item);
-                          }}
-                          className="flex flex-row"
-                        >
-                          <FaReply size={15} className="cursor-pointer mr-1" />
-                          <p className="text-sm font-semibold">{`${
-                            item?.repliesCount
-                          } ${
-                            item?.repliesCount !== 1 ? `replies` : `reply`
-                          }`}</p>
-                        </div>
 
-                        {item?.user?._id === user?._id && (
-                          <div className="flex ml-auto">
-                            {deletingComment !== item?._id ? (
-                              <MdDeleteForever
-                                onClick={() => {
-                                  deleteComment(item?._id);
-                                }}
-                                size={25}
-                                className="cursor-pointer text-[#a83f39]"
-                              />
-                            ) : (
-                              <AiOutlineLoading3Quarters
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                }}
-                                size={25}
-                                className="animate-spin cursor-pointer text-[#ff7f7f]"
-                              />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              {tab === "comments" && showCommentReplies?._id && (
-                  <div className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-2 bg-secondTheme rounded-lg">
-                    {showCommentReplies?.user?._id && (
-                      <>
-                        <div className="flex gap-2">
-                          <Link
-                            onClick={() =>
-                              router.push(
-                                `/user-profile/${showCommentReplies?.user?._id}`
-                              )
-                            }
-                            href={`/user-profile/${showCommentReplies?.user?._id}`}
-                          >
-                            <div className="flex flex-row gap-2 items-center cursor-pointer">
-                              <Image
-                                height={30}
-                                width={30}
-                                src={getImage(showCommentReplies?.user?.image)}
-                                className="w-12 h-12 rounded-full"
-                                alt="user-profile"
-                              />
-                              <p className="font-bold text-sm">
-                                {getUserName(
-                                  showCommentReplies?.user?.userName
-                                )}
-                              </p>
-                            </div>
-                          </Link>
-                          <div className="flex ml-auto items-center">
-                            <p className="font-bold text-xs">
-                              {moment(showCommentReplies?.createdAt).fromNow()}
-                            </p>
-                          </div>
+                <CommentSection
+                  user={user}
+                  tab={tab}
+                  showCommentReplies={showCommentReplies}
+                  setShowCommentReplies={setShowCommentReplies}
+                  commentsArr={collectionComments}
+                  deletingComment={deletingComment}
+                  deleteComment={deleteComment}
+                  commentReplies={commentReplies}
+                  setCommentReplies={setCommentReplies}
+                  deleteCommentReply={deleteCommentReply}
+                />
+                
+              </div>
+                {tab === "comments" && (
+                  <div className="flex flex-wrap mt-2 gap-3">
+                    {user?._id && (
+                      <Link href={`/user-profile/${user?._id}`}>
+                        <div>
+                          <Image
+                            height={45}
+                            width={45}
+                            src={getImage(user?.image)}
+                            className="w-14 h-14 rounded-full cursor-pointer pt-2"
+                            alt="user-profile"
+                          />
                         </div>
-                      </>
+                      </Link>
                     )}
-                    <div className="flex justify-start ml-10">
-                      <p className="font-semibold text-sm">
-                        {showCommentReplies.comment}
-                      </p>
-                    </div>
-                    <div
-                      
-                      className="flex justify-center items-center cursor-pointer ml-10"
+                    <input
+                      className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
+                      type="text"
+                      placeholder={
+                        !showCommentReplies?._id
+                          ? "Add a Comment"
+                          : "Add a Reply"
+                      }
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                      onClick={() => {
+                        !showCommentReplies?._id
+                          ? addComment()
+                          : addCommentReply(showCommentReplies?._id);
+                      }}
                     >
-                      <div onClick={() => {
-                        setShowCommentReplies(showCommentReplies);
-                      }} className="flex flex-row">
-                        <FaReply
+                      {!addingComment ? (
+                        !showCommentReplies?._id ? (
+                          "Comment"
+                        ) : (
+                          "Reply"
+                        )
+                      ) : (
+                        <AiOutlineLoading3Quarters
                           onClick={(e) => {
                             e.stopPropagation();
+                            // savePin();
                           }}
-                          size={15}
-                          className="cursor-pointer mr-1"
+                          className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                          size={20}
                         />
-                        <p className="text-sm font-semibold">{`${
-                          showCommentReplies?.repliesCount
-                        } ${
-                          showCommentReplies?.repliesCount !== 1
-                            ? `replies`
-                            : `reply`
-                        }`}</p>
-                      </div>
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowCommentReplies({});
-                          setCommentReplies([]);
-                        }}
-                        className="flex flex-row"
-                      >
-                        <FaReplyAll
-                          size={15}
-                          className="cursor-pointer mr-1 ml-4"
-                        />
-                        <p className="text-sm font-semibold">{`Go Back`}</p>
-                      </div>
-
-                      {showCommentReplies?.user?._id === user?._id && (
-                        <div className="flex ml-auto">
-                          {deletingComment !== showCommentReplies?._id ? (
-                            <MdDeleteForever
-                              onClick={() => {
-                                deleteComment(showCommentReplies?._id);
-                              }}
-                              size={25}
-                              className="cursor-pointer text-[#a83f39] shadow-xl drop-shadow-lg rounded-full"
-                            />
-                          ) : (
-                            <AiOutlineLoading3Quarters
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              size={25}
-                              className="animate-spin cursor-pointer text-[#ff7f7f]"
-                            />
-                          )}
-                        </div>
                       )}
-                    </div>
-                    {commentReplies.length > 0 &&
-                      commentReplies?.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-2 ml-7 bg-secondTheme rounded-lg"
-                        >
-                          {item?.user?._id && (
-                            <>
-                              <div className="flex gap-2">
-                                <Link
-                                  onClick={() =>
-                                    router.push(
-                                      `/user-profile/${item?.user?._id}`
-                                    )
-                                  }
-                                  href={`/user-profile/${item?.user?._id}`}
-                                >
-                                  <div className="flex flex-row gap-2 items-center cursor-pointer">
-                                    <Image
-                                      height={30}
-                                      width={30}
-                                      src={getImage(item?.user?.image)}
-                                      className="w-12 h-12 rounded-full"
-                                      alt="user-profile"
-                                    />
-                                    <p className="font-bold text-sm">
-                                      {getUserName(item?.user?.userName)}
-                                    </p>
-                                  </div>
-                                </Link>
-                                <div className="flex ml-auto items-center">
-                                  <p className="font-bold text-xs">
-                                    {moment(item?.createdAt).fromNow()}
-                                  </p>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                          <div className="flex justify-start ml-10">
-                            <p className="font-semibold text-sm">
-                              {item.comment}
-                            </p>
-                            {item?.user?._id === user?._id && (
-                              <div className="flex ml-auto">
-                                {deletingComment !== item?._id ? (
-                                  <MdDeleteForever
-                                    onClick={() => {
-                                      deleteCommentReply(
-                                        item?._id
-                                      );
-                                    }}
-                                    size={25}
-                                    className="cursor-pointer text-[#a83f39] shadow-xl drop-shadow-lg rounded-full"
-                                  />
-                                ) : (
-                                  <AiOutlineLoading3Quarters
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                    }}
-                                    size={25}
-                                    className="animate-spin cursor-pointer text-[#ff7f7f]"
-                                  />
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-
+                    </button>
                   </div>
                 )}
-              </div>
-
-
-
-              {tab === "comments" && (
-                <div className="flex flex-wrap mt-6 gap-3">
-                  {user?._id && (
-                    <Link href={`/user-profile/${user?._id}`}>
-                      <div>
-                        <Image
-                          height={45}
-                          width={45}
-                          src={getImage(user?.image)}
-                          className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                          alt="user-profile"
-                        />
-                      </div>
-                    </Link>
-                  )}
-                  <input
-                    className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
-                    type="text"
-                    placeholder={!showCommentReplies?._id ? "Add a Comment" : "Add a Reply"}
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                    onClick={() => {
-                      !showCommentReplies?._id ? addComment() : addCommentReply(showCommentReplies?._id)
-                    }}
-                  >
-                    {!addingComment ? (
-                      !showCommentReplies?._id ? "Comment" : "Reply"
-                    ) : (
-                      <AiOutlineLoading3Quarters
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // savePin();
-                        }}
-                        className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                        size={20}
-                      />
-                    )}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -867,7 +666,7 @@ const CollectionDetail = () => {
               text: "Add Minted NFTs",
               query: {
                 type: "pins",
-                createdBy: true
+                createdBy: true,
               },
               condition: user?._id === createdBy?._id,
             },
