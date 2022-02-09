@@ -8,13 +8,11 @@ import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import redisClient from "./redis";
 import { getMaxBid } from "../utils/data";
-// import Redis from "ioredis"
+import mongoose from "mongoose";
 
 const DEFAULT_EXPIRATION = 3600;
 
 const allPins = catchAsyncErrors(async (req, res) => {
-  // const redisClient = new Redis(process.env.REDIS_URL);
-
   try {
     const data = await redisClient.get(req?.url);
 
@@ -24,16 +22,6 @@ const allPins = catchAsyncErrors(async (req, res) => {
   } catch (e) {
     console.log(e);
   }
-
-  // redisClient.get(`pins${JSON.stringify(req.query)}`, (err, data) => {
-  //   if (err) {
-  //     console.error(err);
-  //   } else {
-  //     if(data) {
-  //       return res.status(200).json(JSON.parse(data));
-  //     }
-  //   }
-  // });
 
   const resultPerPage = 8;
   const pinsCount = await Pin.countDocuments();
@@ -87,7 +75,7 @@ const allPins = catchAsyncErrors(async (req, res) => {
 const getPin = catchAsyncErrors(async (req, res) => {
   const pin = await Pin.findById(req.query.id)
     .populate("postedBy", "_id userName image")
-    .populate("createdBy", "_id userName image")
+    .populate("createdBy", "_id userName image");
 
   if (!pin) {
     return res.status(404).json({
@@ -102,9 +90,9 @@ const getPin = catchAsyncErrors(async (req, res) => {
 });
 
 const isPinExist = catchAsyncErrors(async (req, res) => {
-  const {nftContract, tokenId} = req.body
-  
-  const pin = await Pin.findOne({nftContract, tokenId})
+  const { nftContract, tokenId } = req.body;
+
+  const pin = await Pin.findOne({ nftContract, tokenId });
 
   if (pin) {
     return res.status(404).json({
@@ -113,7 +101,7 @@ const isPinExist = catchAsyncErrors(async (req, res) => {
     });
   }
   res.status(200).json({
-    success: true
+    success: true,
   });
 });
 
@@ -122,7 +110,7 @@ const createPin = catchAsyncErrors(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    pin
+    pin,
   });
 
   // redisClient.flushall('ASYNC', () => {
@@ -130,8 +118,8 @@ const createPin = catchAsyncErrors(async (req, res) => {
   // });
 
   redisClient.del("/api/pins?page=1", () => {
-    console.log("pins page 1 redis refreshed")
-  })
+    console.log("pins page 1 redis refreshed");
+  });
 });
 
 const updatePin = catchAsyncErrors(async (req, res) => {
@@ -204,8 +192,6 @@ const getCommentsPin = catchAsyncErrors(async (req, res) => {
   const pin = await Pin.findById(pinId)
     .select("comments")
     .populate("comments.user", "_id userName image");
-
-    // console.log(pin, "DDDDDDDDDDDDDd")
 
   if (!pin) {
     return res.status(404).json({
@@ -297,8 +283,129 @@ const deletePinComment = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+const getCommentsPinReplies = catchAsyncErrors(async (req, res) => {
+  const [pinId, commentId] = req.query.id;
+
+  // console.log(req.query.id)
+
+  const pin = await Pin.findById(pinId)
+    .select("comments")
+    // .populate("comments.user", "_id userName image")
+    .populate("comments.replies.user", "_id userName image");
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+
+  const replies = pin.comments.find(
+    (item) => item?._id?.toString() === commentId
+  ).replies;
+
+  res.status(200).json({
+    success: true,
+    comments: replies,
+  });
+});
+
+const commentPinReply = catchAsyncErrors(async (req, res, next) => {
+  const { user, comment } = req.body;
+  const [pinId, commentId] = req.query.id;
+
+  const newComment = {
+    user,
+    comment,
+  };
+
+  let pin = await Pin.findById(pinId).select("_id");
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+
+  await Pin.updateOne(
+    {
+      _id: pinId,
+      "comments._id": commentId,
+    },
+    {
+      $push: {
+        "comments.$.replies": newComment,
+      },
+    }
+  );
+
+  // pin.comments.replies.push(newComment);
+  // pin.comments.repliesCount = pin.comments.replies.length;
+
+  // await pin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const updatePinCommentReply = catchAsyncErrors(async (req, res, next) => {
+  const { user, comment } = req.body;
+  const [pinId, commentId, replyCommentId] = req.query.id;
+
+  let pin = await Pin.findById(pinId).select("comments");
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+
+  pin.comments.forEach((com) => {
+    if (com.user.toString() === user && com._id.toString() === replyCommentId) {
+      com.comment = comment;
+    }
+  });
+
+  await pin.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const deletePinCommentReply = catchAsyncErrors(async (req, res, next) => {
+  const [pinId, commentId, replyCommentId] = req.query.id;
+  let pin = await Pin.findById(pinId).select("_id");
+
+  if (!pin) {
+    return res.status(404).json({
+      success: false,
+      error: "Pin not found with this ID",
+    });
+  }
+
+  await Pin.updateOne(
+    {
+      _id: pinId,
+      "comments._id": commentId,
+    },
+    {
+      $pull: {
+        "comments.$.replies": { _id: mongoose.Types.ObjectId(replyCommentId) },
+      },
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
 const saveHistoryPin = catchAsyncErrors(async (req, res, next) => {
-  let pin = await Pin.findById(req.query.id).select("history")
+  let pin = await Pin.findById(req.query.id).select("history");
 
   pin.history.unshift(req.body);
 
@@ -327,8 +434,7 @@ const getHistoryPin = catchAsyncErrors(async (req, res) => {
 });
 
 const getPropertyPin = catchAsyncErrors(async (req, res) => {
-  const pin = await Pin.findById(req.query.id)
-    .select("attributes")
+  const pin = await Pin.findById(req.query.id).select("attributes");
 
   if (!pin) {
     return res.status(404).json({
@@ -367,7 +473,7 @@ const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
     bid,
   };
 
-  let pin = await Pin.findById(req.query.id).select("bids")
+  let pin = await Pin.findById(req.query.id).select("bids");
 
   const alreadyBid = pin.bids.find((bid) => bid.user.toString() === user);
 
@@ -378,7 +484,7 @@ const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
     });
   } else {
     pin.bids.unshift(newBid);
-    pin.currentBid = getMaxBid(pin.bids).bid
+    pin.currentBid = getMaxBid(pin.bids).bid;
     pin.bidsCount = pin.bids.length;
     pin = await pin.save({ validateBeforeSave: false });
 
@@ -391,7 +497,7 @@ const makeAuctionBid = catchAsyncErrors(async (req, res, next) => {
 const withdrawAuctionBid = catchAsyncErrors(async (req, res, next) => {
   const { user } = req.body;
 
-  let pin = await Pin.findById(req.query.id).select("bids")
+  let pin = await Pin.findById(req.query.id).select("bids");
 
   const alreadyBid = pin.bids.find((bid) => bid.user.toString() === user);
 
@@ -402,7 +508,7 @@ const withdrawAuctionBid = catchAsyncErrors(async (req, res, next) => {
     });
   } else {
     pin.bids = pin.bids.filter((bid) => bid?.user?.toString() !== user);
-    pin.currentBid = getMaxBid(pin.bids).bid
+    pin.currentBid = getMaxBid(pin.bids).bid;
     pin.bidsCount = pin.bids.length;
     pin = await pin.save({ validateBeforeSave: false });
 
@@ -429,7 +535,6 @@ const getOffersPin = catchAsyncErrors(async (req, res) => {
   });
 });
 
-
 const makeOffer = catchAsyncErrors(async (req, res, next) => {
   const { user, offer } = req.body;
 
@@ -438,9 +543,11 @@ const makeOffer = catchAsyncErrors(async (req, res, next) => {
     offer,
   };
 
-  let pin = await Pin.findById(req.query.id).select("offers")
+  let pin = await Pin.findById(req.query.id).select("offers");
 
-  const alreadyOffer = pin.offers.find((offer) => offer.user.toString() === user);
+  const alreadyOffer = pin.offers.find(
+    (offer) => offer.user.toString() === user
+  );
 
   if (alreadyOffer) {
     res.status(403).json({
@@ -462,9 +569,11 @@ const makeOffer = catchAsyncErrors(async (req, res, next) => {
 const withdrawOffer = catchAsyncErrors(async (req, res, next) => {
   const { user } = req.body;
 
-  let pin = await Pin.findById(req.query.id).select("offers")
+  let pin = await Pin.findById(req.query.id).select("offers");
 
-  const alreadyOffer = pin.offers.find((offer) => offer.user.toString() === user);
+  const alreadyOffer = pin.offers.find(
+    (offer) => offer.user.toString() === user
+  );
 
   if (!alreadyOffer) {
     res.status(403).json({
@@ -489,18 +598,22 @@ export {
   updatePin,
   deletePin,
   savePin,
+  getCommentsPin,
   commentPin,
   updatePinComment,
   deletePinComment,
+  getCommentsPinReplies,
+  commentPinReply,
+  updatePinCommentReply,
+  deletePinCommentReply,
   saveHistoryPin,
   getHistoryPin,
   getPropertyPin,
-  getCommentsPin,
   getBidsPin,
   makeAuctionBid,
   withdrawAuctionBid,
   getOffersPin,
   makeOffer,
   withdrawOffer,
-  isPinExist
+  isPinExist,
 };

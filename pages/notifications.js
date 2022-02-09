@@ -5,6 +5,7 @@ import {
   buttonStyle,
   fetcher,
   getImage,
+  getNotificationDescription,
   getNotificationStatus,
   getUserName,
 } from "../utils/data";
@@ -144,44 +145,6 @@ const Notifications = () => {
       .catch((e) => {
         setLoading(false);
       });
-  };
-
-  const getDescription = (item) => {
-    const {type, toUser, byUser, pin, pinCollection, price, createdAt, to, _id} = item
-    switch(type) {
-      case "New NFT":
-        return `${getUserName(byUser?.userName)} minted an NFT "${pin?.title}".`
-      case "New Collection":
-        return `${getUserName(byUser?.userName)} created a collection "${pinCollection?.title}".`
-      case "New Save":
-        return `${getUserName(byUser?.userName)} saved the ${pin ? `NFT "${pin?.title}"` : `Collection "${pinCollection?.title}"`}.`
-      case "New Comment":
-        return `${getUserName(byUser?.userName)} commented on the ${pin ? `NFT "${pin?.title}"` : `Collection "${pinCollection?.title}"`}.`
-      case "New Bid":
-        return `${getUserName(byUser?.userName)} made bid of ${price} Matic on NFT "${pin?.title}".`
-      case "New Offer":
-        return `${getUserName(byUser?.userName)} made an offer of ${price} Matic on NFT "${pin?.title}" to ${getUserName(toUser?.userName)}.`
-      case "Offer Accepted":
-        return `${getUserName(byUser?.userName)} accepted an offer of ${price} Matic on NFT "${pin?.title}" from ${getUserName(toUser?.userName)}.`
-      case "Offer Rejected":
-        return `${getUserName(byUser?.userName)} rejected an offer of ${price} Matic on NFT "${pin?.title}" from ${getUserName(toUser?.userName)}.`
-      case "Offers Rejected":
-        return `${getUserName(byUser?.userName)} rejcted all the offers on NFT "${pin?.title}".`
-      case "New Follow":
-        return `${getUserName(byUser?.userName)} started following ${getUserName(toUser?.userName)}.`
-      case "Up For Sale":
-        return `${getUserName(byUser?.userName)} has put NFT "${pin?.title}" on sale for ${price} Matic.`
-      case "Sale Ended":
-        return `${getUserName(byUser?.userName)} has ended the sale for NFT "${pin?.title}"`
-      case "NFT Sold":
-        return `${getUserName(byUser?.userName)} has sold the NFT "${pin?.title}" to ${getUserName(toUser?.userName)} for ${price} Matic.`
-      case "Up For Auction":
-        return `${getUserName(byUser?.userName)} has put NFT "${pin?.title}" on auction.`
-      case "Auction Ended":
-        return `${getUserName(byUser?.userName)} has ended the auction for NFT "${pin?.title}"${price ? `, ${getUserName(toUser?.userName)} was the highest bidder with a bid of ${price} Matic` : ``}.`
-      default:
-        return ``
-    }
   };
 
   useEffect(() => {
@@ -487,7 +450,7 @@ const Notifications = () => {
                               className="border-b border-gray-200 hover:bg-[#f4f4f4]"
                             >
                               <td align="center" colspan="10">
-                                {getDescription(item)}
+                                {getNotificationDescription(item)}
                               </td>
                             </tr>
                           )}

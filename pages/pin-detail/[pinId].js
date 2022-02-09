@@ -13,6 +13,7 @@ import {
   fetcher,
   getCurrentBid,
   getEventData,
+  getHistoryDescription,
   getImage,
   getIpfsImage,
   getUserBid,
@@ -96,6 +97,8 @@ import {
   FaCheckCircle,
   FaCross,
   FaCrosshairs,
+  FaReply,
+  FaReplyAll,
   FaShareAlt,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -121,6 +124,8 @@ const PinDetail = () => {
   const [refresh, setRefresh] = useState(false);
   const [pinDetail, setPinDetail] = useState();
   const [pinComments, setPinComments] = useState([]);
+  const [commentReplies, setCommentReplies] = useState([]);
+  const [showCommentReplies, setShowCommentReplies] = useState({});
   const [pinHistory, setPinHistory] = useState([]);
   const [pinProperties, setPinProperties] = useState([]);
   const [pinBids, setPinBids] = useState([]);
@@ -313,6 +318,22 @@ const PinDetail = () => {
       });
   };
 
+  const fetchPinCommentReplies = () => {
+    setLoadingMessage(fetchingCommentsLoadingMessage);
+    setSideLoading(true);
+    axios
+      .get(`/api/pins/comments/reply/${pinId}/${showCommentReplies?._id}`)
+      .then((res) => {
+        setCommentReplies(res?.data?.comments);
+        setSideLoading(false);
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
+        setSideLoading(false);
+        // console.log(e);
+      });
+  };
+
   const deleteComment = (id) => {
     setDeletingComment(id);
     axios
@@ -328,12 +349,31 @@ const PinDetail = () => {
       });
   };
 
-  const { data, error } = useSWR(() => pinId ? `/api/pins/${pinId}` : null, fetcher, {
-    refreshInterval: 15000,
-    onSuccess: (data, key, config) => {
-      setPinDetail(data?.pin);
-    },
-  });
+  const deleteCommentReply = (id) => {
+    setDeletingComment(id);
+    axios
+      .delete(`/api/pins/comments/reply/${pinId}/${showCommentReplies?._id}/${id}`)
+      .then((res) => {
+        setDeletingComment("");
+        fetchPinCommentReplies();
+      })
+      .catch((e) => {
+        setDeletingComment("");
+        toast.error(errorMessage);
+        // console.log(e);
+      });
+  };
+
+  const { data, error } = useSWR(
+    () => (pinId ? `/api/pins/${pinId}` : null),
+    fetcher,
+    {
+      refreshInterval: 15000,
+      onSuccess: (data, key, config) => {
+        setPinDetail(data?.pin);
+      },
+    }
+  );
 
   const fetchPinDetails = () => {
     setPinDetail(null);
@@ -379,6 +419,7 @@ const PinDetail = () => {
   }, [pinId, refresh]);
 
   useEffect(() => {
+    setShowCommentReplies({});
     if (pinId) {
       if (tab === "comments") {
         fetchPinComments();
@@ -393,6 +434,10 @@ const PinDetail = () => {
       }
     }
   }, [tab, pinId]);
+
+  useEffect(() => {
+    showCommentReplies?._id && fetchPinCommentReplies();
+  }, [showCommentReplies]);
 
   const updatePin = (body) => {
     axios
@@ -501,7 +546,7 @@ const PinDetail = () => {
     // transfer asset
     const transferObj = {
       user: giftingUser?._id,
-      price: "0.0",
+      type: "Gift",
     };
     transferPin(transferObj);
 
@@ -585,7 +630,8 @@ const PinDetail = () => {
     // transfer asset
     const transferObj = {
       user: user?._id,
-      price,
+      type: "Sale",
+      amount: price,
     };
     transferPin(transferObj);
 
@@ -945,7 +991,8 @@ const PinDetail = () => {
     if (newOwner !== user?._id) {
       const transferObj = {
         user: newOwner,
-        price: currentBid,
+        type: "Bid",
+        amount: currentBid,
       };
 
       transferPin(transferObj);
@@ -1120,7 +1167,8 @@ const PinDetail = () => {
     // transfer asset
     const transferObj = {
       user: newOwner,
-      price: offer,
+      type: "Offer",
+      amount: offer,
     };
 
     transferPin(transferObj);
@@ -1443,6 +1491,61 @@ const PinDetail = () => {
     }
   };
 
+  const addCommentReply = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    if (comment) {
+      setAddingComment(true);
+
+      axios
+        .post(`/api/pins/comments/reply/${pinId}/${showCommentReplies?._id}`, {
+          user: user?._id,
+          comment,
+        })
+        .then(() => {
+          setAddingComment(false);
+          setComment("");
+          // setShowCommentReplies({});
+          fetchPinCommentReplies();
+          toast.success(commentAddSuccessMessage);
+
+          let to = [
+            ...pinComments.map((item) => item?.user?._id),
+            ...user?.followers,
+            createdBy?._id,
+            postedBy?._id,
+          ];
+          to = [...new Set(to)];
+          to = to.filter((item) => item !== user?._id);
+          to = to.map((item) => ({ user: item }));
+
+          const obj = {
+            type: "New Reply",
+            byUser: user?._id,
+            pin: _id,
+            to,
+          };
+
+          sendNotifications(
+            obj,
+            (res) => {
+              // console.log(res);
+            },
+            (e) => {
+              // console.log(e, "DDDDDDDDDDddddd");
+            }
+          );
+        })
+        .catch((e) => {
+          setAddingComment(false);
+          toast.error(commentAddErrorMessage);
+        });
+    }
+  };
+
   const makeAuctionBidRequest = (body) => {
     axios
       .post(`/api/pins/bids/${pinId}`, body)
@@ -1696,12 +1799,15 @@ const PinDetail = () => {
         tab === "comments" && !pinComments?.length && !sideLoading,
       input: {
         condition: tab === "comments",
-        placeholder: "Add a Comment",
+        placeholder: !showCommentReplies?._id ? "Add a Comment" : "Add a Reply",
         value: comment,
         loadingCondition: addingComment,
-        buttonText: "Comment",
+        buttonText: !showCommentReplies?._id ? "Comment" : "Reply",
         onChangeFunc: (val) => setComment(val),
-        onClickFunc: () => addComment(),
+        onClickFunc: () =>
+          !showCommentReplies?._id
+            ? addComment()
+            : addCommentReply(showCommentReplies?._id),
       },
       func: () => setTab("comments"),
     },
@@ -1876,26 +1982,40 @@ const PinDetail = () => {
                   pinBids?.map((item, index) => (
                     <div
                       key={index}
-                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
-                        <Link href={`/user-profile/${item?.user?._id}`}>
-                          <div>
-                            <Image
-                              height={45}
-                              width={45}
-                              src={getImage(item?.user?.image)}
-                              className="w-12 h-12 rounded-full cursor-pointer"
-                              alt="user-profile"
-                            />
+                        <>
+                          <div className="flex gap-2">
+                            <Link
+                              onClick={() =>
+                                router.push(`/user-profile/${item?.user?._id}`)
+                              }
+                              href={`/user-profile/${item?.user?._id}`}
+                            >
+                              <div className="flex flex-row gap-2 items-center cursor-pointer">
+                                <Image
+                                  height={30}
+                                  width={30}
+                                  src={getImage(item?.user?.image)}
+                                  className="w-12 h-12 rounded-full"
+                                  alt="user-profile"
+                                />
+                                <p className="font-bold text-sm">
+                                  {getUserName(item?.user?.userName)}
+                                </p>
+                              </div>
+                            </Link>
+                            <div className="flex ml-auto items-center">
+                              <p className="font-bold text-xs">
+                                {moment(item?.createdAt).fromNow()}
+                              </p>
+                            </div>
                           </div>
-                        </Link>
+                        </>
                       )}
-                      <div className="flex flex-col">
-                        <p className="font-bold">
-                          {getUserName(item?.user?.userName)}
-                        </p>
-                        <p className="font-bold">{`${item.bid} Matic`}</p>
+                      <div className="flex justify-start ml-10">
+                        <p className="font-semibold text-sm">{`${item.bid} Matic`}</p>
                       </div>
                     </div>
                   ))}
@@ -1905,88 +2025,235 @@ const PinDetail = () => {
                   pinOffers?.map((item, index) => (
                     <div
                       key={index}
-                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
-                        <Link href={`/user-profile/${item?.user?._id}`}>
-                          <div>
-                            <Image
-                              height={45}
-                              width={45}
-                              src={getImage(item?.user?.image)}
-                              className="w-12 h-12 rounded-full cursor-pointer"
-                              alt="user-profile"
+                        <>
+                          <div className="flex gap-2">
+                            <Link
+                              onClick={() =>
+                                router.push(`/user-profile/${item?.user?._id}`)
+                              }
+                              href={`/user-profile/${item?.user?._id}`}
+                            >
+                              <div className="flex flex-row gap-2 items-center cursor-pointer">
+                                <Image
+                                  height={30}
+                                  width={30}
+                                  src={getImage(item?.user?.image)}
+                                  className="w-12 h-12 rounded-full"
+                                  alt="user-profile"
+                                />
+                                <p className="font-bold text-sm">
+                                  {getUserName(item?.user?.userName)}
+                                </p>
+                              </div>
+                            </Link>
+                            <div className="flex ml-auto items-center">
+                              <p className="font-bold text-xs">
+                                {moment(item?.createdAt).fromNow()}
+                              </p>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex justify-start ml-10">
+                        <p className="font-semibold text-sm">{`${item.offer} Matic`}</p>
+                        {postedBy?._id === user?._id && (
+                          <div className="flex ml-auto gap-4">
+                            <FaCheckCircle
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                acceptMarketItemOffer(
+                                  item?.user?._id,
+                                  item?.offer
+                                );
+                              }}
+                              size={23}
+                              className="cursor-pointer text-[#009387]"
+                            />
+                            <MdCancel
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                rejectMarketItemOffer(item?.user?._id);
+                              }}
+                              size={23}
+                              className="cursor-pointer text-[#a83f39]"
                             />
                           </div>
-                        </Link>
-                      )}
-                      <div className="flex flex-col">
-                        <p className="font-bold">
-                          {getUserName(item?.user?.userName)}
-                        </p>
-                        <p className="font-bold">{`${item.offer} Matic`}</p>
+                        )}
                       </div>
-                      {postedBy?._id === user?._id && (
-                        <div className="flex ml-auto gap-2">
-                          <FaCheckCircle
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              acceptMarketItemOffer(
-                                item?.user?._id,
-                                item?.offer
-                              );
-                            }}
-                            size={25}
-                            className="cursor-pointer text-[#009387]"
-                          />
-                          <MdCancel
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              rejectMarketItemOffer(item?.user?._id);
-                            }}
-                            size={25}
-                            className="cursor-pointer text-[#a83f39]"
-                          />
-                        </div>
-                      )}
                     </div>
                   ))}
 
                 {tab === "comments" &&
+                  !showCommentReplies?._id &&
                   pinComments.length > 0 &&
                   pinComments?.map((item, index) => (
                     <div
                       key={index}
-                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-2 bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
-                        <Link href={`/user-profile/${item?.user?._id}`}>
-                          <div>
-                            <Image
-                              height={45}
-                              width={45}
-                              src={getImage(item?.user?.image)}
-                              className="w-12 h-12 rounded-full cursor-pointer"
-                              alt="user-profile"
-                            />
+                        <>
+                          <div className="flex gap-2">
+                            <Link
+                              onClick={() =>
+                                router.push(`/user-profile/${item?.user?._id}`)
+                              }
+                              href={`/user-profile/${item?.user?._id}`}
+                            >
+                              <div className="flex flex-row gap-2 items-center cursor-pointer">
+                                <Image
+                                  height={30}
+                                  width={30}
+                                  src={getImage(item?.user?.image)}
+                                  className="w-12 h-12 rounded-full"
+                                  alt="user-profile"
+                                />
+                                <p className="font-bold text-sm">
+                                  {getUserName(item?.user?.userName)}
+                                </p>
+                              </div>
+                            </Link>
+                            <div className="flex ml-auto items-center">
+                              <p className="font-bold text-xs">
+                                {moment(item?.createdAt).fromNow()}
+                              </p>
+                            </div>
                           </div>
-                        </Link>
+                        </>
                       )}
-                      <div className="flex flex-col">
-                        <p className="font-bold">
-                          {getUserName(item?.user?.userName)}
-                        </p>
-                        <p className="font-semibold">{item.comment}</p>
+                      <div className="flex justify-start ml-10">
+                        <p className="font-semibold text-sm">{item.comment}</p>
                       </div>
-                      {item?.user?._id === user?._id && (
-                        <div className="flex flex-col ml-auto">
-                          {deletingComment !== item?._id ? (
+                      <div className="flex justify-center items-center cursor-pointer ml-10">
+                        <div
+                          onClick={(e) => {
+                            setShowCommentReplies(item);
+                          }}
+                          className="flex flex-row"
+                        >
+                          <FaReply size={15} className="cursor-pointer mr-1" />
+                          <p className="text-sm font-semibold">{`${
+                            item?.repliesCount
+                          } ${
+                            item?.repliesCount !== 1 ? `replies` : `reply`
+                          }`}</p>
+                        </div>
+
+                        {item?.user?._id === user?._id && (
+                          <div className="flex ml-auto">
+                            {deletingComment !== item?._id ? (
+                              <MdDeleteForever
+                                onClick={() => {
+                                  deleteComment(item?._id);
+                                }}
+                                size={25}
+                                className="cursor-pointer text-[#a83f39]"
+                              />
+                            ) : (
+                              <AiOutlineLoading3Quarters
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                size={25}
+                                className="animate-spin cursor-pointer text-[#ff7f7f]"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                {tab === "comments" && showCommentReplies?._id && (
+                  <div className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg">
+                    {showCommentReplies?.user?._id && (
+                      <>
+                        <div className="flex gap-2">
+                          <Link
+                            onClick={() =>
+                              router.push(
+                                `/user-profile/${showCommentReplies?.user?._id}`
+                              )
+                            }
+                            href={`/user-profile/${showCommentReplies?.user?._id}`}
+                          >
+                            <div className="flex flex-row gap-2 items-center cursor-pointer">
+                              <Image
+                                height={30}
+                                width={30}
+                                src={getImage(showCommentReplies?.user?.image)}
+                                className="w-12 h-12 rounded-full"
+                                alt="user-profile"
+                              />
+                              <p className="font-bold text-sm">
+                                {getUserName(
+                                  showCommentReplies?.user?.userName
+                                )}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="flex ml-auto items-center">
+                            <p className="font-bold text-xs">
+                              {moment(showCommentReplies?.createdAt).fromNow()}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-start ml-10">
+                      <p className="font-semibold text-sm">
+                        {showCommentReplies.comment}
+                      </p>
+                    </div>
+                    <div
+                      
+                      className="flex justify-center items-center cursor-pointer ml-10"
+                    >
+                      <div onClick={() => {
+                        setShowCommentReplies(showCommentReplies);
+                      }} className="flex flex-row">
+                        <FaReply
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          size={15}
+                          className="cursor-pointer mr-1"
+                        />
+                        <p className="text-sm font-semibold">{`${
+                          showCommentReplies?.repliesCount
+                        } ${
+                          showCommentReplies?.repliesCount !== 1
+                            ? `replies`
+                            : `reply`
+                        }`}</p>
+                      </div>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCommentReplies({});
+                          setCommentReplies([]);
+                        }}
+                        className="flex flex-row"
+                      >
+                        <FaReplyAll
+                          size={15}
+                          className="cursor-pointer mr-1 ml-4"
+                        />
+                        <p className="text-sm font-semibold">{`Go Back`}</p>
+                      </div>
+
+                      {showCommentReplies?.user?._id === user?._id && (
+                        <div className="flex ml-auto">
+                          {deletingComment !== showCommentReplies?._id ? (
                             <MdDeleteForever
                               onClick={() => {
-                                deleteComment(item?._id);
+                                deleteComment(showCommentReplies?._id);
                               }}
                               size={25}
-                              className="cursor-pointer text-[#a83f39]"
+                              className="cursor-pointer text-[#a83f39] shadow-xl drop-shadow-lg rounded-full"
                             />
                           ) : (
                             <AiOutlineLoading3Quarters
@@ -2000,29 +2267,121 @@ const PinDetail = () => {
                         </div>
                       )}
                     </div>
-                  ))}
+
+                    {commentReplies.length > 0 &&
+                      commentReplies?.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-2 ml-7 bg-secondTheme rounded-lg"
+                        >
+                          {item?.user?._id && (
+                            <>
+                              <div className="flex gap-2">
+                                <Link
+                                  onClick={() =>
+                                    router.push(
+                                      `/user-profile/${item?.user?._id}`
+                                    )
+                                  }
+                                  href={`/user-profile/${item?.user?._id}`}
+                                >
+                                  <div className="flex flex-row gap-2 items-center cursor-pointer">
+                                    <Image
+                                      height={30}
+                                      width={30}
+                                      src={getImage(item?.user?.image)}
+                                      className="w-12 h-12 rounded-full"
+                                      alt="user-profile"
+                                    />
+                                    <p className="font-bold text-sm">
+                                      {getUserName(item?.user?.userName)}
+                                    </p>
+                                  </div>
+                                </Link>
+                                <div className="flex ml-auto items-center">
+                                  <p className="font-bold text-xs">
+                                    {moment(item?.createdAt).fromNow()}
+                                  </p>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                          <div className="flex justify-start ml-10">
+                            <p className="font-semibold text-sm">
+                              {item.comment}
+                            </p>
+                            {item?.user?._id === user?._id && (
+                              <div className="flex ml-auto">
+                                {deletingComment !== item?._id ? (
+                                  <MdDeleteForever
+                                    onClick={() => {
+                                      deleteCommentReply(
+                                        item?._id
+                                      );
+                                    }}
+                                    size={25}
+                                    className="cursor-pointer text-[#a83f39] shadow-xl drop-shadow-lg rounded-full"
+                                  />
+                                ) : (
+                                  <AiOutlineLoading3Quarters
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                    }}
+                                    size={25}
+                                    className="animate-spin cursor-pointer text-[#ff7f7f]"
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
 
                 {tab === "history" &&
                   pinHistory?.length > 0 &&
                   pinHistory?.map((item, index) => (
                     <div
                       key={index}
-                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-5 items-center bg-secondTheme rounded-lg"
+                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
                     >
                       {item?.user?._id && (
-                        <Link href={`/user-profile/${item?.user?._id}`}>
-                          <div>
-                            <Image
-                              height={40}
-                              width={40}
-                              src={getImage(item?.user?.image)}
-                              className="w-12 h-12 rounded-full cursor-pointer"
-                              alt="user-profile"
-                            />
+                        <>
+                          <div className="flex gap-2">
+                            <Link
+                              onClick={() =>
+                                router.push(`/user-profile/${item?.user?._id}`)
+                              }
+                              href={`/user-profile/${item?.user?._id}`}
+                            >
+                              <div className="flex flex-row gap-2 items-center cursor-pointer">
+                                <Image
+                                  height={30}
+                                  width={30}
+                                  src={getImage(item?.user?.image)}
+                                  className="w-12 h-12 rounded-full"
+                                  alt="user-profile"
+                                />
+                                <p className="font-bold text-sm">
+                                  {getUserName(item?.user?.userName)}
+                                </p>
+                              </div>
+                            </Link>
+                            <div className="flex ml-auto items-center">
+                              <p className="font-bold text-xs">
+                                {moment(item?.createdAt).fromNow()}
+                              </p>
+                            </div>
                           </div>
-                        </Link>
+                        </>
                       )}
-                      <div className="flex justify-between gap-2 md:gap-8">
+                      <div className="flex justify-start ml-10">
+                        <p className="font-semibold text-sm">
+                          {getHistoryDescription(item)}
+                        </p>
+                      </div>
+                      {/* <div className="flex justify-between gap-2 md:gap-8">
                         <div className="flex flex-wrap">
                           <p className=" font-bold">
                             {`${getUserName(item?.user?.userName)}`}
@@ -2042,7 +2401,7 @@ const PinDetail = () => {
                             <p className="font-semibold">{`For: ${item?.price} Matic`}</p>
                           )}
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   ))}
               </div>

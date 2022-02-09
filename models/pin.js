@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const commentSchema = new mongoose.Schema({
+const replyCommentSchema = new mongoose.Schema({
   user: {
     type: String,
     ref: "User",
@@ -16,15 +16,43 @@ const commentSchema = new mongoose.Schema({
   },
 });
 
+const commentSchema = new mongoose.Schema({
+  user: {
+    type: String,
+    ref: "User",
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
+  replies: {
+    type: [replyCommentSchema],
+    select: false
+  },
+  repliesCount: {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 const historySchema = new mongoose.Schema({
   user: {
     type: String,
     ref: "User",
     required: true,
   },
-  price: {
+  type: {
     type: String,
     required: true,
+  },
+  amount: {
+    type: String,
+    default: "0.0"
   },
   createdAt: {
     type: Date,

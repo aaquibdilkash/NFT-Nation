@@ -7,6 +7,7 @@ import Notification from "../models/notification";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
 import redisClient from "./redis";
+import mongoose from "mongoose";
 // import Redis from "ioredis"
 
 const DEFAULT_EXPIRATION = 3600;
@@ -389,6 +390,130 @@ const deleteCollectionComment = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+const getCommentsCollectionReplies = catchAsyncErrors(async (req, res) => {
+  const [collectionId, commentId] = req.query.id;
+
+  const collection = await Collection.findById(collectionId)
+  .select("comments")
+  // .populate("comments.user", "_id userName image")
+  .populate("comments.replies.user", "_id userName image")
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
+  
+  const replies = collection.comments.find(
+    (item) => item?._id?.toString() === commentId
+    ).replies;
+
+  res.status(200).json({
+    success: true,
+    comments: replies,
+  });
+});
+
+const commentCollectionReply = catchAsyncErrors(async (req, res, next) => {
+  const { user, comment } = req.body;
+  const [collectionId, commentId] = req.query.id;
+
+  const newComment = {
+    user,
+    comment,
+  };
+
+  let collection = await Collection.findById(collectionId).select("_id");
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
+
+  console.log(collection, "DDDDDDDDDDD")
+  console.log(req.body, req.query.id)
+
+  await Collection.updateOne(
+    {
+      _id: collectionId,
+      "comments._id": commentId,
+    },
+    {
+      $push: {
+        "comments.$.replies": newComment,
+      },
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const updateCollectionCommentReply = catchAsyncErrors(async (req, res, next) => {
+  const { user, comment } = req.body;
+  const [collectionId, commentId] = req.query.id;
+
+  let collection = await Collection.findById(collectionId).select("_id");
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
+
+  await Collection.updateOne(
+    {
+      _id: pinId,
+      "comments._id": commentId,
+    },
+    {
+      $pull: {
+        "comments.$.replies": { _id: mongoose.Types.ObjectId(replyCommentId) },
+      },
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
+const deleteCollectionCommentReply = catchAsyncErrors(async (req, res, next) => {
+  const [collectionId, commentId, replyCommentId] = req.query.id;
+
+  let collection = await Collection.findById(collectionId).select("_id");
+
+  if (!collection) {
+    return res.status(404).json({
+      success: false,
+      error: "Collection not found with this ID",
+    });
+  }
+
+  console.log(req.query.id, req.body, collection)
+
+  await Collection.updateOne(
+    {
+      _id: collectionId,
+      "comments._id": commentId,
+    },
+    {
+      $pull: {
+        "comments.$.replies": { _id: mongoose.Types.ObjectId(replyCommentId) },
+      },
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+  });
+});
+
 export {
   allCollections,
   getCollection,
@@ -401,4 +526,8 @@ export {
   commentCollection,
   updateCollectionComment,
   deleteCollectionComment,
+  getCommentsCollectionReplies,
+  commentCollectionReply,
+  updateCollectionCommentReply,
+  deleteCollectionCommentReply,
 };

@@ -340,7 +340,7 @@ const CreatePin = () => {
       history: [
         {
           user: user?._id,
-          price: "0.0",
+          type: "Mint"
         },
       ],
       destination: "https://nft-nation.vercel.app",
@@ -415,7 +415,7 @@ const CreatePin = () => {
       history: [
         {
           user: user?._id,
-          price: "0.0",
+          type: "Mint"
         },
       ],
       destination: "https://nft-nation.vercel.app",
@@ -478,7 +478,7 @@ const CreatePin = () => {
       history: [
         {
           user: user?._id,
-          price: "0.0",
+          type: "Mint"
         },
       ],
       destination: "https://nft-nation.vercel.app",
@@ -611,7 +611,7 @@ const CreatePin = () => {
       history: [
         {
           user: user?._id,
-          price: "0.0",
+          type: "Mint"
         },
       ],
       destination: "https://nft-nation.vercel.app",
