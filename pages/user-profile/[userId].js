@@ -27,6 +27,8 @@ import {
   CURRENT_PROFILE_SET,
   USER_GET_SUCCESS,
 } from "../../redux/constants/UserTypes";
+import ShareButtons from "../../components/ShareButtons";
+import { IoMdLogOut } from "react-icons/io";
 
 const UserProfilePage = () => {
   const router = useRouter();
@@ -317,12 +319,16 @@ const UserProfilePage = () => {
           property="og:url"
           content={`https://nft-nation.vercel.app/user-profile/${_id}`}
         />
+        <meta
+          property="og:image"
+          content={getImage(image)}
+        />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="bg-gradient-to-r from-secondTheme to-themeColor relative rounded-lg pb-2 h-full justify-center items-center mt-6 lg:mt-0">
         <div className="flex flex-col pb-5">
-          <div className="lg:p-10">
+          <div className="p-2">
             {editing && <ProfileEdit setEditing={setEditing} />}
             {collectionEditing && (
               <CollectionEdit setCollectionEditing={setCollectionEditing} />
@@ -396,19 +402,6 @@ const UserProfilePage = () => {
                                 {`Edit`}
                               </button>
                             )}
-
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(
-                                  `https:nft-nation.vercel.app/user-profile/${userId}`
-                                );
-                                toast.info(shareInfoMessage);
-                              }}
-                              className="bg-pink-500 bg-themeColor uppercase text-[#ffffff] font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
-                              type="button"
-                            >
-                              {`Share`}
-                            </button>
                           </div>
                         </div>
                         <div className="w-full lg:w-4/12 px-4 lg:order-1">
@@ -442,6 +435,9 @@ const UserProfilePage = () => {
                             "MMM DD, YYYY"
                           )}`}
                         </div>
+                        <div className="text-sm leading-normal mt-0 mb-4 text-blueGray-400 font-bold justify-center">
+                        <ShareButtons title={userName} shareUrl={`https:nft-nation.vercel.app/user-profile/${userId}`} image={getImage(image)}/>
+                        </div>
                         {/* <div className="mb-2 text-blueGray-600 mt-10">
                         <i className="fas fa-briefcase mr-2 text-lg text-blueGray-400"></i>
                         Solution Manager - Creative Tim Officer
@@ -473,36 +469,11 @@ const UserProfilePage = () => {
                 </div>
               </section>
 
-              {!editing && !collectionEditing && (
-                <div className="absolute -top-10 z-1 left-0 p-2">
-                  <button
-                    type="button"
-                    className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        `https:nft-nation.vercel.app/user-profile/${userId}`
-                      );
-                      toast.info(shareInfoMessage);
-                    }}
-                  >
-                    <FaShareAlt color="themeColor" fontSize={21} />
-                  </button>
-                </div>
-              )}
-              {user?._id === _id && !collectionEditing && (
+              {/* {!editing && !collectionEditing && (
                 <div className="absolute -top-10 z-1 right-0 p-2">
-                  <button
-                    type="button"
-                    className="transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg bg-secondTheme p-2 rounded-full cursor-pointer outline-none shadow-md"
-                    onClick={() => {
-                      setEditing((editing) => !editing);
-                      setCollectionEditing(false);
-                    }}
-                  >
-                    <AiOutlineEdit color="themeColor" fontSize={21} />
-                  </button>
+                  <IoMdLogOut size={35} color="orange"/>
                 </div>
-              )}
+              )} */}
             </div>
           )}
 

@@ -9,7 +9,6 @@ import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
   buttonStyle,
-  etherAddress,
   fetcher,
   getCurrentBid,
   getEventData,
@@ -18,6 +17,7 @@ import {
   getIpfsImage,
   getUserBid,
   getUserName,
+  iconStyles,
   isValidAmount,
   parseAmount,
   sendNotifications,
@@ -55,7 +55,6 @@ import {
   rejectAllOffersLoadingMessage,
   rejectOfferLoadingMessage,
   saveErrorMessage,
-  shareInfoMessage,
   tokenAllOfferRejectSuccessMessage,
   tokenAllOffersRejectErrorMessage,
   tokenApproveErrorMessage,
@@ -93,14 +92,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import {
-  FaCheckCircle,
-  FaCross,
-  FaCrosshairs,
-  FaReply,
-  FaReplyAll,
-  FaShareAlt,
-} from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import {
@@ -109,10 +101,11 @@ import {
   AiOutlineLoading3Quarters,
 } from "react-icons/ai";
 import moment from "moment";
-import { MdCancel, MdDeleteForever } from "react-icons/md";
+import { MdCancel } from "react-icons/md";
 import { GIFTING_USER_SET } from "../../redux/constants/UserTypes";
 import useSWR from "swr";
 import CommentSection from "../../components/CommentSection";
+import ShareButtons from "../../components/ShareButtons";
 
 const PinDetail = () => {
   const router = useRouter();
@@ -353,7 +346,9 @@ const PinDetail = () => {
   const deleteCommentReply = (id) => {
     setDeletingComment(id);
     axios
-      .delete(`/api/pins/comments/reply/${pinId}/${showCommentReplies?._id}/${id}`)
+      .delete(
+        `/api/pins/comments/reply/${pinId}/${showCommentReplies?._id}/${id}`
+      )
       .then((res) => {
         setDeletingComment("");
         fetchPinCommentReplies();
@@ -1902,6 +1897,10 @@ const PinDetail = () => {
           property="og:url"
           content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
         />
+        <meta
+          property="og:image"
+          content={getImage(image)}
+        />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -2090,16 +2089,16 @@ const PinDetail = () => {
                   ))}
 
                 <CommentSection
-                user={user}
-                tab={tab}
-                showCommentReplies={showCommentReplies}
-                setShowCommentReplies={setShowCommentReplies}
-                commentsArr={pinComments}
-                deletingComment={deletingComment}
-                deleteComment={deleteComment}
-                commentReplies={commentReplies}
-                setCommentReplies={setCommentReplies}
-                deleteCommentReply={deleteCommentReply}
+                  user={user}
+                  tab={tab}
+                  showCommentReplies={showCommentReplies}
+                  setShowCommentReplies={setShowCommentReplies}
+                  commentsArr={pinComments}
+                  deletingComment={deletingComment}
+                  deleteComment={deleteComment}
+                  commentReplies={commentReplies}
+                  setCommentReplies={setCommentReplies}
+                  deleteCommentReply={deleteCommentReply}
                 />
 
                 {tab === "history" &&
@@ -2386,7 +2385,7 @@ const PinDetail = () => {
                           e.stopPropagation();
                           savePin();
                         }}
-                        className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        className={iconStyles}
                         size={25}
                       />
                     ) : (
@@ -2395,7 +2394,7 @@ const PinDetail = () => {
                           e.stopPropagation();
                           savePin();
                         }}
-                        className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        className={`${iconStyles} text-[#a83f39]`}
                         size={25}
                       />
                     )}
@@ -2412,21 +2411,7 @@ const PinDetail = () => {
                 )}
               </div>
             </button>
-            <button className={tabButtonStyles}>
-              <div className="flex gap-2 items-center">
-                <FaShareAlt
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(
-                      `https:nft-nation.vercel.app/pin-detail/${pinId}`
-                    );
-                    toast.info(shareInfoMessage);
-                  }}
-                  className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                  size={25}
-                />
-              </div>
-            </button>
+            <ShareButtons title={title} shareUrl={`https:nft-nation.vercel.app/pin-detail/${pinId}`} image={getImage(image)}/>
           </div>
           {(makeAuctionBidCondition || createMarketSaleCondition) &&
             (addingBidPrice || addingSellPrice) && (

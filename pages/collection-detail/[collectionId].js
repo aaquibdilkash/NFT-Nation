@@ -6,6 +6,7 @@ import {
   buttonStyle,
   getImage,
   getUserName,
+  iconStyles,
   sendNotifications,
   tabButtonStyles,
 } from "../../utils/data";
@@ -43,6 +44,7 @@ import CollectionEdit from "../../components/CollectionEdit";
 import { MdDeleteForever } from "react-icons/md";
 import moment from "moment";
 import CommentSection from "../../components/CommentSection";
+import ShareButtons from "../../components/ShareButtons";
 
 const CollectionDetail = () => {
   const router = useRouter();
@@ -381,6 +383,10 @@ const CollectionDetail = () => {
           property="og:url"
           content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
         />
+        <meta
+          property="og:image"
+          content={getImage(image)}
+        />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -607,7 +613,7 @@ const CollectionDetail = () => {
                           e.stopPropagation();
                           saveCollection();
                         }}
-                        className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        className={iconStyles}
                         size={25}
                       />
                     ) : (
@@ -616,7 +622,7 @@ const CollectionDetail = () => {
                           e.stopPropagation();
                           saveCollection();
                         }}
-                        className="text-[#a83f39] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+                        className={`${iconStyles} text-[#a83f39]`}
                         size={25}
                       />
                     )}
@@ -633,21 +639,7 @@ const CollectionDetail = () => {
                 )}
               </div>
             </button>
-            <button className={tabButtonStyles}>
-              <div className="flex gap-2 items-center">
-                <FaShareAlt
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(
-                      `https:nft-nation.vercel.app/collection-detail/${collectionId}`
-                    );
-                    toast.info(shareInfoMessage);
-                  }}
-                  className="text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
-                  size={25}
-                />
-              </div>
-            </button>
+            <ShareButtons title={title} shareUrl={`https:nft-nation.vercel.app/collection-detail/${collectionId}`} image={getImage(image)}/>
           </div>
         </div>
       )}

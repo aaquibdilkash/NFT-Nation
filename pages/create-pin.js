@@ -677,6 +677,10 @@ const CreatePin = () => {
           property="og:url"
           content={`https://nft-nation.vercel.app/create-pin`}
         />
+        <meta
+          property="og:image"
+          content={`https://nft-nation.vercel.app/favicon.png`}
+        />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

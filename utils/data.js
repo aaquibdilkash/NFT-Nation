@@ -30,6 +30,8 @@ export const formButtonStyles = "w-full transition transition duration-500 ease 
 export const tabButtonStyles =
   "m-2 shadow-lg hover:drop-shadow-lg transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-md font-semibold rounded-full text-secondTheme px-4 py-2 cursor-pointer";
 
+export const iconStyles = "text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 drop-shadow-lg cursor-pointer"
+
 export const toHex = (num) => {
   return "0x" + num.toString(16);
 };
