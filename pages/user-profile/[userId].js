@@ -436,7 +436,7 @@ const UserProfilePage = () => {
                           )}`}
                         </div>
                         <div className="text-sm leading-normal mt-0 mb-4 text-blueGray-400 font-bold justify-center">
-                        <ShareButtons title={userName} shareUrl={`https:nft-nation.vercel.app/user-profile/${userId}`} image={getImage(image)}/>
+                        <ShareButtons title={userName} shareUrl={`https://nft-nation.vercel.app/user-profile/${userId}`} image={getImage(image)}/>
                         </div>
                         {/* <div className="mb-2 text-blueGray-600 mt-10">
                         <i className="fas fa-briefcase mr-2 text-lg text-blueGray-400"></i>

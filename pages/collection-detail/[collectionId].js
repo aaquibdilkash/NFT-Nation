@@ -639,7 +639,7 @@ const CollectionDetail = () => {
                 )}
               </div>
             </button>
-            <ShareButtons title={title} shareUrl={`https:nft-nation.vercel.app/collection-detail/${collectionId}`} image={getImage(image)}/>
+            <ShareButtons title={title} shareUrl={`https://nft-nation.vercel.app/collection-detail/${collectionId}`} image={getImage(image)}/>
           </div>
         </div>
       )}

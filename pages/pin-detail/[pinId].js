@@ -2411,7 +2411,7 @@ const PinDetail = () => {
                 )}
               </div>
             </button>
-            <ShareButtons title={title} shareUrl={`https:nft-nation.vercel.app/pin-detail/${pinId}`} image={getImage(image)}/>
+            <ShareButtons title={title} shareUrl={`https://nft-nation.vercel.app/pin-detail/${pinId}`} image={getImage(image)}/>
           </div>
           {(makeAuctionBidCondition || createMarketSaleCondition) &&
             (addingBidPrice || addingSellPrice) && (
