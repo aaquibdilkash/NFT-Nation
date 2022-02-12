@@ -35,49 +35,36 @@ const ShareButtons = ({ title, shareUrl, image }) => {
           <TwitterShareButton
             // title={title}
             url={shareUrl}
-            size={32}
-            round={true}
           >
             <TwitterIcon className={iconStyles} size={32} round />
           </TwitterShareButton>
           <WhatsappShareButton
             // title={`${title}`}
             url={shareUrl}
-            size={32}
-            round={true}
           >
             <WhatsappIcon className={iconStyles} size={32} round />
           </WhatsappShareButton>
           <LinkedinShareButton
             // title={`${title}`}
-            separator={`:`}
             url={shareUrl}
-            size={32}
-            round={true}
           >
             <LinkedinIcon className={iconStyles} size={32} round />
           </LinkedinShareButton>
           <TelegramShareButton
             // title={`${title}`}
             url={shareUrl}
-            size={32}
-            round={true}
           >
             <TelegramIcon className={iconStyles} size={32} round />
           </TelegramShareButton>
           <RedditShareButton
             // title={`${title}`}
             url={shareUrl}
-            size={32}
-            round={true}
           >
             <RedditIcon className={iconStyles} size={32} round />
           </RedditShareButton>
           <FacebookShareButton
             // title={`${title}`}
             url={shareUrl}
-            size={32}
-            round={true}
           >
             <FacebookIcon className={iconStyles} size={32} round />
           </FacebookShareButton>

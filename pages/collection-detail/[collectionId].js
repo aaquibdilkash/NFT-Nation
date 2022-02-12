@@ -3,6 +3,7 @@ import Link from "next/link";
 import Spinner from "../../components/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  basePath,
   buttonStyle,
   getImage,
   getUserName,
@@ -46,7 +47,7 @@ import moment from "moment";
 import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
 
-const CollectionDetail = () => {
+const CollectionDetail = ({detail}) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname, query } = router;
@@ -59,7 +60,7 @@ const CollectionDetail = () => {
   const [activeBtn, setActiveBtn] = useState("Items");
   const [sideLoading, setSideLoading] = useState(true);
   const [collectionEditing, setCollectionEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [addingComment, setAddingComment] = useState(false);
   const [deletingComment, setDeletingComment] = useState(false);
@@ -187,6 +188,13 @@ const CollectionDetail = () => {
         // console.log(e);
       });
   };
+
+  useEffect(() => {
+    dispatch({
+      type: COLLECTION_SET,
+      payload: detail
+    })
+  }, [])
 
   useEffect(() => {
     user?._id && setAlreadySaved(saved?.find((item) => item === user?._id));
@@ -368,25 +376,26 @@ const CollectionDetail = () => {
       });
   };
 
-  if (loading) {
+  if (!collection) {
     return <Spinner message={fetchingCollectionLoadingMessage} />;
   }
 
   return (
     <>
       <Head>
-        <title>{`${title} | NFT Nation`}</title>
-        <meta name="description" content={`${about}`} />
-        <meta property="og:title" content={`${title} | NFT Nation`} />
-        <meta property="og:description" content={`${about}`} />
+        <title>{`${detail?.title} - Collection | NFT Nation`}</title>
+        <meta name="description" content={`${detail?.about}`} />
+        <meta property="og:title" content={`${detail?.title} - Collection | NFT Nation`} />
+        <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
           content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
         />
         <meta
           property="og:image"
-          content={getImage(image)}
+          content={getImage(detail?.image)}
         />
+        <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -702,3 +711,26 @@ const CollectionDetail = () => {
 };
 
 export default CollectionDetail;
+
+export const getServerSideProps = async ({query}) => {
+  const {collectionId} = query
+
+  try {
+    var {data} = await axios
+    .get(`${basePath}/api/collections/${collectionId}`)
+  } catch(e) {
+    console.log(e,"Error")
+  }
+
+  if (!data) {
+    return {
+        notFound: true,
+    };
+}
+
+  return {
+    props: {
+      detail: data?.collection,
+    },
+  };
+};

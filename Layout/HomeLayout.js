@@ -12,7 +12,7 @@ import { chainData } from "../utils/chainData";
 import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
 import Web3 from "web3";
-import Web3Modal from "web3modal";
+import Web3Modal, { local } from "web3modal";
 import Image from "next/image";
 import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
@@ -27,7 +27,22 @@ const HomeLayout = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { pathname, query } = router;
-  const { page, keyword, category, postedBy, onSale, bids, saved, auctionEnded, feed, pinId, sort, commented, type } = query;
+  const {
+    page,
+    keyword,
+    category,
+    postedBy,
+    onSale,
+    bids,
+    saved,
+    auctionEnded,
+    feed,
+    pinId,
+    sort,
+    commented,
+    type,
+    refer,
+  } = query;
   const { user, marketContract, refresh, hasMore, changePage } = useSelector(
     (state) => state.userReducer
   );
@@ -40,7 +55,13 @@ const HomeLayout = ({ children }) => {
   // const chain = chainData.localhost;
 
   const connectToMetamask = async () => {
+    if (refer) {
+      // const ISSERVER = typeof window === "undefined";
 
+      // !ISSERVER &&
+        // window.addEventListener("contextmenu", (e) => e.preventDefault());
+      localStorage.setItem("refer", refer)
+    }
     if (!window?.ethereum) {
       // window.ethereum.isMetaMask
       toast.info(
@@ -52,7 +73,6 @@ const HomeLayout = ({ children }) => {
       return;
     }
 
-    
     const providerOptions = {
       /* See Provider Options Section */
     };
@@ -162,23 +182,27 @@ const HomeLayout = ({ children }) => {
   };
 
   const login = (address) => {
-    setLoggingIn(true)
+    setLoggingIn(true);
     const obj = {
       _id: address,
       userName: address,
+      ...(localStorage.getItem("refer") && localStorage.getItem("refer")?.length == 42
+        ? { referred: { user: localStorage.getItem("refer") } }
+        : {}),
     };
     axios
       .post("/api/users", obj)
       .then((res) => {
         toast.success(loginSuccessMessage);
-        setLoggingIn(false)
+        setLoggingIn(false);
         dispatch({
           type: USER_GET_SUCCESS,
           payload: res.data.user,
         });
+        localStorage.removeItem("refer");
       })
       .catch((e) => {
-        setLoggingIn(false)
+        setLoggingIn(false);
         toast.error(loginErrorMessage);
         // console.log(e);
       });
@@ -214,27 +238,41 @@ const HomeLayout = ({ children }) => {
   //   })
 
   // }, [])
-  
 
   useEffect(() => {
     setToggleSidebar(false);
-    page && pathname == "/" && router.push(
-      {
-        pathname: pathname,
-        query: {
-          ...query,
-          page: 1,
+    page &&
+      pathname == "/" &&
+      router.push(
+        {
+          pathname: pathname,
+          query: {
+            ...query,
+            page: 1,
+          },
         },
-      },
-      undefined,
-      { shallow: true }
-    );
-  }, [category, bids, postedBy, onSale, saved, auctionEnded, feed, pinId, sort, commented, type, keyword]);
+        undefined,
+        { shallow: true }
+      );
+  }, [
+    category,
+    bids,
+    postedBy,
+    onSale,
+    saved,
+    auctionEnded,
+    feed,
+    pinId,
+    sort,
+    commented,
+    type,
+    keyword,
+  ]);
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
     if (scrollHeight - scrollTop === clientHeight && hasMore && changePage) {
-    // if (scrollTop + clientHeight > scrollHeight - 100 && hasMore && changePage) {
+      // if (scrollTop + clientHeight > scrollHeight - 100 && hasMore && changePage) {
       router.push(
         {
           pathname: pathname,
@@ -252,7 +290,11 @@ const HomeLayout = ({ children }) => {
   return (
     <div className="flex bg-gradient-to-r from-secondTheme to-themeColor md:flex-row flex-col h-screen transition-height duration-75 ease-out">
       <div className="hidden md:flex h-screen flex-initial">
-        <Sidebar user={user && user} connectToMetamask={connectToMetamask} loggingIn={loggingIn}/>
+        <Sidebar
+          user={user && user}
+          connectToMetamask={connectToMetamask}
+          loggingIn={loggingIn}
+        />
       </div>
       <div className="flex md:hidden flex-row">
         <div className="p-2 w-full flex flex-row justify-between items-center shadow-md">
@@ -299,7 +341,10 @@ const HomeLayout = ({ children }) => {
       >
         <div className="px-2 md:px-5">
           <div className="transparent sticky top-4 z-40">
-            <Navbar connectToMetamask={connectToMetamask} loggingIn={loggingIn}/>
+            <Navbar
+              connectToMetamask={connectToMetamask}
+              loggingIn={loggingIn}
+            />
           </div>
           <div className="h-full">{children}</div>
           {/* <div className="sticky transparent w-auto bottom-0">

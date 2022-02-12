@@ -1,8 +1,23 @@
 import Link from "next/link";
 import { FaArtstation, FaHome, FaUserAstronaut } from "react-icons/fa";
-import { IoIosAperture, IoIosArrowForward, IoMdNotifications } from "react-icons/io";
-import { AiFillCloseCircle, AiOutlineLoading3Quarters, AiOutlineLogin } from "react-icons/ai";
-import { feedPathArray, fetcher, getImage, getUserName, isSubset } from "../utils/data";
+import {
+  IoIosAperture,
+  IoIosArrowForward,
+  IoMdNotifications,
+} from "react-icons/io";
+import {
+  AiFillCloseCircle,
+  AiFillDollarCircle,
+  AiOutlineLoading3Quarters,
+  AiOutlineLogin,
+} from "react-icons/ai";
+import {
+  feedPathArray,
+  fetcher,
+  getImage,
+  getUserName,
+  isSubset,
+} from "../utils/data";
 import { sidebarCategories } from "../utils/sidebarCategories";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -18,16 +33,28 @@ const isNotActiveArrowStyle =
 const isActiveArrowStyle =
   "text-[#ffffff] transition transition duration-500 ease transform hover:-translate-y-1 inline-block drop-shadow-lg flex items-center gap-3 font-extrabold transition-all duration-200 ease-in-out capitalize hover:cursor-pointer bg-themeColor";
 
-const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, loggingIn = false }) => {
+const Sidebar = ({
+  user,
+  connectToMetamask,
+  setToggleSidebar = () => {},
+  loggingIn = false,
+}) => {
   const router = useRouter();
   const { query, asPath, pathname } = router;
   const handleCloseSidebar = () => {
     setToggleSidebar(false);
   };
 
-  const { data,  error } = useSWR(() => user?._id ? `/api/notifications?to.user=${user?._id}&to.status=unread` : null , fetcher, {
-    refreshInterval: 15000
-  })
+  const { data, error } = useSWR(
+    () =>
+      user?._id
+        ? `/api/notifications?to.user=${user?._id}&to.status=unread`
+        : null,
+    fetcher,
+    {
+      refreshInterval: 15000,
+    }
+  );
 
   return (
     <div className="flex flex-col justify-between bg-secondTheme bg-gradient-to-r from-secondTheme to-themeColor h-full overflow-y-scroll min-w-210 hide-scrollbar drop-shadow-lg">
@@ -94,19 +121,42 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
             </div>
           )}
           {user?._id && (
-            <Link href={`/notifications`} >
-            <div
-              onClick={() => {
-                handleCloseSidebar();
-              }}
-              className={pathname == `/notifications` ? isActiveStyle : isNotActiveStyle}
-            >
-              <IoMdNotifications className="" size={25} />
-              {`Notifications${data?.filteredDataCount > 0 ? ` (${data?.filteredDataCount})` : ``}`}
-            </div>
+            <Link href={`/notifications`}>
+              <div
+                onClick={() => {
+                  handleCloseSidebar();
+                }}
+                className={
+                  pathname == `/notifications`
+                    ? isActiveStyle
+                    : isNotActiveStyle
+                }
+              >
+                <IoMdNotifications className="" size={25} />
+                {`Notifications${
+                  data?.filteredDataCount > 0
+                    ? ` (${data?.filteredDataCount})`
+                    : ``
+                }`}
+              </div>
             </Link>
           )}
-          <Link href={`/ico`} >
+          {/* {user?._id && (
+            <Link href={`/refer`}>
+              <div
+                onClick={() => {
+                  handleCloseSidebar();
+                }}
+                className={
+                  pathname == `/refer` ? isActiveStyle : isNotActiveStyle
+                }
+              >
+                <AiFillDollarCircle className="" size={25} />
+                {`Refer & Earn`}
+              </div>
+            </Link>
+          )} */}
+          <Link href={`/ico`}>
             <div
               onClick={() => {
                 handleCloseSidebar();
@@ -116,12 +166,10 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
               <IoIosAperture className="" size={25} />
               NNT ICO
             </div>
-            </Link>
+          </Link>
 
           <div className="flex flex-col gap-3">
-            <h3 className="mt-1 px-5 text-lg font-bold">
-              Discover Categories
-            </h3>
+            <h3 className="mt-1 px-5 text-lg font-bold">Discover Categories</h3>
             {sidebarCategories[`Discover Categories`].map((cat, index) => {
               const { link, name, icon } = cat;
               return (
@@ -167,9 +215,7 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="mt-1 px-5 text-lg font-bold">
-              Sort By
-            </h3>
+            <h3 className="mt-1 px-5 text-lg font-bold">Sort By</h3>
             {sidebarCategories[`Sort By`].map((cat, index) => {
               const { link, name, icon, array, type } = cat;
               const [query1, query2] = array;
@@ -178,13 +224,16 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
                   <div
                     key={index}
                     onClick={() => {
-
-                        console.log(JSON.stringify(query?.sort), JSON.stringify(array[1].query.sort), JSON.stringify(array[0].query.sort))
+                      console.log(
+                        JSON.stringify(query?.sort),
+                        JSON.stringify(array[1].query.sort),
+                        JSON.stringify(array[0].query.sort)
+                      );
                       router.push(
                         {
                           pathname: !feedPathArray.includes(pathname)
-                          ? "/"
-                          : pathname,
+                            ? "/"
+                            : pathname,
                           query: {
                             ...query,
                             ...query1.query,
@@ -196,7 +245,9 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
                       handleCloseSidebar();
                     }}
                     className={
-                      [array[0].query.sort, array[1].query.sort].includes(query?.sort)
+                      [array[0].query.sort, array[1].query.sort].includes(
+                        query?.sort
+                      )
                         ? isActiveStyle
                         : isNotActiveStyle
                     }
@@ -269,13 +320,14 @@ const Sidebar = ({ user, connectToMetamask, setToggleSidebar = () => {}, logging
           className="bg-gradient-to-r from-themeColor to-secondTheme flex my-5 mb-3 gap-2 p-3 items-center bg-secondTheme rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
         >
           <p className="font-bold">{`Connect and Get In`}</p>
-          {
-            !loggingIn ? (
-              <AiOutlineLogin className="font-bold" fontSize={21} />
-            ) : (
-              <AiOutlineLoading3Quarters className="font-bold animate-spin" fontSize={21} />
-            )
-          }
+          {!loggingIn ? (
+            <AiOutlineLogin className="font-bold" fontSize={21} />
+          ) : (
+            <AiOutlineLoading3Quarters
+              className="font-bold animate-spin"
+              fontSize={21}
+            />
+          )}
         </div>
       )}
     </div>

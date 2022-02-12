@@ -13,24 +13,20 @@ import {
 } from "../utils/messages";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { isValidAmount, parseAmount } from "../utils/data";
+import { parseAmount, tabButtonStyles } from "../utils/data";
 import { nftmarketaddress } from "../config";
 import Head from "next/head";
+import ShareButtons from "../components/ShareButtons";
 
-const ICO = () => {
+const Refer = () => {
   const { user } = useSelector((state) => state.userReducer);
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  const crowdSale = async () => {
+  const earn = async (url) => {
     if (!user?._id) {
       toast.info(loginMessage);
-      return;
-    }
-
-    if (!isValidAmount(amount)) {
-      toast.info(validAmountErrorMessage);
       return;
     }
 
@@ -43,14 +39,13 @@ const ICO = () => {
 
     /* then list the item for sale on the marketplace */
     try {
-      const auctionPrice = parseAmount(amount);
-      // const auctionPrice = ethers.utils.parseUnits(amount, "ether");
+      const auctionPrice = parseAmount("10");
       const contract = new ethers.Contract(
         nftmarketaddress,
         Market.abi,
         signer
       );
-      const transaction = await contract.crowdSale({ value: auctionPrice });
+      const transaction = await contract.earn(auctionPrice);
       setLoadingMessage(getNNTLoadingMessage);
       const tx = await transaction.wait();
       toast.success(getNNTSuccessMessage);
@@ -69,22 +64,22 @@ const ICO = () => {
   return (
     <>
       <Head>
-        <title>ICO | NFT Nation</title>
-        <meta
-          name="description"
-          content={`Initial Coin Offering for NFT Nation Tokens`}
-        />
-        <meta property="og:title" content={`ICO | NFT Nation`} />
+        <title>{`Refer & Earn | NFT Nation`}</title>
+        <meta name="description" content={`Refer & Earn NFT Nation Tokens`} />
+        <meta property="og:title" content={`Refer & Earn | NFT Nation`} />
         <meta
           property="og:description"
-          content={`Initial Coin Offering for NFT Nation Tokens`}
+          content={`Refer & Earn NFT Nation Tokens`}
         />
         <meta
           property="og:image"
           content={`https://nft-nation.vercel.app/favicon.png`}
         />
+        <meta
+          property="og:url"
+          content={`https://nft-nation.vercel.app/refer`}
+        />
         <meta name="twitter:card" content="summary" />
-        <meta property="og:url" content={`https://nft-nation.vercel.app/ico`} />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -92,12 +87,21 @@ const ICO = () => {
         <section className="text-gray-700 body-font flex md:flex-row flex-col items-center bg-white items-center justify-center">
           <div className="lg:flex-grow lg:pl-24 flex flex-col md:items-center mb-16 items-center text-center">
             <h1 className="title-font sm:text-4xl text-3xl mb-4 font-bold text-gray-900">
-              NFT Nation Token ICO
+              {`Refer & Earn`}
             </h1>
             <p className="mb-8 leading-relaxed flex-wrap font-bold">
-              Initial Coin Offering for NFT Nation Token
+              {`Refer & Earn NFT Nation Tokens`}
             </p>
-            <div className="flex flex-row justify-start w-full max-w-md shadow-xl border-gray-200">
+            <p className="mb-2 leading-relaxed flex-wrap font-bold">
+              {`After you refer someone to NFT Nation you both earn 10 NFT Nation Tokens when the referred user get verified`}
+            </p>
+            <p className="mb-8 leading-relaxed flex-wrap font-bold">
+              {`A user will only be verified by obtaining the ownership of an NFT in a Sale or in an Auction.`}
+            </p>
+            <h2 className="mb-2 leading-relaxed flex-wrap font-bold">
+              {`Share Your Refferal Link`}
+            </h2>
+            {/* <div className="flex flex-row justify-start w-full max-w-md shadow-xl border-gray-200">
               <input
                 className="border-l-4 border-red-700 bg-white focus:outline-none px-4 w-full m-0"
                 placeholder="NNT Amount To Buy"
@@ -119,21 +123,17 @@ const ICO = () => {
             <p className="text-sm mt-2 text-gray-500 mb-8 w-full font-bold">
               {amount ? `${amount} NNT will cost ${amount} Matic` : ``}
             </p>
-            {loading && <Spinner title={loadingMessage} />}
-            {/* <div className="flex lg:flex-row md:flex-col">
-            <a className="mx-2 text-gray-600 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-              <i className="fab fa-linkedin-in"></i>
-            </a>
-            <a className="mx-2 text-gray-600 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-              <i className="fab fa-facebook-f"></i>
-            </a>
-            <a className="mx-2 text-gray-600 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a className="mx-2 text-gray-600 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-              <i className="fab fa-youtube"></i>
-            </a>
-          </div> */}
+            {loading && <Spinner title={loadingMessage} />} */}
+            <ShareButtons
+              title={`Refer & Earn`}
+              shareUrl={`https://nft-nation.vercel.app/?refer=${user?._id}`}
+            />
+
+            <button onClick={() => {
+                earn()
+            }}>
+              <span className={tabButtonStyles}>{`Claim Your Referral Joining NNT`} </span>
+            </button>
           </div>
           {/* <div className="md:w-1/2 w-5/6">
           <img
@@ -148,4 +148,4 @@ const ICO = () => {
   );
 };
 
-export default ICO;
+export default Refer;

@@ -99,6 +99,14 @@ const createUser = catchAsyncErrors(async (req, res) => {
 
   if (!user) {
     user = await User.create(req.body);
+
+    if(req.body.referred) {
+      let referred = await User.findById(req.body.referred)
+      referred.referrals = referred.referrals.push(referred)
+
+      await referred.save({ validateBeforeSave: false })
+
+    }
   }
 
   res.status(200).json({
@@ -135,6 +143,32 @@ const updateUser = catchAsyncErrors(async (req, res) => {
   res.status(200).json({
     success: true,
     user,
+  });
+});
+
+const updateUserData = catchAsyncErrors(async (req, res) => {
+  let [userId1, userId2] = req.query.id
+  let [action1, action2] = req.body.actions
+
+  let [user1, user2] = await Promise.all([await User.findById(userId1), await User.findById(userId2)])
+
+
+  // let user = await User.findById(req.query.id);
+
+  if (!user1 || !user2) {
+    return res.status(404).json({
+      success: false,
+      error: "Users not found with this ID",
+    });
+  }
+
+  user1[`${action1}`] += 1
+  user2[`${action2}`] += 1
+
+  await Promise.all([user1.save({ validateBeforeSave: false }), user2.save({ validateBeforeSave: false })])
+
+  res.status(200).json({
+    success: true,
   });
 });
 

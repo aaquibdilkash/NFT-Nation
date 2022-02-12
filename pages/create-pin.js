@@ -681,6 +681,7 @@ const CreatePin = () => {
           property="og:image"
           content={`https://nft-nation.vercel.app/favicon.png`}
         />
+        <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

@@ -41,6 +41,7 @@ const Feed = () => {
     sort,
     commented,
     postedBy,
+    referred
   } = query;
 
 
@@ -70,7 +71,7 @@ const Feed = () => {
 
   const userLink = `/api/users?${page ? `page=${page}` : `page=1`}${
     keyword ? `&keyword=${keyword}` : ``
-  }${feed && user?._id ? `&feed=${user?._id}` : ``}${followers ? `&followings=${userId}` : ``}${
+  }${feed && user?._id ? `&feed=${user?._id}` : ``}${followers ? `&followings=${userId}` : ``}${referred ? `&referred.user=${userId}` : ``}${
     followings ? `&followers=${userId}` : ``
   }${sort ? `&sort=${sort}` : ``}`;
 

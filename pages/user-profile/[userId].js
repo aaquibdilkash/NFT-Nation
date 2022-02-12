@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit, AiOutlineLoading3Quarters } from "react-icons/ai";
-import { getImage, getUserName, sendNotifications } from "../../utils/data";
+import { basePath, getImage, getUserName, sendNotifications } from "../../utils/data";
 import {
   errorMessage,
   fetchingProfileLoadingMessage,
@@ -30,7 +30,7 @@ import {
 import ShareButtons from "../../components/ShareButtons";
 import { IoMdLogOut } from "react-icons/io";
 
-const UserProfilePage = () => {
+const UserProfilePage = ({detail}) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname, query } = router;
@@ -161,6 +161,13 @@ const UserProfilePage = () => {
   };
 
   useEffect(() => {
+    dispatch({
+      type: CURRENT_PROFILE_SET,
+      payload: detail
+    })
+  }, [])
+
+  useEffect(() => {
     setActiveBtn("Owned NFTs");
     userId && fetchUserDetails();
   }, [userId]);
@@ -170,7 +177,7 @@ const UserProfilePage = () => {
       setAlreadyFollowed(user?.followings?.find((item) => item === userId));
   }, [user, currentProfile]);
 
-  if (loading) return <Spinner message={fetchingProfileLoadingMessage} />;
+  if (!currentProfile) return <Spinner message={fetchingProfileLoadingMessage} />;
 
   const {
     _id,
@@ -182,6 +189,7 @@ const UserProfilePage = () => {
     followings,
     followersCount,
     followingsCount,
+    refferals,
   } = currentProfile;
 
   const buttonsArray = {
@@ -203,6 +211,14 @@ const UserProfilePage = () => {
           condition: true,
           query: {
             followings: true,
+          },
+        },
+        {
+          name: `Referrals`,
+          text: `Referrals (${refferals?.length ?? 0})`,
+          condition: true,
+          query: {
+            referred: true,
           },
         },
       ],
@@ -308,20 +324,21 @@ const UserProfilePage = () => {
   return (
     <>
       <Head>
-        <title>{`${userName}'s Profile  | NFT Nation`}</title>
-        <meta name="description" content={`${about}`} />
+        <title>{`@${detail?.userName} - Profile | NFT Nation`}</title>
+        <meta name="description" content={`${detail?.about}`} />
         <meta
           property="og:title"
-          content={`${userName}'s Profile  | NFT Nation`}
+          content={`@${detail?.userName} - Profile  | NFT Nation`}
         />
-        <meta property="og:description" content={`${about}`} />
+        <meta property="og:description" content={`${detail?.about}`} />
+        <meta name="twitter:card" content="summary" />
         <meta
           property="og:url"
           content={`https://nft-nation.vercel.app/user-profile/${_id}`}
         />
         <meta
           property="og:image"
-          content={getImage(image)}
+          content={getImage(detail?.image)}
         />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
@@ -420,6 +437,14 @@ const UserProfilePage = () => {
                               </span>
                               <span className="text-sm text-blueGray-400">
                                 Following
+                              </span>
+                            </div>
+                            <div className="mr-4 p-3 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {refferals?.length ?? 0}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Referrals
                               </span>
                             </div>
                           </div>
@@ -629,3 +654,26 @@ const UserProfilePage = () => {
 };
 
 export default UserProfilePage;
+
+export const getServerSideProps = async ({query}) => {
+  const {userId} = query
+
+  try {
+    var {data} = await axios
+    .get(`${basePath}/api/users/${userId}`)
+  } catch(e) {
+    console.log(e,"Error")
+  }
+
+  if (!data) {
+    return {
+        notFound: true,
+    };
+}
+
+  return {
+    props: {
+      detail: data?.user,
+    },
+  };
+};

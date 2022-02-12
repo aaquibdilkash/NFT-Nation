@@ -22,6 +22,7 @@ import {
   parseAmount,
   sendNotifications,
   tabButtonStyles,
+  basePath
 } from "../../utils/data";
 import {
   acceptOfferLoadingMessage,
@@ -107,7 +108,7 @@ import useSWR from "swr";
 import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
 
-const PinDetail = () => {
+const PinDetail = ({detail}) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname } = router;
@@ -116,7 +117,7 @@ const PinDetail = () => {
     (state) => state.userReducer
   );
   const [refresh, setRefresh] = useState(false);
-  const [pinDetail, setPinDetail] = useState();
+  const [pinDetail, setPinDetail] = useState(detail);
   const [pinComments, setPinComments] = useState([]);
   const [commentReplies, setCommentReplies] = useState([]);
   const [showCommentReplies, setShowCommentReplies] = useState({});
@@ -372,7 +373,7 @@ const PinDetail = () => {
   );
 
   const fetchPinDetails = () => {
-    setPinDetail(null);
+    // setPinDetail(null);
     axios
       .get(`/api/pins/${pinId}`)
       .then((res) => {
@@ -1886,25 +1887,26 @@ const PinDetail = () => {
     return <Spinner title={loadingMessage} message={waitLoadingMessage} />;
   }
 
+
   return (
     <>
       <Head>
-        <title>{`${title} | NFT Nation`}</title>
-        <meta name="description" content={`${about}`} />
-        <meta property="og:title" content={`${title} | NFT Nation`} />
-        <meta property="og:description" content={`${about}`} />
+        <title>{`#${detail?.tokenId} ${detail?.title} - NFT | NFT Nation`}</title>
+        <meta name="description" content={`${detail?.about}`} />
+        <meta property="og:title" content={`${detail?.title} - NFT | NFT Nation`} />
+        <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
           content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
         />
         <meta
           property="og:image"
-          content={getImage(image)}
+          content={getImage(detail?.image)}
         />
+        <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      {pinDetail && (
         <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
           <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
             <Image
@@ -2457,7 +2459,6 @@ const PinDetail = () => {
               </div>
             )}
         </div>
-      )}
       <>
         <div className="flex flex-wrap justify-evenly mt-2 mb-2">
           {[
@@ -2518,3 +2519,26 @@ const PinDetail = () => {
 };
 
 export default PinDetail;
+
+export const getServerSideProps = async ({query}) => {
+  const {pinId} = query
+
+  try {
+    var {data} = await axios
+    .get(`${basePath}/api/pins/${pinId}`)
+  } catch(e) {
+    console.log(e,"Error")
+  }
+
+  if (!data) {
+    return {
+        notFound: true,
+    };
+}
+
+  return {
+    props: {
+      detail: data?.pin,
+    },
+  };
+};
