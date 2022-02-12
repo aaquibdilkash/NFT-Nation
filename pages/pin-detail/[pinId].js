@@ -378,7 +378,7 @@ const PinDetail = ({detail}) => {
   );
 
   const fetchPinDetails = () => {
-    setPinDetail(null);
+    // setPinDetail(null);
     axios
       .get(`/api/pins/${pinId}`)
       .then((res) => {
