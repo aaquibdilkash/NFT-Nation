@@ -25,10 +25,11 @@ export const fetchingHistoryLoadingMessage = `Fetching History...`;
 export const fetchingBidsLoadingMessage = `Fetching Bids...`;
 export const fetchingPropertiesLoadingMessage = `Fetching Properties...`;
 export const fetchingOffersLoadingMessage = `Fetching Offers...`;
-export const fetchingNFTLoadingMessage = `Fetching Pin...`;
-export const fetchingCollectionLoadingMessage = `Fetching Collection...`;
-export const fetchingProfileLoadingMessage = `Fetching Profile...`;
+export const fetchingNFTLoadingMessage = `Fetching NFT Data For You...`;
+export const fetchingCollectionLoadingMessage = `Fetching Collection Data For You...`;
+export const fetchingProfileLoadingMessage = `Fetching Profile Data For You...`;
 export const waitLoadingMessage = `Please Wait And Do Not Leave This Page...`;
+export const fetchingLoadingMessage = `Don't Worry We're Fetching For You...`;
 
 export const validAmountErrorMessage = `Please enter a valid amount`;
 export const fileUploadErrorMessage = `Something went wrong while uploading the file, Please Try Again Later!`;

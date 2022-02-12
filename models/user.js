@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
     about: {
       type: String,
       maxlength: [128, "userName field cannot exceeds 80 characters"],
-      unique: false,
+      default: ""
     },
     followers: [
       {

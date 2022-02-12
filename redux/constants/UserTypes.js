@@ -8,6 +8,8 @@ export const GIFTING_USER_SET = "GIFTING_USER_SET"
 
 export const HAS_MORE = "HAS_MORE"
 
+export const NAVIGATING_SET = "NAVIGATING_SET"
+
 export const CHANGE_PAGE = "CHANGE_PAGE"
 
 export const REFRESH_SET = "REFRESH_SET"

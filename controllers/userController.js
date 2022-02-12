@@ -5,33 +5,23 @@ import Message from "../models/message";
 import Blog from "../models/blog";
 import Notification from "../models/notification";import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
-import redisClient from "./redis";
+// import redisClient from "./redis";
 // import Redis from "ioredis"
 
-const DEFAULT_EXPIRATION = 3600;
+// const DEFAULT_EXPIRATION = 3600;
 
 const allUsers = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
 
-  try {
-    const data = await redisClient.get(req?.url);
+  // try {
+  //   const data = await redisClient.get(req?.url);
 
-    if (data) {
-      // return res.status(200).json(JSON.parse(data));
-    }
-  } catch (e) {
-    console.log(e);
-  }
-
-  // redisClient.get(`users${JSON.stringify(req.query)}`, (err, data) => {
-  //   if (err) {
-  //     console.error(err);
-  //   } else {
-  //     if(data) {
-  //       return res.status(200).json(JSON.parse(data));
-  //     }
+  //   if (data) {
+  //     return res.status(200).json(JSON.parse(data));
   //   }
-  // });
+  // } catch (e) {
+  //   console.log(e);
+  // }
 
   const resultPerPage = 8;
   const usersCount = await User.countDocuments();
@@ -62,18 +52,18 @@ const allUsers = catchAsyncErrors(async (req, res) => {
     resultPerPage,
   });
 
-  redisClient.set(
-    req?.url,
-    JSON.stringify({
-      success: true,
-      data: users,
-      dataCount: usersCount,
-      filteredDataCount: filteredUsersCount,
-      resultPerPage,
-    }),
-    "ex",
-    DEFAULT_EXPIRATION
-  );
+  // redisClient.set(
+  //   req?.url,
+  //   JSON.stringify({
+  //     success: true,
+  //     data: users,
+  //     dataCount: usersCount,
+  //     filteredDataCount: filteredUsersCount,
+  //     resultPerPage,
+  //   }),
+  //   "ex",
+  //   DEFAULT_EXPIRATION
+  // );
 
   // await redisClient.quit();
 });
@@ -93,6 +83,7 @@ const getUser = catchAsyncErrors(async (req, res) => {
     user,
   });
 });
+
 
 const createUser = catchAsyncErrors(async (req, res) => {
   let user = await User.findById(req.body._id);
@@ -119,9 +110,9 @@ const createUser = catchAsyncErrors(async (req, res) => {
   // });
 
   // flushing old data
-  redisClient.del("/api/users?page=1", () => {
-    console.log("users page 1 redis refreshed")
-  })
+  // redisClient.del("/api/users?page=1", () => {
+  //   console.log("users page 1 redis refreshed")
+  // })
 });
 
 const updateUser = catchAsyncErrors(async (req, res) => {

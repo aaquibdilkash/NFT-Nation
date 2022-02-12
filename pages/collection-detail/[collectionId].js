@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   basePath,
   buttonStyle,
+  getGatewayImage,
   getImage,
   getUserName,
   iconStyles,
@@ -17,21 +18,14 @@ import {
   errorMessage,
   fetchingCollectionLoadingMessage,
   fetchingCommentsLoadingMessage,
+  fetchingLoadingMessage,
   loginMessage,
   saveErrorMessage,
-  shareInfoMessage,
 } from "../../utils/messages";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
 import Image from "next/image";
-import {
-  FaBackspace,
-  FaBackward,
-  FaReply,
-  FaReplyAll,
-  FaShareAlt,
-} from "react-icons/fa";
 import { toast } from "react-toastify";
 import { Feed } from "../../components";
 import {
@@ -42,17 +36,16 @@ import {
 } from "react-icons/ai";
 import { COLLECTION_SET } from "../../redux/constants/UserTypes";
 import CollectionEdit from "../../components/CollectionEdit";
-import { MdDeleteForever } from "react-icons/md";
 import moment from "moment";
 import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
 
-const CollectionDetail = ({detail}) => {
+const CollectionDetail = ({ detail }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname, query } = router;
   const { collectionId } = query;
-  const { user, collection } = useSelector((state) => state.userReducer);
+  const { user, collection, navigating } = useSelector((state) => state.userReducer);
   const [refresh, setRefresh] = useState(false);
   const [collectionComments, setCollectionComments] = useState([]);
   const [commentReplies, setCommentReplies] = useState([]);
@@ -192,9 +185,9 @@ const CollectionDetail = ({detail}) => {
   useEffect(() => {
     dispatch({
       type: COLLECTION_SET,
-      payload: detail
-    })
-  }, [])
+      payload: detail,
+    });
+  }, [detail]);
 
   useEffect(() => {
     user?._id && setAlreadySaved(saved?.find((item) => item === user?._id));
@@ -376,6 +369,14 @@ const CollectionDetail = ({detail}) => {
       });
   };
 
+  if (navigating) {
+    return (
+      <Spinner
+        message={fetchingLoadingMessage}
+      />
+    );
+  }
+
   if (!collection) {
     return <Spinner message={fetchingCollectionLoadingMessage} />;
   }
@@ -385,16 +386,16 @@ const CollectionDetail = ({detail}) => {
       <Head>
         <title>{`${detail?.title} - Collection | NFT Nation`}</title>
         <meta name="description" content={`${detail?.about}`} />
-        <meta property="og:title" content={`${detail?.title} - Collection | NFT Nation`} />
+        <meta
+          property="og:title"
+          content={`${detail?.title} - Collection | NFT Nation`}
+        />
         <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
           content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
         />
-        <meta
-          property="og:image"
-          content={getImage(detail?.image)}
-        />
+        <meta property="og:image" content={getGatewayImage(detail?.image, "pinata")} />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
@@ -491,62 +492,59 @@ const CollectionDetail = ({detail}) => {
                   setCommentReplies={setCommentReplies}
                   deleteCommentReply={deleteCommentReply}
                 />
-                
               </div>
-                {tab === "comments" && (
-                  <div className="flex flex-wrap mt-2 gap-3">
-                    {user?._id && (
-                      <Link href={`/user-profile/${user?._id}`}>
-                        <div>
-                          <Image
-                            height={45}
-                            width={45}
-                            src={getImage(user?.image)}
-                            className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                            alt="user-profile"
-                          />
-                        </div>
-                      </Link>
-                    )}
-                    <input
-                      className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
-                      type="text"
-                      placeholder={
-                        !showCommentReplies?._id
-                          ? "Add a Comment"
-                          : "Add a Reply"
-                      }
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                      onClick={() => {
-                        !showCommentReplies?._id
-                          ? addComment()
-                          : addCommentReply(showCommentReplies?._id);
-                      }}
-                    >
-                      {!addingComment ? (
-                        !showCommentReplies?._id ? (
-                          "Comment"
-                        ) : (
-                          "Reply"
-                        )
-                      ) : (
-                        <AiOutlineLoading3Quarters
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // savePin();
-                          }}
-                          className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                          size={20}
+              {tab === "comments" && (
+                <div className="flex flex-wrap mt-2 gap-3">
+                  {user?._id && (
+                    <Link href={`/user-profile/${user?._id}`}>
+                      <div>
+                        <Image
+                          height={45}
+                          width={45}
+                          src={getImage(user?.image)}
+                          className="w-14 h-14 rounded-full cursor-pointer pt-2"
+                          alt="user-profile"
                         />
-                      )}
-                    </button>
-                  </div>
-                )}
+                      </div>
+                    </Link>
+                  )}
+                  <input
+                    className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
+                    type="text"
+                    placeholder={
+                      !showCommentReplies?._id ? "Add a Comment" : "Add a Reply"
+                    }
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                    onClick={() => {
+                      !showCommentReplies?._id
+                        ? addComment()
+                        : addCommentReply(showCommentReplies?._id);
+                    }}
+                  >
+                    {!addingComment ? (
+                      !showCommentReplies?._id ? (
+                        "Comment"
+                      ) : (
+                        "Reply"
+                      )
+                    ) : (
+                      <AiOutlineLoading3Quarters
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // savePin();
+                        }}
+                        className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                        size={20}
+                      />
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -648,7 +646,11 @@ const CollectionDetail = ({detail}) => {
                 )}
               </div>
             </button>
-            <ShareButtons title={title} shareUrl={`https://nft-nation.vercel.app/collection-detail/${collectionId}`} image={getImage(image)}/>
+            <ShareButtons
+              title={title}
+              shareUrl={`https://nft-nation.vercel.app/collection-detail/${collectionId}`}
+              image={getImage(image)}
+            />
           </div>
         </div>
       )}
@@ -712,21 +714,18 @@ const CollectionDetail = ({detail}) => {
 
 export default CollectionDetail;
 
-export const getServerSideProps = async ({query}) => {
-  const {collectionId} = query
+export const getServerSideProps = async ({ query }) => {
+  const { collectionId } = query;
 
-  try {
-    var {data} = await axios
-    .get(`${basePath}/api/collections/${collectionId}`)
-  } catch(e) {
-    console.log(e,"Error")
-  }
+  const { data } = await axios.get(
+    `${basePath}/api/collections/${collectionId}`
+  );
 
   if (!data) {
     return {
-        notFound: true,
+      notFound: true,
     };
-}
+  }
 
   return {
     props: {

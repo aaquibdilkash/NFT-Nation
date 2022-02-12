@@ -6,15 +6,15 @@ import { useSelector } from "react-redux";
 import { CHANGE_PAGE, HAS_MORE } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
-import { toast } from "react-toastify";
-import { errorMessage } from "../utils/messages";
+import { fetchingLoadingMessage } from "../utils/messages";
+import { toTitleCase } from "../utils/data";
 
 const Feed = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [dataArray, setDataArray] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { user, currentProfile, hasMore, refresh } = useSelector(
+  const { user, currentProfile, hasMore, refresh, navigating } = useSelector(
     (state) => state.userReducer
   );
   const CancelToken = axios.CancelToken;
@@ -131,13 +131,22 @@ const Feed = () => {
     })
   }, [user])
 
+  if (navigating) {
+    return (
+      <Spinner
+        message={fetchingLoadingMessage}
+      />
+    );
+  }
+  
   const showCategory = category?.length ? category : "new"
   const showType = type?.length ? type : "pins"
+
 
   if (loading) {
     return (
       <Spinner
-        message={`We are adding ${showCategory} ${showType} to your feed...`}
+        message={`We Are Fetching ${toTitleCase(showCategory)} ${toTitleCase(showType)} For Your Feed...`}
       />
     );
   }
@@ -157,9 +166,7 @@ const Feed = () => {
   return (
     <>
       <div className="">
-        {/* {dataArray?.length > 0 && ( */}
           <MasonryLayout comp={dataArray} type={showType} />
-        {/* )} */}
         {hasMore && (
           <Spinner
             message={`We are adding more ${showCategory} ${showType} to your feed...`}

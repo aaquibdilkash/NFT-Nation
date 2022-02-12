@@ -6,24 +6,23 @@ import Blog from "../models/blog";
 import Notification from "../models/notification";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
-import redisClient from "./redis";
+// import redisClient from "./redis";
 import mongoose from "mongoose";
-// import Redis from "ioredis"
 
-const DEFAULT_EXPIRATION = 3600;
+// const DEFAULT_EXPIRATION = 3600;
 
 const allCollections = catchAsyncErrors(async (req, res) => {
   // const redisClient = new Redis(process.env.REDIS_URL);
   
-  try {
-    const data = await redisClient.get(req?.url);
+  // try {
+  //   const data = await redisClient.get(req?.url);
     
-    if (data) {
-      // return res.status(200).json(JSON.parse(data));
-    }
-  } catch (e) {
-    console.log(e);
-  }
+  //   if (data) {
+  //     return res.status(200).json(JSON.parse(data));
+  //   }
+  // } catch (e) {
+  //   console.log(e);
+  // }
   
   const resultPerPage = 8;
   const collectionsCount = await Collection.countDocuments();
@@ -58,18 +57,18 @@ const allCollections = catchAsyncErrors(async (req, res) => {
     resultPerPage,
   });
 
-  redisClient.set(
-    req?.url,
-    JSON.stringify({
-      success: true,
-      data: collections,
-      dataCount: collectionsCount,
-      filteredDataCount: filteredCollectionsCount,
-      resultPerPage,
-    }),
-    "ex",
-    DEFAULT_EXPIRATION
-  );
+  // redisClient.set(
+  //   req?.url,
+  //   JSON.stringify({
+  //     success: true,
+  //     data: collections,
+  //     dataCount: collectionsCount,
+  //     filteredDataCount: filteredCollectionsCount,
+  //     resultPerPage,
+  //   }),
+  //   "ex",
+  //   DEFAULT_EXPIRATION
+  // );
 
   // await redisClient.quit();
 });
@@ -96,6 +95,7 @@ const getCollection = catchAsyncErrors(async (req, res) => {
     return;
   }
 });
+
 
 const updateCollectionData = async (id) => {
   let collection = await Collection.findById(id).populate("pins", "postedBy price auctionEnded history");
@@ -160,9 +160,9 @@ const createCollection = catchAsyncErrors(async (req, res) => {
   //   console.log("flused all keys in redis")
   // });
 
-  redisClient.del("/api/collections?page=1", () => {
-    console.log("collections page 1 redis refreshed")
-  })
+  // redisClient.del("/api/collections?page=1", () => {
+  //   console.log("collections page 1 redis refreshed")
+  // })
 });
 
 const updateCollection = catchAsyncErrors(async (req, res) => {
@@ -185,6 +185,7 @@ const updateCollection = catchAsyncErrors(async (req, res) => {
     success: true,
     collection,
   });
+
 });
 
 const deleteCollection = catchAsyncErrors(async (req, res) => {

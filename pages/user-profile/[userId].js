@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { AiOutlineEdit, AiOutlineLoading3Quarters } from "react-icons/ai";
-import { basePath, getImage, getUserName, sendNotifications } from "../../utils/data";
+import { basePath, getGatewayImage, getImage, getUserName, sendNotifications } from "../../utils/data";
 import {
   errorMessage,
+  fetchingLoadingMessage,
   fetchingProfileLoadingMessage,
   followErrorMessage,
   followSuccessMessage,
@@ -34,7 +35,7 @@ const UserProfilePage = ({detail}) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname, query } = router;
-  const { user, currentProfile } = useSelector((state) => state.userReducer);
+  const { user, currentProfile, navigating } = useSelector((state) => state.userReducer);
   const { userId, type } = query;
   const [editing, setEditing] = useState(false);
   const [collectionEditing, setCollectionEditing] = useState(false);
@@ -165,7 +166,7 @@ const UserProfilePage = ({detail}) => {
       type: CURRENT_PROFILE_SET,
       payload: detail
     })
-  }, [])
+  }, [detail])
 
   useEffect(() => {
     setActiveBtn("Owned NFTs");
@@ -176,6 +177,14 @@ const UserProfilePage = ({detail}) => {
     user?._id &&
       setAlreadyFollowed(user?.followings?.find((item) => item === userId));
   }, [user, currentProfile]);
+
+  if (navigating) {
+    return (
+      <Spinner
+        message={fetchingLoadingMessage}
+      />
+    );
+  }
 
   if (!currentProfile) return <Spinner message={fetchingProfileLoadingMessage} />;
 
@@ -338,7 +347,7 @@ const UserProfilePage = ({detail}) => {
         />
         <meta
           property="og:image"
-          content={getImage(detail?.image)}
+          content={getGatewayImage(detail?.image, "pinata")}
         />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />

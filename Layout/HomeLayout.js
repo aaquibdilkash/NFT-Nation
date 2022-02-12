@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { HiMenu } from "react-icons/hi";
 import Link from "next/link";
 import { Navbar, Sidebar } from "../components";
@@ -12,7 +12,7 @@ import { chainData } from "../utils/chainData";
 import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
 import Web3 from "web3";
-import Web3Modal, { local } from "web3modal";
+import Web3Modal from "web3modal";
 import Image from "next/image";
 import { FaArtstation } from "react-icons/fa";
 import { useRouter } from "next/router";
@@ -59,8 +59,8 @@ const HomeLayout = ({ children }) => {
       // const ISSERVER = typeof window === "undefined";
 
       // !ISSERVER &&
-        // window.addEventListener("contextmenu", (e) => e.preventDefault());
-      localStorage.setItem("refer", refer)
+      // window.addEventListener("contextmenu", (e) => e.preventDefault());
+      localStorage.setItem("refer", refer);
     }
     if (!window?.ethereum) {
       // window.ethereum.isMetaMask
@@ -186,7 +186,8 @@ const HomeLayout = ({ children }) => {
     const obj = {
       _id: address,
       userName: address,
-      ...(localStorage.getItem("refer") && localStorage.getItem("refer")?.length == 42
+      ...(localStorage.getItem("refer") &&
+      localStorage.getItem("refer")?.length == 42
         ? { referred: { user: localStorage.getItem("refer") } }
         : {}),
     };
@@ -346,7 +347,14 @@ const HomeLayout = ({ children }) => {
               loggingIn={loggingIn}
             />
           </div>
-          <div className="h-full">{children}</div>
+          {/* {navigating ? (
+            <div className="h-full">
+            <Spinner message={`Don't Worry We're Fetching For You...`} />
+            </div>
+          ) : (
+            <div className="h-full">{children}</div>
+            )} */}
+            <div className="h-full">{children}</div>
           {/* <div className="sticky transparent w-auto bottom-0">
             <Footer />
           </div> */}

@@ -6,22 +6,22 @@ import Blog from "../models/blog";
 import Notification from "../models/notification";
 import catchAsyncErrors from "../middleware/catchAsyncErrors";
 import SearchPagination from "../middleware/searchPagination";
-import redisClient from "./redis";
+// import redisClient from "./redis";
 import { getMaxBid } from "../utils/data";
 import mongoose from "mongoose";
 
-const DEFAULT_EXPIRATION = 3600;
+// const DEFAULT_EXPIRATION = 3600;
 
 const allPins = catchAsyncErrors(async (req, res) => {
-  try {
-    const data = await redisClient.get(req?.url);
+  // try {
+  //   const data = await redisClient.get(req?.url);
 
-    if (data) {
-      // return res.status(200).json(JSON.parse(data));
-    }
-  } catch (e) {
-    console.log(e);
-  }
+  //   if (data) {
+  //     return res.status(200).json(JSON.parse(data));
+  //   }
+  // } catch (e) {
+  //   console.log(e);
+  // }
 
   const resultPerPage = 8;
   const pinsCount = await Pin.countDocuments();
@@ -56,18 +56,18 @@ const allPins = catchAsyncErrors(async (req, res) => {
     resultPerPage,
   });
 
-  redisClient.set(
-    req?.url,
-    JSON.stringify({
-      success: true,
-      data: pins,
-      dataCount: pinsCount,
-      filteredDataCount: filteredPinsCount,
-      resultPerPage,
-    }),
-    "ex",
-    DEFAULT_EXPIRATION
-  );
+  // redisClient.set(
+  //   req?.url,
+  //   JSON.stringify({
+  //     success: true,
+  //     data: pins,
+  //     dataCount: pinsCount,
+  //     filteredDataCount: filteredPinsCount,
+  //     resultPerPage,
+  //   }),
+  //   "ex",
+  //   DEFAULT_EXPIRATION
+  // );
 
   // await redisClient.quit();
 });
@@ -88,6 +88,7 @@ const getPin = catchAsyncErrors(async (req, res) => {
     pin,
   });
 });
+
 
 const isPinExist = catchAsyncErrors(async (req, res) => {
   const { nftContract, tokenId } = req.body;
@@ -117,9 +118,9 @@ const createPin = catchAsyncErrors(async (req, res) => {
   //   console.log("flused all keys in redis")
   // });
 
-  redisClient.del("/api/pins?page=1", () => {
-    console.log("pins page 1 redis refreshed");
-  });
+  // redisClient.del("/api/pins?page=1", () => {
+  //   console.log("pins page 1 redis refreshed");
+  // });
 });
 
 const updatePin = catchAsyncErrors(async (req, res) => {

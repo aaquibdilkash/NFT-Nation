@@ -22,7 +22,8 @@ import {
   parseAmount,
   sendNotifications,
   tabButtonStyles,
-  basePath
+  basePath,
+  getGatewayImage
 } from "../../utils/data";
 import {
   acceptOfferLoadingMessage,
@@ -41,6 +42,7 @@ import {
   fetchingBidsLoadingMessage,
   fetchingCommentsLoadingMessage,
   fetchingHistoryLoadingMessage,
+  fetchingLoadingMessage,
   fetchingNFTLoadingMessage,
   fetchingOffersLoadingMessage,
   fetchingPropertiesLoadingMessage,
@@ -113,7 +115,7 @@ const PinDetail = ({detail}) => {
   const dispatch = useDispatch();
   const { pathname } = router;
   const { pinId } = router.query;
-  const { user, giftingUser, marketContract } = useSelector(
+  const { user, giftingUser, marketContract, navigating } = useSelector(
     (state) => state.userReducer
   );
   const [refresh, setRefresh] = useState(false);
@@ -373,7 +375,7 @@ const PinDetail = ({detail}) => {
   );
 
   const fetchPinDetails = () => {
-    // setPinDetail(null);
+    setPinDetail(null);
     axios
       .get(`/api/pins/${pinId}`)
       .then((res) => {
@@ -407,13 +409,20 @@ const PinDetail = ({detail}) => {
   }, [user, pinDetail]);
 
   useEffect(() => {
+    setPinDetail(detail)
+  }, [detail])
+
+  useEffect(() => {
     pinId && fetchPinDetails();
+  }, [pinId, refresh]);
+
+  useEffect(() => {
     pinId && fetchPinComments();
     pinId && fetchPinBids();
     pinId && fetchPinHistory();
     pinId && fetchPinOffers();
     pinId && fetchPinProperties();
-  }, [pinId, refresh]);
+  }, [pinId]);
 
   useEffect(() => {
     setShowCommentReplies({});
@@ -1879,6 +1888,14 @@ const PinDetail = ({detail}) => {
     },
   ];
 
+  if (navigating) {
+    return (
+      <Spinner
+        message={fetchingLoadingMessage}
+      />
+    );
+  }
+
   if (!pinDetail) {
     return <Spinner message={fetchingNFTLoadingMessage} />;
   }
@@ -1901,7 +1918,7 @@ const PinDetail = ({detail}) => {
         />
         <meta
           property="og:image"
-          content={getImage(detail?.image)}
+          content={getGatewayImage(detail?.image, "pinata")}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
