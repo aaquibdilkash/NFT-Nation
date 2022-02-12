@@ -156,7 +156,7 @@ const Feed = () => {
       <>
         {dataArray.length === 0 && (
           <div className="mt-10 text-center text-xl font-bold">
-            {`No ${showCategory} ${showType} Found!`}
+            {`No ${toTitleCase(showCategory)} ${toTitleCase(showType)} Found!`}
           </div>
         )}
       </>

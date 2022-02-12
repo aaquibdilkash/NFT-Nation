@@ -343,11 +343,12 @@ const UserProfilePage = ({detail}) => {
         <meta name="twitter:card" content="summary" />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/user-profile/${_id}`}
+          content={`https://nft-nation.vercel.app/user-profile/${userId}`}
         />
         <meta
           property="og:image"
-          content={getGatewayImage(detail?.image, "pinata")}
+          // content={getGatewayImage(detail?.image, "pinata")}
+          content={`${basePath}/favicon.png`}
         />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />

@@ -45,7 +45,9 @@ const CollectionDetail = ({ detail }) => {
   const dispatch = useDispatch();
   const { pathname, query } = router;
   const { collectionId } = query;
-  const { user, collection, navigating } = useSelector((state) => state.userReducer);
+  const { user, collection, navigating } = useSelector(
+    (state) => state.userReducer
+  );
   const [refresh, setRefresh] = useState(false);
   const [collectionComments, setCollectionComments] = useState([]);
   const [commentReplies, setCommentReplies] = useState([]);
@@ -370,11 +372,7 @@ const CollectionDetail = ({ detail }) => {
   };
 
   if (navigating) {
-    return (
-      <Spinner
-        message={fetchingLoadingMessage}
-      />
-    );
+    return <Spinner message={fetchingLoadingMessage} />;
   }
 
   if (!collection) {
@@ -393,9 +391,13 @@ const CollectionDetail = ({ detail }) => {
         <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
+          content={`https://nft-nation.vercel.app/collection-detail/${collectionId}`}
         />
-        <meta property="og:image" content={getGatewayImage(detail?.image, "pinata")} />
+        <meta
+          property="og:image"
+          // content={getGatewayImage(detail?.image, "pinata")}
+          content={`${basePath}/favicon.png`}
+        />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />

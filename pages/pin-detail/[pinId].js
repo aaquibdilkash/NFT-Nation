@@ -111,6 +111,9 @@ import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
 
 const PinDetail = ({detail}) => {
+  const CancelToken = axios.CancelToken;
+  const source = CancelToken.source();
+
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname } = router;
@@ -439,7 +442,13 @@ const PinDetail = ({detail}) => {
         // fetchPinProperties();
       }
     }
+
+    return () => source.cancel("Operation Cancelled By The User!");
   }, [tab, pinId]);
+
+  // useEffect(() => {
+
+  // }, [])
 
   useEffect(() => {
     showCommentReplies?._id && fetchPinCommentReplies();
@@ -1914,11 +1923,12 @@ const PinDetail = ({detail}) => {
         <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/pin-detail/${_id}`}
+          content={`https://nft-nation.vercel.app/pin-detail/${pinId}`}
         />
         <meta
           property="og:image"
-          content={getGatewayImage(detail?.image, "pinata")}
+          // content={getGatewayImage(detail?.image, "pinata")}
+          content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
