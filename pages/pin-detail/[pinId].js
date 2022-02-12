@@ -1927,8 +1927,8 @@ const PinDetail = ({detail}) => {
         />
         <meta
           property="og:image"
-          // content={getGatewayImage(detail?.image, "pinata")}
-          content={`${basePath}/favicon.png`}
+          content={getGatewayImage(detail?.image, "ipfs")}
+          // content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />

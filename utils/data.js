@@ -95,7 +95,7 @@ export const getImage = (hash) => {
 
 export const getGatewayImage = (hash, gateway) => {
   if (!hash) {
-    return "/favicon.png";
+    return "https://nft-nation.vercel.app/favicon.png";
   }
 
   const gatewayObj = {
