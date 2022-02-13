@@ -109,10 +109,11 @@ import { GIFTING_USER_SET } from "../../redux/constants/UserTypes";
 import useSWR from "swr";
 import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
+// import { wrapper } from "../../redux/store";
 
-const PinDetail = ({detail}) => {
-  const CancelToken = axios.CancelToken;
-  const source = CancelToken.source();
+const PinDetail = ({detail, data = []}) => {
+  // const CancelToken = axios.CancelToken;
+  // const source = CancelToken.source();
 
   const router = useRouter();
   const dispatch = useDispatch();
@@ -124,7 +125,7 @@ const PinDetail = ({detail}) => {
   const [refresh, setRefresh] = useState(false);
   const [pinDetail, setPinDetail] = useState(detail);
   const [pinComments, setPinComments] = useState([]);
-  const [commentReplies, setCommentReplies] = useState([]);
+  const [commentReplies, setCommentReplies] = useState({});
   const [showCommentReplies, setShowCommentReplies] = useState({});
   const [pinHistory, setPinHistory] = useState([]);
   const [pinProperties, setPinProperties] = useState([]);
@@ -366,7 +367,7 @@ const PinDetail = ({detail}) => {
       });
   };
 
-  const { data, error } = useSWR(
+  const { data: swrData, error } = useSWR(
     () => (pinId ? `/api/pins/${pinId}` : null),
     fetcher,
     {
@@ -443,12 +444,8 @@ const PinDetail = ({detail}) => {
       }
     }
 
-    return () => source.cancel("Operation Cancelled By The User!");
+    // return () => source.cancel("Operation Cancelled By The User!");
   }, [tab, pinId]);
-
-  // useEffect(() => {
-
-  // }, [])
 
   useEffect(() => {
     showCommentReplies?._id && fetchPinCommentReplies();
@@ -1502,6 +1499,7 @@ const PinDetail = ({detail}) => {
         .catch((e) => {
           setAddingComment(false);
           toast.error(commentAddErrorMessage);
+          console.log(e, "DDDDDDDDDDDDDDDDDDDD")
         });
     }
   };
@@ -1529,7 +1527,7 @@ const PinDetail = ({detail}) => {
 
           let to = [
             ...pinComments.map((item) => item?.user?._id),
-            ...commentReplies.map((item) => item?.user?._id),
+            ...commentReplies?.replies?.map((item) => item?.user?._id),
             ...user?.followers,
             createdBy?._id,
             postedBy?._id,
@@ -1559,6 +1557,7 @@ const PinDetail = ({detail}) => {
         .catch((e) => {
           setAddingComment(false);
           toast.error(commentAddErrorMessage);
+          console.log(e,'DDDDDDDDDDD')
         });
     }
   };
@@ -1927,8 +1926,8 @@ const PinDetail = ({detail}) => {
         />
         <meta
           property="og:image"
-          content={getGatewayImage(detail?.image, "ipfs")}
-          // content={`${basePath}/favicon.png`}
+          // content={getGatewayImage(detail?.image, "ipfs")}
+          content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
@@ -2128,6 +2127,7 @@ const PinDetail = ({detail}) => {
                   commentReplies={commentReplies}
                   setCommentReplies={setCommentReplies}
                   deleteCommentReply={deleteCommentReply}
+                  fetchComments={fetchPinComments}
                 />
 
                 {tab === "history" &&
@@ -2539,7 +2539,7 @@ const PinDetail = ({detail}) => {
               );
           })}
         </div>
-        <Feed />
+        <Feed data={data}/>
       </>
     </>
   );
@@ -2547,7 +2547,10 @@ const PinDetail = ({detail}) => {
 
 export default PinDetail;
 
-export const getServerSideProps = async ({query}) => {
+// export const getServerSideProps = wrapper.getServerSideProps(
+//   (store) =>
+//     async ({ query }) => {
+  export const getServerSideProps = async ({query}) => {
   const {pinId} = query
 
   try {
@@ -2566,6 +2569,8 @@ export const getServerSideProps = async ({query}) => {
   return {
     props: {
       detail: data?.pin,
+      data: []
     },
   };
-};
+}
+// );

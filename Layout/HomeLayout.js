@@ -43,7 +43,7 @@ const HomeLayout = ({ children }) => {
     type,
     refer,
   } = query;
-  const { user, marketContract, refresh, hasMore, changePage } = useSelector(
+  const { user, marketContract, refresh, hasMore, changePage, navigating } = useSelector(
     (state) => state.userReducer
   );
   let web3Modal;
@@ -272,7 +272,7 @@ const HomeLayout = ({ children }) => {
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop === clientHeight && hasMore && changePage) {
+    if (scrollHeight - scrollTop === clientHeight && hasMore && changePage && !navigating) {
       // if (scrollTop + clientHeight > scrollHeight - 100 && hasMore && changePage) {
       router.push(
         {

@@ -15,9 +15,10 @@ const CommentSection = ({
     commentsArr = [],
     deletingComment,
     deleteComment = () => {},
-    commentReplies = [],
+    commentReplies = {},
     setCommentReplies = () => {},
-    deleteCommentReply = () => {}
+    deleteCommentReply = () => {},
+    fetchComments = () => {}
 
 }) => {
   return (
@@ -68,12 +69,12 @@ const CommentSection = ({
                 onClick={(e) => {
                   setShowCommentReplies(item);
                 }}
-                className="flex flex-row"
+                className="flex flex-row mr-auto"
               >
                 <FaReply size={15} className="cursor-pointer mr-1" />
-                <p className="text-sm font-semibold">{`${item?.repliesCount} ${
+                <p className="text-sm font-semibold">{item?.repliesCount > 0 ? `${item?.repliesCount} ${
                   item?.repliesCount !== 1 ? `replies` : `reply`
-                }`}</p>
+                }` : `No Replies Yet!`}</p>
               </div>
 
               {item?.user?._id === user?._id && (
@@ -154,17 +155,16 @@ const CommentSection = ({
                 size={15}
                 className="cursor-pointer mr-1"
               />
-              <p className="text-sm font-semibold">{`${
-                showCommentReplies?.repliesCount
-              } ${
-                showCommentReplies?.repliesCount !== 1 ? `replies` : `reply`
-              }`}</p>
+              <p className="text-sm font-semibold">{(commentReplies?.repliesCount ?? showCommentReplies?.repliesCount) > 0 ? `${(commentReplies?.repliesCount ?? showCommentReplies?.repliesCount)} ${
+                  (commentReplies?.repliesCount ?? showCommentReplies?.repliesCount) !== 1 ? `replies` : `reply`
+                }` : `No Replies Yet!`}</p>
             </div>
             <div
               onClick={(e) => {
                 e.stopPropagation();
                 setShowCommentReplies({});
                 setCommentReplies([]);
+                fetchComments()
               }}
               className="flex flex-row"
             >
@@ -195,8 +195,8 @@ const CommentSection = ({
             )}
           </div>
 
-          {commentReplies.length > 0 &&
-            commentReplies?.map((item, index) => (
+          {commentReplies?.replies?.length > 0 &&
+            commentReplies?.replies?.map((item, index) => (
               <div
                 key={index}
                 className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-2 ml-7 bg-secondTheme rounded-lg"

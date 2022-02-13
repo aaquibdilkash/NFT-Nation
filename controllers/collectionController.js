@@ -408,7 +408,7 @@ const getCommentsCollectionReplies = catchAsyncErrors(async (req, res) => {
   
   const replies = collection.comments.find(
     (item) => item?._id?.toString() === commentId
-    ).replies;
+    );
 
   res.status(200).json({
     success: true,
@@ -446,6 +446,7 @@ const commentCollectionReply = catchAsyncErrors(async (req, res, next) => {
       $push: {
         "comments.$.replies": newComment,
       },
+      $inc:{'comments.$.repliesCount':1}
     }
   );
 
@@ -455,8 +456,7 @@ const commentCollectionReply = catchAsyncErrors(async (req, res, next) => {
 });
 
 const updateCollectionCommentReply = catchAsyncErrors(async (req, res, next) => {
-  const { user, comment } = req.body;
-  const [collectionId, commentId] = req.query.id;
+  const [collectionId, commentId, replyCommentId] = req.query.id;
 
   let collection = await Collection.findById(collectionId).select("_id");
 
@@ -507,6 +507,7 @@ const deleteCollectionCommentReply = catchAsyncErrors(async (req, res, next) => 
       $pull: {
         "comments.$.replies": { _id: mongoose.Types.ObjectId(replyCommentId) },
       },
+      $inc:{'comments.$.repliesCount':-1}
     }
   );
 

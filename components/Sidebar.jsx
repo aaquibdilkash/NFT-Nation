@@ -314,8 +314,8 @@ const Sidebar = ({
       {!user?._id && (
         <div
           onClick={(e) => {
-            handleCloseSidebar(e);
             connectToMetamask(e);
+            handleCloseSidebar(e);
           }}
           className="bg-gradient-to-r from-themeColor to-secondTheme flex my-5 mb-3 gap-2 p-3 items-center bg-secondTheme rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
         >

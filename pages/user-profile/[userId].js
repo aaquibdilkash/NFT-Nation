@@ -30,8 +30,9 @@ import {
 } from "../../redux/constants/UserTypes";
 import ShareButtons from "../../components/ShareButtons";
 import { IoMdLogOut } from "react-icons/io";
+// import { wrapper } from "../../redux/store";
 
-const UserProfilePage = ({detail}) => {
+const UserProfilePage = ({detail, data = []}) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname, query } = router;
@@ -347,8 +348,8 @@ const UserProfilePage = ({detail}) => {
         />
         <meta
           property="og:image"
-          content={getGatewayImage(detail?.image, "ipfs")}
-          // content={`${basePath}/favicon.png`}
+          // content={getGatewayImage(detail?.image, "ipfs")}
+          content={`${basePath}/favicon.png`}
         />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
@@ -655,7 +656,7 @@ const UserProfilePage = ({detail}) => {
             })}
           </div>
           <div className="px-2">
-            <Feed />
+            <Feed data={data}/>
           </div>
         </div>
       </div>
@@ -665,7 +666,10 @@ const UserProfilePage = ({detail}) => {
 
 export default UserProfilePage;
 
-export const getServerSideProps = async ({query}) => {
+// export const getServerSideProps = wrapper.getServerSideProps(
+//   (store) =>
+//     async ({ query }) => {
+  export const getServerSideProps = async ({query}) => {
   const {userId} = query
 
   try {
@@ -684,6 +688,8 @@ export const getServerSideProps = async ({query}) => {
   return {
     props: {
       detail: data?.user,
+      data: []
     },
   };
-};
+}
+// );

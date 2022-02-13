@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { fetchingLoadingMessage } from "../utils/messages";
 import { toTitleCase } from "../utils/data";
 
-const Feed = () => {
+const Feed = ({data = []}) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [dataArray, setDataArray] = useState([]);

@@ -89,7 +89,6 @@ const getPin = catchAsyncErrors(async (req, res) => {
   });
 });
 
-
 const isPinExist = catchAsyncErrors(async (req, res) => {
   const { nftContract, tokenId } = req.body;
 
@@ -287,11 +286,8 @@ const deletePinComment = catchAsyncErrors(async (req, res, next) => {
 const getCommentsPinReplies = catchAsyncErrors(async (req, res) => {
   const [pinId, commentId] = req.query.id;
 
-  // console.log(req.query.id)
-
   const pin = await Pin.findById(pinId)
     .select("comments")
-    // .populate("comments.user", "_id userName image")
     .populate("comments.replies.user", "_id userName image");
 
   if (!pin) {
@@ -303,7 +299,7 @@ const getCommentsPinReplies = catchAsyncErrors(async (req, res) => {
 
   const replies = pin.comments.find(
     (item) => item?._id?.toString() === commentId
-  ).replies;
+  );
 
   res.status(200).json({
     success: true,
@@ -338,6 +334,7 @@ const commentPinReply = catchAsyncErrors(async (req, res, next) => {
       $push: {
         "comments.$.replies": newComment,
       },
+      $inc:{'comments.$.repliesCount':1}
     }
   );
 
@@ -352,10 +349,8 @@ const commentPinReply = catchAsyncErrors(async (req, res, next) => {
 });
 
 const updatePinCommentReply = catchAsyncErrors(async (req, res, next) => {
-  const { user, comment } = req.body;
   const [pinId, commentId, replyCommentId] = req.query.id;
-
-  let pin = await Pin.findById(pinId).select("comments");
+  let pin = await Pin.findById(pinId).select("_id");
 
   if (!pin) {
     return res.status(404).json({
@@ -364,13 +359,17 @@ const updatePinCommentReply = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
-  pin.comments.forEach((com) => {
-    if (com.user.toString() === user && com._id.toString() === replyCommentId) {
-      com.comment = comment;
+  await Pin.updateOne(
+    {
+      _id: pinId,
+      "comments._id": commentId,
+    },
+    {
+      $pull: {
+        "comments.$.replies": { _id: mongoose.Types.ObjectId(replyCommentId) },
+      },
     }
-  });
-
-  await pin.save({ validateBeforeSave: false });
+  );
 
   res.status(200).json({
     success: true,
@@ -397,6 +396,7 @@ const deletePinCommentReply = catchAsyncErrors(async (req, res, next) => {
       $pull: {
         "comments.$.replies": { _id: mongoose.Types.ObjectId(replyCommentId) },
       },
+      $inc:{'comments.$.repliesCount':-1}
     }
   );
 

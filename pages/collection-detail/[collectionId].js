@@ -39,8 +39,9 @@ import CollectionEdit from "../../components/CollectionEdit";
 import moment from "moment";
 import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
+// import { wrapper } from "../../redux/store";
 
-const CollectionDetail = ({ detail }) => {
+const CollectionDetail = ({ detail, data = [] }) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const { pathname, query } = router;
@@ -50,7 +51,7 @@ const CollectionDetail = ({ detail }) => {
   );
   const [refresh, setRefresh] = useState(false);
   const [collectionComments, setCollectionComments] = useState([]);
-  const [commentReplies, setCommentReplies] = useState([]);
+  const [commentReplies, setCommentReplies] = useState({});
   const [showCommentReplies, setShowCommentReplies] = useState({});
   const [activeBtn, setActiveBtn] = useState("Items");
   const [sideLoading, setSideLoading] = useState(true);
@@ -286,7 +287,7 @@ const CollectionDetail = ({ detail }) => {
 
           let to = [
             ...collectionComments.map((item) => item?.user?._id),
-            ...commentReplies.map((item) => item?.user?._id),
+            ...commentReplies?.replies?.map((item) => item?.user?._id),
             ...user?.followers,
             createdBy?._id,
           ];
@@ -395,8 +396,8 @@ const CollectionDetail = ({ detail }) => {
         />
         <meta
           property="og:image"
-          content={getGatewayImage(detail?.image, "ipfs")}
-          // content={`${basePath}/favicon.png`}
+          // content={getGatewayImage(detail?.image, "ipfs")}
+          content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
@@ -493,6 +494,7 @@ const CollectionDetail = ({ detail }) => {
                   commentReplies={commentReplies}
                   setCommentReplies={setCommentReplies}
                   deleteCommentReply={deleteCommentReply}
+                  fetchComments={fetchCollectionComments}
                 />
               </div>
               {tab === "comments" && (
@@ -708,7 +710,7 @@ const CollectionDetail = ({ detail }) => {
               );
           })}
         </div>
-        <Feed />
+        <Feed data={data}/>
       </>
     </>
   );
@@ -716,7 +718,10 @@ const CollectionDetail = ({ detail }) => {
 
 export default CollectionDetail;
 
-export const getServerSideProps = async ({ query }) => {
+// export const getServerSideProps = wrapper.getServerSideProps(
+//   (store) =>
+//     async ({ query }) => {
+  export const getServerSideProps = async ({query}) => {
   const { collectionId } = query;
 
   const { data } = await axios.get(
@@ -731,7 +736,9 @@ export const getServerSideProps = async ({ query }) => {
 
   return {
     props: {
+      data: [],
       detail: data?.collection,
     },
   };
-};
+}
+// );
