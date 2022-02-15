@@ -89,7 +89,7 @@ const Sidebar = ({
             }}
             className={
               asPath === "/" ||
-              (pathname === "/" &&
+              (pathname === "/" && !query?.feed &&
                 (query?.page && query?.type &&
                 Object.keys(query).length == 2) || ((query?.page || query?.type) &&
                 Object.keys(query).length == 1))
