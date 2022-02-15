@@ -372,7 +372,8 @@ const UserProfilePage = ({detail, data = []}) => {
                   height={250}
                   width={250}
                   src={getImage(image)}
-                  objectFit="cover"
+                  // objectFit="cover"
+                  layout="intrinsic"
                   alt="userProfile-pic"
                 />
               </div>

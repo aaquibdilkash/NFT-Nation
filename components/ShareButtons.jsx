@@ -21,7 +21,7 @@ import { shareInfoMessage } from "../utils/messages";
 const ShareButtons = ({ title, shareUrl, image }) => {
   return (
     <div className="">
-      <button className={tabButtonStyles}>
+      <div className={tabButtonStyles}>
         <div className="flex gap-1 items-center">
           <FaShareAlt
             onClick={(e) => {
@@ -69,7 +69,7 @@ const ShareButtons = ({ title, shareUrl, image }) => {
             <FacebookIcon className={iconStyles} size={32} round />
           </FacebookShareButton>
         </div>
-      </button>
+      </div>
     </div>
   );
 };

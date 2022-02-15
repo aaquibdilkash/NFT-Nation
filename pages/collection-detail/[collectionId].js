@@ -430,6 +430,7 @@ const CollectionDetail = ({ detail, data = [] }) => {
               className="shadow-lg rounded-lg"
               height={500}
               width={480}
+              layout="intrinsic"
               src={getImage(image)}
             />
 

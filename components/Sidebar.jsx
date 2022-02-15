@@ -306,7 +306,7 @@ const Sidebar = ({
               className="w-10 h-10 rounded-full"
               alt="user-profile"
             />
-            <p className="font-bold">{getUserName(user?.userName)}</p>
+            <p className="font-bold mr-auto">{getUserName(user?.userName)}</p>
             <IoIosArrowForward className="" fontSize={21} />
           </div>
         </Link>
