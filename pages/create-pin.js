@@ -9,11 +9,13 @@ import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import {
   buttonStyle,
+  checkAttributes,
   formButtonStyles,
   getEventData,
   getImage,
   getIpfsImage,
   isValidAmount,
+  isValidRoyalty,
   parseAmount,
   pinFileToIPFS,
   removePinFromIPFS,
@@ -56,6 +58,7 @@ import {
   tokenSaleErrorMessage,
   tokenSaleSuccessMessage,
   validAmountErrorMessage,
+  validRoyaltyErrorMessage,
   verifyingOwnershipLoadingMessage,
   waitLoadingMessage,
 } from "../utils/messages";
@@ -90,6 +93,7 @@ const CreatePin = () => {
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const [price, setPrice] = useState("");
+  const [royalty, setRoyalty] = useState("");
   const [nftContract, setNftContract] = useState("");
   const [tokenId, setTokenId] = useState("");
   const [imageLoading, setImageLoading] = useState(false);
@@ -181,25 +185,8 @@ const CreatePin = () => {
     }
   };
 
-  const checkAttributes = () => {
-    return attributes.every(
-      ({ trait_type, value }) => !(!trait_type || !value)
-    );
-  };
 
   const submitHandler = async () => {
-    console.log(
-      "title",
-      title,
-      "about",
-      about,
-      "fileUrl",
-      fileUrl,
-      "category",
-      category,
-      "sellOrAuct",
-      sellOrAuct
-    );
     if (!user?._id) {
       toast.info(loginMessage);
       return;
@@ -211,13 +198,10 @@ const CreatePin = () => {
       !fileUrl ||
       !category ||
       !sellOrAuct ||
-      !checkAttributes()
+      !checkAttributes(attributes) ||
+      !royalty
     ) {
-      // setFields(true);
 
-      // setTimeout(() => {
-      //   setFields(false);
-      // }, 2000);
       toast.info(fillFieldsInfoMessage)
 
       return;
@@ -225,6 +209,11 @@ const CreatePin = () => {
 
     if (sellOrAuct === "Mint NFT and Put on Sale" && !isValidAmount(price)) {
       toast.info(validAmountErrorMessage);
+      return;
+    }
+
+    if (!isValidRoyalty(royalty)) {
+      toast.info(validRoyaltyErrorMessage);
       return;
     }
 
@@ -315,7 +304,8 @@ const CreatePin = () => {
       transaction = await contract.createMarketItemForSale(
         nftaddress,
         tokenId,
-        auctionPrice
+        auctionPrice,
+        royalty
       );
       setLoadingMessage(createSaleLoadingMessage);
       tx = await transaction.wait();
@@ -335,7 +325,7 @@ const CreatePin = () => {
       about,
       category,
       image: fileUrl,
-      createdBy: user?._id,
+      // createdBy: user?._id,
       attributes,
       history: [
         {
@@ -389,7 +379,8 @@ const CreatePin = () => {
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
       transaction = await contract.createMarketItemForAuction(
         nftaddress,
-        tokenId
+        tokenId,
+        royalty
       );
       setLoadingMessage(createAuctionLoadingMessage);
       tx = await transaction.wait();
@@ -410,7 +401,7 @@ const CreatePin = () => {
       category,
       startingBid: price,
       image: fileUrl,
-      createdBy: user?._id,
+      // createdBy: user?._id,
       attributes,
       history: [
         {
@@ -453,7 +444,7 @@ const CreatePin = () => {
     try {
       setLoadingMessage(confirmLoadingMessage);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      transaction = await contract.createMarketItem(nftaddress, tokenId);
+      transaction = await contract.createMarketItem(nftaddress, tokenId, royalty);
       setLoadingMessage(createItemLoadingMessage);
       tx = await transaction.wait();
       toast.success(MarketItemSuccessMessage);
@@ -473,7 +464,7 @@ const CreatePin = () => {
       about,
       category,
       image: fileUrl,
-      createdBy: user?._id,
+      // createdBy: user?._id,
       attributes,
       history: [
         {
@@ -501,21 +492,21 @@ const CreatePin = () => {
       return;
     }
 
-    if (!nftContract || !tokenId || !category) {
-      // setFields(true);
+    if (isValidRoyalty(royalty)) {
+      toast.info(validRoyaltyErrorMessage);
+      return;
+    }
 
-      // setTimeout(() => {
-      //   setFields(false);
-      // }, 2000);
+    if (!nftContract || !tokenId || !category) {
       toast.info(fillFieldsInfoMessage)
 
       return;
     }
 
-    importNFT(nftContract, tokenId);
+    importNFT(nftContract, tokenId, royalty);
   };
 
-  const importNFT = async (nftContract, tokenId) => {
+  const importNFT = async (nftContract, tokenId, royalty) => {
     if (!user?._id) {
       toast.info(loginMessage);
       return;
@@ -585,7 +576,7 @@ const CreatePin = () => {
     try {
       setLoadingMessage(confirmLoadingMessage);
       contract = new ethers.Contract(nftmarketaddress, Market.abi, signer);
-      const transaction = await contract.createMarketItem(nftContract, tokenId);
+      const transaction = await contract.createMarketItem(nftContract, tokenId, royalty);
       setLoadingMessage(createItemLoadingMessage);
       const tx = await transaction.wait();
       toast.success(MarketItemSuccessMessage);
@@ -607,7 +598,7 @@ const CreatePin = () => {
       about: description,
       category,
       image,
-      createdBy: user?._id,
+      // createdBy: user?._id,
       history: [
         {
           user: user?._id,
@@ -806,7 +797,7 @@ const CreatePin = () => {
                       setCategory(e.target.value);
                     }}
                     value={category}
-                    className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg"
+                    className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg bg-[#f4f4f4]"
                   >
                     <option value="others" className="text-sm">
                       Select Category
@@ -834,7 +825,7 @@ const CreatePin = () => {
                       setSellOrAuct(e.target.value);
                     }}
                     value={sellOrAuct}
-                    className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer"
+                    className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer bg-[#f4f4f4]"
                   >
                     <option
                       value="others"
@@ -867,6 +858,14 @@ const CreatePin = () => {
                     className="outline-none mt-2 text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
                   />
                 )}
+                <input
+                    type="text"
+                    value={royalty}
+                    maxLength={10}
+                    onChange={(e) => setRoyalty(e.target.value)}
+                    placeholder={`Royalty Percentage`}
+                    className="outline-none mt-2 text-sm border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
+                  />
 
                 <p className="mt-4 font-semibold text-sm">Attributes</p>
                 {attributes.map((item, index) => {
@@ -1014,13 +1013,20 @@ const CreatePin = () => {
                 value={tokenId}
                 onChange={(e) => setTokenId(e.target.value)}
               />
+              <input
+                    type="text"
+                    value={royalty}
+                    maxLength={10}
+                    onChange={(e) => setRoyalty(e.target.value)}
+                    placeholder={`Royalty Percentage`}
+                    className="w-full flex-2 border-gray-100 outline-none border-2 p-2 rounded-lg focus:border-gray-300"
+                    />
               <select
                 onChange={(e) => {
                   setCategory(e.target.value);
                 }}
                 value={category}
-                // className="outline-none w-full text-sm border-b-2 border-gray-200 p-2 cursor-pointer focus:drop-shadow-lg"
-                className="w-full bg-[#ffffff] flex-2 border-gray-100 outline-none border-2 p-2 rounded-lg focus:border-gray-300"
+                className="w-full bg-[#ffffff] flex-2 border-gray-100 outline-none border-2 p-2 rounded-lg focus:border-gray-300 bg-[#f4f4f4]"
               >
                 <option value="others" className="text-sm">
                   Select Category

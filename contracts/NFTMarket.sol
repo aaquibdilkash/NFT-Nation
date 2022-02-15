@@ -33,6 +33,8 @@ contract NFTMarket is ReentrancyGuard {
         address payable[] pendingBidders;
         address payable[] pendingOffers;
         bool auctionEnded;
+        address payable minter;
+        uint256 royalty;
     }
 
     mapping(uint256 => MarketItem) public idToMarketItem;
@@ -50,13 +52,15 @@ contract NFTMarket is ReentrancyGuard {
         uint256 highestBid,
         address payable[] pendingBidders,
         address payable[] pendingOffers,
-        bool auctionEnded
+        bool auctionEnded,
+        address payable minter,
+        uint256 royalty
     );
 
     function setListingPrice(uint256 _listingPrice) public {
         require(
             msg.sender == owner,
-            "You are not the owner of this smart contract"
+            "Invalid Owner"
         );
         listingPrice = _listingPrice;
     }
@@ -64,9 +68,19 @@ contract NFTMarket is ReentrancyGuard {
     function setTokenRate(uint256 _tokenRate) public {
         require(
             msg.sender == owner,
-            "You are not the owner of this smart contract"
+            "Invalid Owner"
         );
         tokenRate = _tokenRate;
+    }
+
+    function setTokenRoyalty(uint256 itemId, uint256 royalty) public {
+        address token_owner = idToMarketItem[itemId].owner;
+        address token_minter = idToMarketItem[itemId].minter;
+        require(
+            msg.sender == token_owner && msg.sender == token_minter,
+            "Invalid Miter or Owner"
+        );
+        idToMarketItem[itemId].royalty = royalty;
     }
 
     function emitEvent(uint256 itemId) private {
@@ -81,7 +95,9 @@ contract NFTMarket is ReentrancyGuard {
             idToMarketItem[itemId].highestBid,
             idToMarketItem[itemId].pendingBidders,
             idToMarketItem[itemId].pendingOffers,
-            idToMarketItem[itemId].auctionEnded
+            idToMarketItem[itemId].auctionEnded,
+            idToMarketItem[itemId].minter,
+            idToMarketItem[itemId].royalty
         );
     }
 
@@ -94,10 +110,11 @@ contract NFTMarket is ReentrancyGuard {
         require(Token(tokenAdress).transfer(msg.sender, _amount));
     }
 
-    function createMarketItem(address nftContract, uint256 tokenId)
+    function createMarketItem(address nftContract, uint256 tokenId, uint royalty)
         public
         nonReentrant
     {
+        require(royalty <= 50, "Invalid royalty");
         require(
             IERC721(nftContract).ownerOf(tokenId) == msg.sender,
             "Ownership Not Verified"
@@ -119,7 +136,9 @@ contract NFTMarket is ReentrancyGuard {
             0,
             emptyArray,
             emptyArray,
-            true
+            true,
+            payable(msg.sender),
+            royalty
         );
 
         emitEvent(itemId);
@@ -128,9 +147,11 @@ contract NFTMarket is ReentrancyGuard {
     function createMarketItemForSale(
         address nftContract,
         uint256 tokenId,
-        uint256 price
+        uint256 price,
+        uint256 royalty
     ) public nonReentrant {
-        require(price > 0, "InValid Price");
+        require(price > 0, "Invalid Price");
+        require(royalty <= 50, "Invalid royalty");
 
         require(
             IERC721(nftContract).ownerOf(tokenId) == msg.sender,
@@ -157,7 +178,9 @@ contract NFTMarket is ReentrancyGuard {
             0,
             emptyArray,
             emptyArray,
-            true
+            true,
+            payable(msg.sender),
+            royalty
         );
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
@@ -165,10 +188,11 @@ contract NFTMarket is ReentrancyGuard {
         emitEvent(itemId);
     }
 
-    function createMarketItemForAuction(address nftContract, uint256 tokenId)
+    function createMarketItemForAuction(address nftContract, uint256 tokenId, uint256 royalty)
         public
         nonReentrant
     {
+        require(royalty <= 50, "Invalid royalty");
         require(
             IERC721(nftContract).getApproved(tokenId) == address(this),
             "Market Didn't Get Approval"
@@ -194,7 +218,9 @@ contract NFTMarket is ReentrancyGuard {
             0,
             emptyArray,
             emptyArray,
-            false
+            false,
+            payable(msg.sender),
+            royalty
         );
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
@@ -208,6 +234,7 @@ contract NFTMarket is ReentrancyGuard {
     ) public payable nonReentrant {
         uint256 token_id = idToMarketItem[itemId].tokenId;
         address nftContract = idToMarketItem[itemId].nftContract;
+        uint256 royalty = idToMarketItem[itemId].royalty;
 
         require(
             IERC721(nftContract).ownerOf(token_id) == msg.sender,
@@ -232,7 +259,9 @@ contract NFTMarket is ReentrancyGuard {
             0,
             emptyArray,
             emptyArray,
-            true
+            true,
+            payable(msg.sender),
+            royalty
         );
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), token_id);
@@ -247,6 +276,7 @@ contract NFTMarket is ReentrancyGuard {
     {
         uint256 token_id = idToMarketItem[itemId].tokenId;
         address nftContract = idToMarketItem[itemId].nftContract;
+        uint256 royalty = idToMarketItem[itemId].royalty;
 
         require(
             IERC721(nftContract).ownerOf(token_id) == msg.sender,
@@ -271,7 +301,9 @@ contract NFTMarket is ReentrancyGuard {
             0,
             emptyArray,
             emptyArray,
-            false
+            false,
+            payable(msg.sender),
+            royalty
         );
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), token_id);
@@ -317,9 +349,14 @@ contract NFTMarket is ReentrancyGuard {
             "InValid Price"
         );
 
+        uint royalty = idToMarketItem[itemId].royalty;
+        address minter = idToMarketItem[itemId].minter;
+
         payable(idToMarketItem[itemId].owner).transfer(
-            (msg.value * (100 - listingPrice)) / 100
+            (msg.value * (100 - listingPrice - royalty)) / 100
         );
+        payable(minter).transfer((msg.value * royalty) / 100);
+
         IERC721(idToMarketItem[itemId].nftContract).transferFrom(address(this), msg.sender, idToMarketItem[itemId].tokenId);
 
         idToMarketItem[itemId].owner = payable(msg.sender);
@@ -355,9 +392,12 @@ contract NFTMarket is ReentrancyGuard {
         address payable[] memory emptyArray;
 
         if (highestBid != 0) {
+            uint256 royalty = idToMarketItem[itemId].royalty;
+
             payable(idToMarketItem[itemId].owner).transfer(
-                (highestBid * (100 - listingPrice)) / 100
+                (highestBid * (100 - listingPrice - royalty)) / 100
             );
+            payable(idToMarketItem[itemId].minter).transfer((highestBid * royalty) / 100);
             payable(owner).transfer((highestBid * listingPrice) / 100);
         }
 
@@ -626,10 +666,12 @@ contract NFTMarket is ReentrancyGuard {
 
         uint256 currentOffer = pendingOffers[itemId][_offeringAddress];
         address payable[] memory emptyArray;
+        uint256 royalty = idToMarketItem[itemId].royalty;
 
         payable(idToMarketItem[itemId].owner).transfer(
-            (currentOffer * (100 - listingPrice)) / 100
+            (currentOffer * (100 - listingPrice - royalty)) / 100
         );
+        payable(idToMarketItem[itemId].minter).transfer((currentOffer * royalty) / 100);
         payable(owner).transfer((currentOffer * listingPrice) / 100);
 
         IERC721(idToMarketItem[itemId].nftContract).safeTransferFrom(

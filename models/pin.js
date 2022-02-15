@@ -122,18 +122,19 @@ const pinSchema = new mongoose.Schema({
   },
   price: {
     type: String,
-    default: "0.0",
-    trim: true,
+    default: "0.0"
+  },
+  royalty: {
+    type: String,
+    default: "0.0"
   },
   currentBid: {
     type: String,
     default: "0.0",
-    trim: true,
   },
   startingBid: {
     type: String,
     default: "0.0",
-    trim: true,
   },
   title: {
     type: String,
@@ -173,7 +174,6 @@ const pinSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "Collection",
     default: null,
-    select: false
   },
   saved: [
     {

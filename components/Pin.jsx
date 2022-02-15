@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import {
+  basePath,
   buttonStyle,
   getCurrentBid,
   getImage,
@@ -31,6 +32,7 @@ import {
 } from "react-icons/ai";
 import { toast } from "react-toastify";
 import moment from "moment";
+import Link from "next/link";
 
 const Pin = ({ pin }) => {
   const dispatch = useDispatch();
@@ -57,6 +59,8 @@ const Pin = ({ pin }) => {
     bidsCount,
     auctionEnded,
     onSale,
+    royalty,
+    pinCollection
   } = pin;
 
   const priceShowCondition = price !== "0.0" && onSale && auctionEnded;
@@ -368,6 +372,20 @@ const Pin = ({ pin }) => {
                 ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
                 : `No Bids Yet`}
             </span>
+          )}
+          {royalty !== "0.0" && (
+            <span className={buttonStyle}>
+              {`Royalty: ${royalty}%`}
+            </span>
+          )}
+          {pinCollection && (
+            <Link onClick={() => {
+              e.stopPropagation()
+            }} href={`${basePath}/collection-detail/${pinCollection}`}>
+              <span className={buttonStyle}>
+              {`Collection`}
+            </span>
+            </Link>
           )}
         </div>
 

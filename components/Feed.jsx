@@ -169,7 +169,7 @@ const Feed = ({data = []}) => {
           <MasonryLayout comp={dataArray} type={showType} />
         {hasMore && (
           <Spinner
-            message={`We are adding more ${showCategory} ${showType} to your feed...`}
+            message={`We are Adding More ${toTitleCase(showCategory)} ${toTitleCase(showType)} To Your Feed...`}
           />
         )}
       </div>

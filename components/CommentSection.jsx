@@ -166,7 +166,7 @@ const CommentSection = ({
                 setCommentReplies([]);
                 fetchComments()
               }}
-              className="flex flex-row"
+              className="flex flex-row mr-auto"
             >
               <FaReplyAll size={15} className="cursor-pointer mr-1 ml-4" />
               <p className="text-sm font-semibold">{`Go Back`}</p>

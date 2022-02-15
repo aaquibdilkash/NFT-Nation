@@ -44,6 +44,16 @@ export const isValidAmount = (number) => {
   return !isNaN(parseFloat(number)) && parseFloat(number) > 0;
 };
 
+export const isValidRoyalty = (number) => {
+  return !isNaN(parseFloat(number)) && parseFloat(number) <= 50;
+};
+
+export const checkAttributes = (attributes = []) => {
+  return attributes?.every(
+    ({ trait_type, value }) => !(!trait_type || !value)
+  );
+};
+
 export const getMaxBid = (bids) => {
   if (!bids?.length) {
     return "0.0";
@@ -135,6 +145,8 @@ export const getEventData = (event) => {
     pendingBidders,
     pendingOffers,
     auctionEnded,
+    minter,
+    royalty
   ] = event?.args;
 
   return {
@@ -149,6 +161,8 @@ export const getEventData = (event) => {
     pendingBidders: pendingBidders,
     offers: pendingOffers,
     auctionEnded: Boolean(auctionEnded),
+    createdBy: minter,
+    royalty: royalty.toString()
   };
 };
 

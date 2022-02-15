@@ -7,7 +7,7 @@ import {
   MARKET_CONTRACT,
   USER_GET_SUCCESS,
 } from "../redux/constants/UserTypes";
-import { getImage, toHex } from "../utils/data";
+import { feedPathArray, getImage, toHex } from "../utils/data";
 import { chainData } from "../utils/chainData";
 import Market from "./../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import axios from "axios";
@@ -272,7 +272,7 @@ const HomeLayout = ({ children }) => {
 
   const onScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop === clientHeight && hasMore && changePage && !navigating) {
+    if (scrollHeight - scrollTop === clientHeight && hasMore && changePage && !navigating && feedPathArray.includes(pathname)) {
       // if (scrollTop + clientHeight > scrollHeight - 100 && hasMore && changePage) {
       router.push(
         {

@@ -23,7 +23,7 @@ import {
   sendNotifications,
   tabButtonStyles,
   basePath,
-  getGatewayImage
+  getGatewayImage,
 } from "../../utils/data";
 import {
   acceptOfferLoadingMessage,
@@ -111,7 +111,7 @@ import CommentSection from "../../components/CommentSection";
 import ShareButtons from "../../components/ShareButtons";
 // import { wrapper } from "../../redux/store";
 
-const PinDetail = ({detail, data = []}) => {
+const PinDetail = ({ detail, data = [] }) => {
   // const CancelToken = axios.CancelToken;
   // const source = CancelToken.source();
 
@@ -169,6 +169,8 @@ const PinDetail = ({detail, data = []}) => {
     postedBy,
     createdBy,
     createdAt,
+    pinCollection,
+    royalty
   } = pinDetail ?? {
     _id: "",
     title: "",
@@ -192,6 +194,8 @@ const PinDetail = ({detail, data = []}) => {
     postedBy: {},
     createdBy: {},
     createdAt: new Date(),
+    pinCollection: null,
+    royalty: "0.0"
   };
 
   const executeMarketSaleCondition =
@@ -413,20 +417,17 @@ const PinDetail = ({detail, data = []}) => {
   }, [user, pinDetail]);
 
   useEffect(() => {
-    setPinDetail(detail)
-  }, [detail])
+    setPinDetail(detail);
+  }, [detail]);
 
   useEffect(() => {
     pinId && fetchPinDetails();
-  }, [pinId, refresh]);
-
-  useEffect(() => {
     pinId && fetchPinComments();
     pinId && fetchPinBids();
     pinId && fetchPinHistory();
     pinId && fetchPinOffers();
     pinId && fetchPinProperties();
-  }, [pinId]);
+  }, [pinId, refresh]);
 
   useEffect(() => {
     setShowCommentReplies({});
@@ -1499,7 +1500,7 @@ const PinDetail = ({detail, data = []}) => {
         .catch((e) => {
           setAddingComment(false);
           toast.error(commentAddErrorMessage);
-          console.log(e, "DDDDDDDDDDDDDDDDDDDD")
+          console.log(e, "DDDDDDDDDDDDDDDDDDDD");
         });
     }
   };
@@ -1557,7 +1558,7 @@ const PinDetail = ({detail, data = []}) => {
         .catch((e) => {
           setAddingComment(false);
           toast.error(commentAddErrorMessage);
-          console.log(e,'DDDDDDDDDDD')
+          console.log(e, "DDDDDDDDDDD");
         });
     }
   };
@@ -1833,7 +1834,7 @@ const PinDetail = ({detail, data = []}) => {
       condition: highestBidShowCondition,
       loadingCondition: tab === "bids" && !pinBids?.length && sideLoading,
       emptyCondition: tab === "bids" && !pinBids?.length && !sideLoading,
-      emptyText: "No Bids Yet, Be the first one to make a Bid...",
+      emptyText: "No Bids Yet, Wanna Make One...?",
       input: {
         condition: tab === "bids" && makeAuctionBidCondition,
         placeholder: "Add a Bid Amount",
@@ -1858,7 +1859,7 @@ const PinDetail = ({detail, data = []}) => {
       condition: offersShowCondition,
       loadingCondition: tab === "offers" && !pinOffers?.length && sideLoading,
       emptyCondition: tab === "offers" && !pinOffers?.length && !sideLoading,
-      emptyText: "No Offers Yet...",
+      emptyText: "No Offers Yet, Wanna Make One...?",
       input: {
         condition: tab === "offers" && makeOfferCondition,
         placeholder: "Add an Offer Price",
@@ -1897,11 +1898,7 @@ const PinDetail = ({detail, data = []}) => {
   ];
 
   if (navigating) {
-    return (
-      <Spinner
-        message={fetchingLoadingMessage}
-      />
-    );
+    return <Spinner message={fetchingLoadingMessage} />;
   }
 
   if (!pinDetail) {
@@ -1912,13 +1909,15 @@ const PinDetail = ({detail, data = []}) => {
     return <Spinner title={loadingMessage} message={waitLoadingMessage} />;
   }
 
-
   return (
     <>
       <Head>
         <title>{`#${detail?.tokenId} ${detail?.title} - NFT | NFT Nation`}</title>
         <meta name="description" content={`${detail?.about}`} />
-        <meta property="og:title" content={`${detail?.title} - NFT | NFT Nation`} />
+        <meta
+          property="og:title"
+          content={`${detail?.title} - NFT | NFT Nation`}
+        />
         <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
@@ -1933,559 +1932,587 @@ const PinDetail = ({detail, data = []}) => {
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-        <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
-          <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
-            <Image
-              unoptimized
-              placeholder="blur"
-              blurDataURL="/favicon.png"
-              alt={title}
-              className="shadow-lg rounded-lg"
-              height={500}
-              width={480}
-              objectFit="cover"
-              src={getImage(image)}
-            />
+      <div className="bg-gradient-to-r from-secondTheme to-themeColor bg-secondTheme shadow-lg rounded-lg p-0 lg:p-5 pb-12 mb-8">
+        <div className="bg-gradient-to-r from-themeColor to-secondTheme flex flex-col lg:flex-row relative justify-between align-center overflow-hidden shadow-md p-5 mb-6 rounded-lg">
+          <Image
+            unoptimized
+            placeholder="blur"
+            blurDataURL="/favicon.png"
+            alt={title}
+            className="shadow-lg rounded-lg"
+            height={500}
+            width={480}
+            layout="fixed"
+            // objectFit="contain"
+            src={getImage(image)}
+          />
 
-            <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
-              <div className="flex flex-wrap justify-center mb-2 lg:gap-2">
-                {tabArray.map((item, index) => {
-                  if (item?.condition)
-                    return (
-                      <button
-                        className={`mt-1`}
-                        key={index}
-                        onClick={() => item?.func()}
-                      >
-                        <span
-                          className={`${buttonStyle} ${
-                            tab === item?.name ? `bg-[#009387]` : ``
-                          } text-xl`}
-                        >
-                          {item?.text}
-                        </span>
-                      </button>
-                    );
-                })}
-              </div>
-
-              <div className="max-h-370 h-370 overflow-y-scroll">
-                {tabArray.map((item, index) => {
-                  if (item?.emptyCondition)
-                    return (
-                      <h2
-                        key={index}
-                        className="flex justify-center items-center h-370 mt-0 text-xl font-bold"
-                      >
-                        {item?.emptyText}
-                      </h2>
-                    );
-                })}
-
-                {tabArray.map((item, index) => {
-                  if (item?.loadingCondition)
-                    return (
-                      <div key={index}>
-                        <Spinner title={loadingMessage} />
-                      </div>
-                    );
-                })}
-
-                {tab === "properties" && pinProperties.length > 0 && (
-                  <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-                    {pinProperties?.map((item, index) => (
-                      <div
-                        key={index}
-                        className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-2 items-center bg-secondTheme rounded-lg justify-center text-center shadow-xl drop-shadow-xl"
-                      >
-                        <div className="flex flex-col py-4" key={index}>
-                          <h1 className="font-bold text-md">{item?.value}</h1>
-                          <h3 className="font-semibold text-sm">{`(${item?.trait_type})`}</h3>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {tab === "bids" &&
-                  pinBids?.length > 0 &&
-                  pinBids?.map((item, index) => (
-                    <div
+          <div className="w-full px-5 flex-1 xl:min-w-620 mt-4">
+            <div className="flex flex-wrap justify-center mb-2 lg:gap-2">
+              {tabArray.map((item, index) => {
+                if (item?.condition)
+                  return (
+                    <button
+                      className={`mt-1`}
                       key={index}
-                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
+                      onClick={() => item?.func()}
                     >
-                      {item?.user?._id && (
-                        <>
-                          <div className="flex gap-2">
-                            <Link
-                              onClick={() =>
-                                router.push(`/user-profile/${item?.user?._id}`)
-                              }
-                              href={`/user-profile/${item?.user?._id}`}
-                            >
-                              <div className="flex flex-row gap-2 items-center cursor-pointer">
-                                <Image
-                                  height={30}
-                                  width={30}
-                                  src={getImage(item?.user?.image)}
-                                  className="w-12 h-12 rounded-full"
-                                  alt="user-profile"
-                                />
-                                <p className="font-bold text-sm">
-                                  {getUserName(item?.user?.userName)}
-                                </p>
-                              </div>
-                            </Link>
-                            <div className="flex ml-auto items-center">
-                              <p className="font-bold text-xs">
-                                {moment(item?.createdAt).fromNow()}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-start ml-10">
-                        <p className="font-semibold text-sm">{`${item.bid} Matic`}</p>
-                      </div>
-                    </div>
-                  ))}
+                      <span
+                        className={`${buttonStyle} ${
+                          tab === item?.name ? `bg-[#009387]` : ``
+                        } text-xl`}
+                      >
+                        {item?.text}
+                      </span>
+                    </button>
+                  );
+              })}
+            </div>
 
-                {tab === "offers" &&
-                  pinOffers?.length > 0 &&
-                  pinOffers?.map((item, index) => (
-                    <div
+            <div className="max-h-370 h-370 overflow-y-scroll">
+              {tabArray.map((item, index) => {
+                if (item?.emptyCondition)
+                  return (
+                    <h2
                       key={index}
-                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
+                      className="flex justify-center items-center h-370 mt-0 text-xl font-bold"
                     >
-                      {item?.user?._id && (
-                        <>
-                          <div className="flex gap-2">
-                            <Link
-                              onClick={() =>
-                                router.push(`/user-profile/${item?.user?._id}`)
-                              }
-                              href={`/user-profile/${item?.user?._id}`}
-                            >
-                              <div className="flex flex-row gap-2 items-center cursor-pointer">
-                                <Image
-                                  height={30}
-                                  width={30}
-                                  src={getImage(item?.user?.image)}
-                                  className="w-12 h-12 rounded-full"
-                                  alt="user-profile"
-                                />
-                                <p className="font-bold text-sm">
-                                  {getUserName(item?.user?.userName)}
-                                </p>
-                              </div>
-                            </Link>
-                            <div className="flex ml-auto items-center">
-                              <p className="font-bold text-xs">
-                                {moment(item?.createdAt).fromNow()}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-start ml-10">
-                        <p className="font-semibold text-sm">{`${item.offer} Matic`}</p>
-                        {postedBy?._id === user?._id && (
-                          <div className="flex ml-auto gap-4">
-                            <FaCheckCircle
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                acceptMarketItemOffer(
-                                  item?.user?._id,
-                                  item?.offer
-                                );
-                              }}
-                              size={23}
-                              className="cursor-pointer text-[#009387]"
-                            />
-                            <MdCancel
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                rejectMarketItemOffer(item?.user?._id);
-                              }}
-                              size={23}
-                              className="cursor-pointer text-[#a83f39]"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                <CommentSection
-                  user={user}
-                  tab={tab}
-                  showCommentReplies={showCommentReplies}
-                  setShowCommentReplies={setShowCommentReplies}
-                  commentsArr={pinComments}
-                  deletingComment={deletingComment}
-                  deleteComment={deleteComment}
-                  commentReplies={commentReplies}
-                  setCommentReplies={setCommentReplies}
-                  deleteCommentReply={deleteCommentReply}
-                  fetchComments={fetchPinComments}
-                />
-
-                {tab === "history" &&
-                  pinHistory?.length > 0 &&
-                  pinHistory?.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
-                    >
-                      {item?.user?._id && (
-                        <>
-                          <div className="flex gap-2">
-                            <Link
-                              onClick={() =>
-                                router.push(`/user-profile/${item?.user?._id}`)
-                              }
-                              href={`/user-profile/${item?.user?._id}`}
-                            >
-                              <div className="flex flex-row gap-2 items-center cursor-pointer">
-                                <Image
-                                  height={30}
-                                  width={30}
-                                  src={getImage(item?.user?.image)}
-                                  className="w-12 h-12 rounded-full"
-                                  alt="user-profile"
-                                />
-                                <p className="font-bold text-sm">
-                                  {getUserName(item?.user?.userName)}
-                                </p>
-                              </div>
-                            </Link>
-                            <div className="flex ml-auto items-center">
-                              <p className="font-bold text-xs">
-                                {moment(item?.createdAt).fromNow()}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-start ml-10">
-                        <p className="font-semibold text-sm">
-                          {getHistoryDescription(item)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
+                      {item?.emptyText}
+                    </h2>
+                  );
+              })}
 
               {tabArray.map((item, index) => {
-                if (item?.input?.condition)
+                if (item?.loadingCondition)
                   return (
-                    <div key={index} className="flex flex-wrap mt-2 gap-3">
-                      {user?._id && (
-                        <Link href={`/user-profile/${user?._id}`}>
-                          <div>
-                            <Image
-                              height={45}
-                              width={45}
-                              src={getImage(user?.image)}
-                              className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                              alt="user-profile"
-                            />
+                    <div key={index}>
+                      <Spinner title={loadingMessage} />
+                    </div>
+                  );
+              })}
+
+              {tab === "properties" && pinProperties.length > 0 && (
+                <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
+                  {pinProperties?.map((item, index) => (
+                    <div
+                      key={index}
+                      className="p-2 bg-gradient-to-r from-secondTheme to-themeColor flex gap-2 mt-2 items-center bg-secondTheme rounded-lg justify-center text-center shadow-xl drop-shadow-xl"
+                    >
+                      <div className="flex flex-col py-4" key={index}>
+                        <h1 className="font-bold text-md">{item?.value}</h1>
+                        <h3 className="font-semibold text-sm">{`(${item?.trait_type})`}</h3>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {tab === "bids" &&
+                pinBids?.length > 0 &&
+                pinBids?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
+                  >
+                    {item?.user?._id && (
+                      <>
+                        <div className="flex gap-2">
+                          <Link
+                            onClick={() =>
+                              router.push(`/user-profile/${item?.user?._id}`)
+                            }
+                            href={`/user-profile/${item?.user?._id}`}
+                          >
+                            <div className="flex flex-row gap-2 items-center cursor-pointer">
+                              <Image
+                                height={30}
+                                width={30}
+                                src={getImage(item?.user?.image)}
+                                className="w-12 h-12 rounded-full"
+                                alt="user-profile"
+                              />
+                              <p className="font-bold text-sm">
+                                {getUserName(item?.user?.userName)}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="flex ml-auto items-center">
+                            <p className="font-bold text-xs">
+                              {moment(item?.createdAt).fromNow()}
+                            </p>
                           </div>
-                        </Link>
-                      )}
-                      <input
-                        className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
-                        type="text"
-                        placeholder={item?.input?.placeholder}
-                        value={item?.input?.value}
-                        onChange={(e) =>
-                          item?.input?.onChangeFunc(e.target.value)
-                        }
-                      />
-                      <button
-                        type="button"
-                        className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                        onClick={() => item?.input?.onClickFunc()}
-                      >
-                        {!item?.input?.loadingCondition ? (
-                          `${item?.input?.buttonText}`
-                        ) : (
-                          <AiOutlineLoading3Quarters
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-start ml-10">
+                      <p className="font-semibold text-sm">{`${item.bid} Matic`}</p>
+                    </div>
+                  </div>
+                ))}
+
+              {tab === "offers" &&
+                pinOffers?.length > 0 &&
+                pinOffers?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
+                  >
+                    {item?.user?._id && (
+                      <>
+                        <div className="flex gap-2">
+                          <Link
+                            onClick={() =>
+                              router.push(`/user-profile/${item?.user?._id}`)
+                            }
+                            href={`/user-profile/${item?.user?._id}`}
+                          >
+                            <div className="flex flex-row gap-2 items-center cursor-pointer">
+                              <Image
+                                height={30}
+                                width={30}
+                                src={getImage(item?.user?.image)}
+                                className="w-12 h-12 rounded-full"
+                                alt="user-profile"
+                              />
+                              <p className="font-bold text-sm">
+                                {getUserName(item?.user?.userName)}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="flex ml-auto items-center">
+                            <p className="font-bold text-xs">
+                              {moment(item?.createdAt).fromNow()}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-start ml-10">
+                      <p className="font-semibold text-sm">{`${item.offer} Matic`}</p>
+                      {postedBy?._id === user?._id && (
+                        <div className="flex ml-auto gap-4">
+                          <FaCheckCircle
                             onClick={(e) => {
                               e.stopPropagation();
-                              // savePin();
+                              acceptMarketItemOffer(
+                                item?.user?._id,
+                                item?.offer
+                              );
                             }}
-                            className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                            size={20}
+                            size={23}
+                            className="cursor-pointer text-[#009387]"
                           />
-                        )}
-                      </button>
+                          <MdCancel
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              rejectMarketItemOffer(item?.user?._id);
+                            }}
+                            size={23}
+                            className="cursor-pointer text-[#a83f39]"
+                          />
+                        </div>
+                      )}
                     </div>
-                  );
-              })}
+                  </div>
+                ))}
 
-              {tabArray.map((item, index) => {
-                if (item?.withdraw?.condition)
-                  return (
-                    <div
-                      key={index}
-                      className="flex flex-wrap mt-6 gap-3 justify-center"
-                    >
-                      <button
-                        type="button"
-                        className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                        onClick={() => item?.withdraw?.func()}
-                      >
-                        {item?.withdraw?.text}
-                      </button>
-                    </div>
-                  );
+              <CommentSection
+                user={user}
+                tab={tab}
+                showCommentReplies={showCommentReplies}
+                setShowCommentReplies={setShowCommentReplies}
+                commentsArr={pinComments}
+                deletingComment={deletingComment}
+                deleteComment={deleteComment}
+                commentReplies={commentReplies}
+                setCommentReplies={setCommentReplies}
+                deleteCommentReply={deleteCommentReply}
+                fetchComments={fetchPinComments}
+              />
 
-                if (item?.owner?.condition)
-                  return (
-                    <div
-                      key={index}
-                      className="flex flex-wrap mt-6 gap-3 justify-center"
-                    >
-                      <button
-                        type="button"
-                        className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                        onClick={() => item?.owner?.func()}
-                      >
-                        {item?.owner?.text}
-                      </button>
+              {tab === "history" &&
+                pinHistory?.length > 0 &&
+                pinHistory?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col p-2 bg-gradient-to-r from-secondTheme to-themeColor mt-5 bg-secondTheme rounded-lg"
+                  >
+                    {item?.user?._id && (
+                      <>
+                        <div className="flex gap-2">
+                          <Link
+                            onClick={() =>
+                              router.push(`/user-profile/${item?.user?._id}`)
+                            }
+                            href={`/user-profile/${item?.user?._id}`}
+                          >
+                            <div className="flex flex-row gap-2 items-center cursor-pointer">
+                              <Image
+                                height={30}
+                                width={30}
+                                src={getImage(item?.user?.image)}
+                                className="w-12 h-12 rounded-full"
+                                alt="user-profile"
+                              />
+                              <p className="font-bold text-sm">
+                                {getUserName(item?.user?.userName)}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="flex ml-auto items-center">
+                            <p className="font-bold text-xs">
+                              {moment(item?.createdAt).fromNow()}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-start ml-10">
+                      <p className="font-semibold text-sm">
+                        {getHistoryDescription(item)}
+                      </p>
                     </div>
-                  );
-              })}
+                  </div>
+                ))}
             </div>
+
+            {tabArray.map((item, index) => {
+              if (item?.input?.condition)
+                return (
+                  <div key={index} className="flex flex-wrap mt-2 gap-3">
+                    {user?._id && (
+                      <Link href={`/user-profile/${user?._id}`}>
+                        <div>
+                          <Image
+                            height={45}
+                            width={45}
+                            src={getImage(user?.image)}
+                            className="w-14 h-14 rounded-full cursor-pointer pt-2"
+                            alt="user-profile"
+                          />
+                        </div>
+                      </Link>
+                    )}
+                    <input
+                      className=" flex-1 border-gray-100 outline-none border-2 p-2 mb-0 rounded-2xl focus:border-gray-300"
+                      type="text"
+                      placeholder={item?.input?.placeholder}
+                      value={item?.input?.value}
+                      onChange={(e) =>
+                        item?.input?.onChangeFunc(e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                      onClick={() => item?.input?.onClickFunc()}
+                    >
+                      {!item?.input?.loadingCondition ? (
+                        `${item?.input?.buttonText}`
+                      ) : (
+                        <AiOutlineLoading3Quarters
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // savePin();
+                          }}
+                          className="mx-4 animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                          size={20}
+                        />
+                      )}
+                    </button>
+                  </div>
+                );
+            })}
+
+            {tabArray.map((item, index) => {
+              if (item?.withdraw?.condition)
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-wrap mt-6 gap-3 justify-center"
+                  >
+                    <button
+                      type="button"
+                      className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                      onClick={() => item?.withdraw?.func()}
+                    >
+                      {item?.withdraw?.text}
+                    </button>
+                  </div>
+                );
+
+              if (item?.owner?.condition)
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-wrap mt-6 gap-3 justify-center"
+                  >
+                    <button
+                      type="button"
+                      className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                      onClick={() => item?.owner?.func()}
+                    >
+                      {item?.owner?.text}
+                    </button>
+                  </div>
+                );
+            })}
+          </div>
+        </div>
+
+        <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
+          {postedBy?._id && (
+            <Link href={`/user-profile/${postedBy?._id}`}>
+              <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
+                <p className="inline align-middle text-sm mr-2 font-bold">
+                  {`Owner: `}
+                </p>
+                <Image
+                  alt={pinDetail.postedBy.userName}
+                  height={35}
+                  width={35}
+                  className="align-middle rounded-full"
+                  src={getImage(postedBy?.image)}
+                />
+
+                <p className="inline align-middle text-sm ml-1 font-bold">
+                  {getUserName(postedBy?.userName)}
+                </p>
+              </div>
+            </Link>
+          )}
+          {createdBy?._id && (
+            <Link href={`/user-profile/${createdBy?._id}`}>
+              <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
+                <p className="inline align-middle text-sm mr-2 font-bold">
+                  {`Minter: `}
+                </p>
+                <Image
+                  alt={createdBy.userName}
+                  height={35}
+                  width={35}
+                  className="align-middle rounded-full"
+                  src={getImage(createdBy?.image)}
+                />
+
+                <p className="inline align-middle text-sm ml-1 font-bold">
+                  {getUserName(createdBy?.userName)}
+                </p>
+              </div>
+            </Link>
+          )}
+        </div>
+        <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
+          <p>{`#${tokenId} ${title}`}</p>
+        </h1>
+        <p className="text-center text-md text-gray-700 font-bold px-4 lg:px-20 mb-5">
+          {about}
+        </p>
+
+        <div className="flex flex-wrap justify-center">
+          <div className="font-bold text-sm mr-2 mb-1">
+            <span className={buttonStyle}>{`Minted ${moment(
+              createdAt
+            ).fromNow()}`}</span>
           </div>
 
-          <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
-            {postedBy?._id && (
-              <Link href={`/user-profile/${postedBy?._id}`}>
-                <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
-                  <p className="inline align-middle text-sm mr-2 font-bold">
-                    {`Owner: `}
-                  </p>
-                  <Image
-                    alt={pinDetail.postedBy.userName}
-                    height={35}
-                    width={35}
-                    className="align-middle rounded-full"
-                    src={getImage(postedBy?.image)}
-                  />
-
-                  <p className="inline align-middle text-sm ml-1 font-bold">
-                    {getUserName(postedBy?.userName)}
-                  </p>
-                </div>
-              </Link>
-            )}
-            {createdBy?._id && (
-              <Link href={`/user-profile/${createdBy?._id}`}>
-                <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
-                  <p className="inline align-middle text-sm mr-2 font-bold">
-                    {`Minter: `}
-                  </p>
-                  <Image
-                    alt={createdBy.userName}
-                    height={35}
-                    width={35}
-                    className="align-middle rounded-full"
-                    src={getImage(createdBy?.image)}
-                  />
-
-                  <p className="inline align-middle text-sm ml-1 font-bold">
-                    {getUserName(createdBy?.userName)}
-                  </p>
-                </div>
-              </Link>
-            )}
-          </div>
-          <h1 className="transition duration-700 text-center mb-2 cursor-pointer hover:text-pink-600 text-2xl font-semibold">
-            <p>{`#${tokenId} ${title}`}</p>
-          </h1>
-          <p className="text-center text-md text-gray-700 font-bold px-4 lg:px-20 mb-5">
-            {about}
-          </p>
-
-          <div className="flex flex-wrap justify-center">
+          {!(priceShowCondition || highestBidShowCondition) && (
             <div className="font-bold text-sm mr-2 mb-1">
-              <span className={buttonStyle}>{`Minted ${moment(
-                createdAt
-              ).fromNow()}`}</span>
+              <span className={buttonStyle}>
+                {offersCount > 0
+                  ? `Has ${offersCount} ${offersCount > 1 ? `Offers` : `Offer`}`
+                  : `No Offers Yet`}
+              </span>
             </div>
+          )}
 
-            {!(priceShowCondition || highestBidShowCondition) && (
-              <div className="font-bold text-sm mr-2 mb-1">
-                <span className={buttonStyle}>
-                  {offersCount > 0
-                    ? `Has ${offersCount} ${
-                        offersCount > 1 ? `Offers` : `Offer`
-                      }`
-                    : `No Offers Yet`}
-                </span>
-              </div>
-            )}
+          {highestBidShowCondition && (
+            <div className="font-bold text-sm mr-2 mb-1">
+              <span className={buttonStyle}>
+                {bidsCount > 0
+                  ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
+                  : `No Bids Yet`}
+              </span>
+            </div>
+          )}
+          {(priceShowCondition || highestBidShowCondition) && (
+            <div className="font-bold text-sm mr-2 mb-1">
+              <span className={buttonStyle}>
+                {priceShowCondition
+                  ? `On Sale (Price: ${price} Matic)`
+                  : `On Auction (Current Bid: ${getCurrentBid(
+                      currentBid,
+                      startingBid
+                    )} Matic)`}
+              </span>
+            </div>
+          )}
 
-            {highestBidShowCondition && (
-              <div className="font-bold text-sm mr-2 mb-1">
-                <span className={buttonStyle}>
-                  {bidsCount > 0
-                    ? `Has ${bidsCount} ${bidsCount > 1 ? `Bids` : `Bid`}`
-                    : `No Bids Yet`}
-                </span>
-              </div>
-            )}
-            {(priceShowCondition || highestBidShowCondition) && (
-              <div className="font-bold text-sm mr-2 mb-1">
-                <span className={buttonStyle}>
-                  {priceShowCondition
-                    ? `On Sale (Price: ${price} Matic)`
-                    : `On Auction (Current Bid: ${getCurrentBid(
-                        currentBid,
-                        startingBid
-                      )} Matic)`}
-                </span>
-              </div>
-            )}
-
+          {royalty !== "0.0" && (
             <div className="font-bold text-sm mr-2 mb-1">
               <span
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigator.clipboard.writeText(`${nftContract}`);
-                  toast.info(contractAddressCopiedMessage);
                 }}
                 className={buttonStyle}
               >
-                {`Contract Address`}
+                {`Royalty: ${royalty}%`}
               </span>
             </div>
-
-            <div className="font-bold text-sm mr-2 mb-1">
-              <span className={buttonStyle}>{`Token ID: ${tokenId}`}</span>
-            </div>
-
-            <div className="font-bold text-sm mr-2 mb-1">
-              <a
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                href={getIpfsImage(image)}
-                target="_blank"
-              >
-                <span className={buttonStyle}>{`IPFS`}</span>
-              </a>
-            </div>
-
-            <div className="font-bold text-sm mr-2 mb-1">
-              <a
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
-                target="_blank"
-              >
-                <span className={buttonStyle}>{`Etherscan`}</span>
-              </a>
-            </div>
-          </div>
-          <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
-            {buttonArray?.map((item, index) => {
-              if (item?.condition) {
-                return (
-                  <button key={index} onClick={item?.function}>
-                    <span className={tabButtonStyles}>{item?.text} </span>
-                  </button>
-                );
-              }
-            })}
-            <button className={tabButtonStyles}>
-              <div className="flex gap-2 items-center">
-                <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
-                  {savedLength}
-                </p>
-                {!savingPost ? (
-                  <span>
-                    {!alreadySaved ? (
-                      <AiOutlineHeart
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          savePin();
-                        }}
-                        className={iconStyles}
-                        size={25}
-                      />
-                    ) : (
-                      <AiFillHeart
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          savePin();
-                        }}
-                        className={`${iconStyles} text-[#a83f39]`}
-                        size={25}
-                      />
-                    )}
-                  </span>
-                ) : (
-                  <AiOutlineLoading3Quarters
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // savePin();
-                    }}
-                    className="animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
-                    size={20}
-                  />
-                )}
+          )}
+          {pinCollection && (
+            <Link
+              onClick={() => {
+                e.stopPropagation();
+              }}
+              href={`${basePath}/collection-detail/${pinCollection}`}
+            >
+              <div className="font-bold text-sm mr-2 mb-1">
+                <span className={buttonStyle}>{`Collection`}</span>
               </div>
-            </button>
-            <ShareButtons title={title} shareUrl={`https://nft-nation.vercel.app/pin-detail/${pinId}`} image={getImage(image)}/>
+            </Link>
+          )}
+
+          <div className="font-bold text-sm mr-2 mb-1">
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(`${nftContract}`);
+                toast.info(contractAddressCopiedMessage);
+              }}
+              className={buttonStyle}
+            >
+              {`Contract Address`}
+            </span>
           </div>
-          {(makeAuctionBidCondition || createMarketSaleCondition) &&
-            (addingBidPrice || addingSellPrice) && (
-              <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
-                <div className="flex flex-wrap m-2 gap-3">
-                  {user?._id && (
-                    <Link href={`/user-profile/${user?._id}`}>
-                      <div>
-                        <Image
-                          height={45}
-                          width={45}
-                          src={getImage(user?.image)}
-                          className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
-                          alt="user-profile"
-                        />
-                      </div>
-                    </Link>
-                  )}
-                  <input
-                    className=" flex-0.5 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
-                    type="text"
-                    placeholder={
-                      addingSellPrice && !addingBidPrice
-                        ? `Price For Sale...`
-                        : `Starting Bid For Auction...`
-                    }
-                    maxLength={10}
-                    value={inputPrice}
-                    onChange={(e) => setInputPrice(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
-                    onClick={() => {
-                      addingSellPrice && !addingBidPrice
-                        ? createMarketSale()
-                        : createMarketAuction();
-                    }}
-                  >
-                    {`Confirm`}
-                  </button>
-                </div>
-              </div>
-            )}
+
+          <div className="font-bold text-sm mr-2 mb-1">
+            <span className={buttonStyle}>{`Token ID: ${tokenId}`}</span>
+          </div>
+
+          <div className="font-bold text-sm mr-2 mb-1">
+            <a
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              href={getIpfsImage(image)}
+              target="_blank"
+            >
+              <span className={buttonStyle}>{`IPFS`}</span>
+            </a>
+          </div>
+
+          <div className="font-bold text-sm mr-2 mb-1">
+            <a
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              href={`https://ropsten.etherscan.io/token/${nftContract}?a=${tokenId}`}
+              target="_blank"
+            >
+              <span className={buttonStyle}>{`Etherscan`}</span>
+            </a>
+          </div>
         </div>
+        <div className="p-2 mt-3 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
+          {buttonArray?.map((item, index) => {
+            if (item?.condition) {
+              return (
+                <button key={index} onClick={item?.function}>
+                  <span className={tabButtonStyles}>{item?.text} </span>
+                </button>
+              );
+            }
+          })}
+          <button className={tabButtonStyles}>
+            <div className="flex gap-2 items-center">
+              <p className="font-semibold hover:font-extrabold hover:cursor-pointer">
+                {savedLength}
+              </p>
+              {!savingPost ? (
+                <span>
+                  {!alreadySaved ? (
+                    <AiOutlineHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        savePin();
+                      }}
+                      className={iconStyles}
+                      size={25}
+                    />
+                  ) : (
+                    <AiFillHeart
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        savePin();
+                      }}
+                      className={`${iconStyles} text-[#a83f39]`}
+                      size={25}
+                    />
+                  )}
+                </span>
+              ) : (
+                <AiOutlineLoading3Quarters
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // savePin();
+                  }}
+                  className="animate-spin text-[#ffffff] drop-shadow-lg cursor-pointer"
+                  size={20}
+                />
+              )}
+            </div>
+          </button>
+          <ShareButtons
+            title={title}
+            shareUrl={`https://nft-nation.vercel.app/pin-detail/${pinId}`}
+            image={getImage(image)}
+          />
+        </div>
+        {(makeAuctionBidCondition || createMarketSaleCondition) &&
+          (addingBidPrice || addingSellPrice) && (
+            <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
+              <div className="flex flex-wrap m-2 gap-3">
+                {user?._id && (
+                  <Link href={`/user-profile/${user?._id}`}>
+                    <div>
+                      <Image
+                        height={45}
+                        width={45}
+                        src={getImage(user?.image)}
+                        className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
+                        alt="user-profile"
+                      />
+                    </div>
+                  </Link>
+                )}
+                <input
+                  className=" flex-0.5 border-gray-100 outline-none border-2 p-2 rounded-2xl focus:border-gray-300"
+                  type="text"
+                  placeholder={
+                    addingSellPrice && !addingBidPrice
+                      ? `Price For Sale...`
+                      : `Starting Bid For Auction...`
+                  }
+                  maxLength={10}
+                  value={inputPrice}
+                  onChange={(e) => setInputPrice(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="shadow-lg hover:drop-shadow-lg transition transition duration-500 ease transform hover:-translate-y-1 inline-block bg-themeColor text-secondTheme rounded-full px-6 py-2 font-semibold text-base outline-none"
+                  onClick={() => {
+                    addingSellPrice && !addingBidPrice
+                      ? createMarketSale()
+                      : createMarketAuction();
+                  }}
+                >
+                  {`Confirm`}
+                </button>
+              </div>
+            </div>
+          )}
+      </div>
       <>
         <div className="flex flex-wrap justify-evenly mt-2 mb-2">
           {[
@@ -2539,7 +2566,7 @@ const PinDetail = ({detail, data = []}) => {
               );
           })}
         </div>
-        <Feed data={data}/>
+        <Feed data={data} />
       </>
     </>
   );
@@ -2550,27 +2577,26 @@ export default PinDetail;
 // export const getServerSideProps = wrapper.getServerSideProps(
 //   (store) =>
 //     async ({ query }) => {
-  export const getServerSideProps = async ({query}) => {
-  const {pinId} = query
+export const getServerSideProps = async ({ query }) => {
+  const { pinId } = query;
 
   try {
-    var {data} = await axios
-    .get(`${basePath}/api/pins/${pinId}`)
-  } catch(e) {
-    console.log(e,"Error")
+    var { data } = await axios.get(`${basePath}/api/pins/${pinId}`);
+  } catch (e) {
+    console.log(e, "Error");
   }
 
   if (!data) {
     return {
-        notFound: true,
+      notFound: true,
     };
-}
+  }
 
   return {
     props: {
       detail: data?.pin,
-      data: []
+      data: [],
     },
   };
-}
+};
 // );

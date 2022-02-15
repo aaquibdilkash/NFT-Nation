@@ -31,7 +31,8 @@ export const fetchingProfileLoadingMessage = `Fetching Profile Data For You...`;
 export const waitLoadingMessage = `Please Wait And Do Not Leave This Page...`;
 export const fetchingLoadingMessage = `Don't Worry We're Fetching For You...`;
 
-export const validAmountErrorMessage = `Please enter a valid amount`;
+export const validAmountErrorMessage = `Please Enter A Valid Amount`;
+export const validRoyaltyErrorMessage = `Royalty Percentage Should be between 0 to 50`;
 export const fileUploadErrorMessage = `Something went wrong while uploading the file, Please Try Again Later!`;
 export const tokenMintErrorMessage = `Token Could Not Be Minted, Please Try Again Later!`;
 export const tokenApproveErrorMessage = `Token Could Not Be Approved, Please Try Again Later!`;
