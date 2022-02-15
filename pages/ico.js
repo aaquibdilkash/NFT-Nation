@@ -117,7 +117,7 @@ const ICO = () => {
               </button>
             </div>
             <p className="text-sm mt-2 text-gray-500 mb-8 w-full font-bold">
-              {amount ? `${amount} NNT will cost ${amount} Matic` : ``}
+              {isValidAmount(amount) ? `${amount} NNT will cost ${amount} Matic` : ``}
             </p>
             {loading && <Spinner title={loadingMessage} />}
             {/* <div className="flex lg:flex-row md:flex-col">

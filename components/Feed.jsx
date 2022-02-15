@@ -83,7 +83,7 @@ const Feed = ({data = []}) => {
       : pinLink;
 
   const fetchData = () => {
-    setLoading(!page || page == 1);
+    setLoading(!page || page == 1 || !dataArray.length);
     dispatch({
       type: CHANGE_PAGE,
       payload: false,

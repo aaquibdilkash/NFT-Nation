@@ -90,8 +90,9 @@ const Sidebar = ({
             className={
               asPath === "/" ||
               (pathname === "/" &&
-                (query?.page || query?.type) &&
-                Object.keys(query).length <= 2)
+                (query?.page && query?.type &&
+                Object.keys(query).length == 2) || ((query?.page || query?.type) &&
+                Object.keys(query).length == 1))
                 ? isActiveStyle
                 : isNotActiveStyle
             }
@@ -224,11 +225,6 @@ const Sidebar = ({
                   <div
                     key={index}
                     onClick={() => {
-                      console.log(
-                        JSON.stringify(query?.sort),
-                        JSON.stringify(array[1].query.sort),
-                        JSON.stringify(array[0].query.sort)
-                      );
                       router.push(
                         {
                           pathname: !feedPathArray.includes(pathname)

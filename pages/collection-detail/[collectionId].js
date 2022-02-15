@@ -473,7 +473,7 @@ const CollectionDetail = ({ detail, data = [] }) => {
                 {tab === "comments" &&
                   !sideLoading &&
                   !collectionComments?.length && (
-                    <h2 className="flex justify-center items-center h-370 text-xl font-bold">{`No Comments Yet, Be the first one to comment...`}</h2>
+                    <h2 className="flex justify-center items-center h-370 text-xl font-bold">{`No Comments Yet, Wanna Comment...?`}</h2>
                   )}
                 {tab === "comments" &&
                   sideLoading &&

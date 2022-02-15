@@ -1736,7 +1736,7 @@ const PinDetail = ({ detail, data = [] }) => {
 
   const buttonArray = [
     {
-      text: `Buy ${price} Matic`,
+      text: `Buy (Price: ${price} Matic)`,
       condition: executeMarketSaleCondition,
       function: executeMarketSale,
     },
@@ -1811,7 +1811,7 @@ const PinDetail = ({ detail, data = [] }) => {
       condition: true,
       loadingCondition:
         tab === "comments" && !pinComments?.length && sideLoading,
-      emptyText: "No Comments Yet, Be the first one to comment...",
+      emptyText: "No Comments Yet, Wanna Comment...?",
       emptyCondition:
         tab === "comments" && !pinComments?.length && !sideLoading,
       input: {
