@@ -1942,8 +1942,8 @@ const PinDetail = ({ detail, data = [] }) => {
             className="shadow-lg rounded-lg"
             height={500}
             width={480}
-            layout="fixed"
-            // objectFit="contain"
+            layout="intrinsic"
+            // objectFit="cover"
             src={getImage(image)}
           />
 
