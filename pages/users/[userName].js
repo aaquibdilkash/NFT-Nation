@@ -50,118 +50,118 @@ const UserProfilePage = ({detail, data = []}) => {
     user?.followings?.find((item) => item === userId)
   );
 
-  const fetchUserDetails = () => {
-    // setLoading(true);
-    axios
-      .get(`/api/users/${userName}`)
-      .then((res) => {
-        const { followers, followings, _id } = res?.data?.user;
-
-        dispatch({
-          type: CURRENT_PROFILE_SET,
-          payload: res?.data?.user,
-        });
-
-        setAlreadyFollowed(followers?.find((item) => item === user?._id));
-
-        setLoading(false);
-
-        router.replace(
-          {
-            pathname: pathname,
-            query: {
-              userName,
-              postedBy: true,
-            },
-          },
-          undefined,
-          { shallow: true }
-        );
-      })
-      .catch((e) => {
-        toast.error(errorMessage);
-      });
-  };
-
-  // const followUser = () => {
-  //   if (!user?._id) {
-  //     toast.info(loginMessage);
-  //     return;
-  //   }
-
-  //   if (following) {
-  //     return;
-  //   }
-    
-  //   setFollowing(true);
+  // const fetchUserDetails = () => {
+  //   // setLoading(true);
   //   axios
-  //     .put(`/api/users/follow/${userId}`, {
-  //       user: user?._id,
-  //     })
+  //     .get(`/api/users/${userName}`)
   //     .then((res) => {
-
-  //       if(!alreadyFollowed) {
-  //         let to = [userId, ...user?.followers]
-  //         to = [...new Set(to)]
-  //         to = to.filter((item) => item !== user?._id)
-  //         to = to.map((item) => ({user: item}))
-
-  //         const obj = {
-  //           type: "New Follow",
-  //           byUser: user?._id,
-  //           toUser: userId,
-  //           to
-  //         }
-
-  //         sendNotifications(obj, (res) => {
-  //           // console.log(res)
-  //         }, (e) => {
-  //           // console.log(e, "DDDDDDDDDDddddd")
-  //         })
-  //       }
-  //       setFollowing(false);
-  //       toast.success(
-  //         alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
-  //       );
-
-  //       const filteredFollowings = alreadyFollowed
-  //         ? user?.followings.filter((item, index) => item !== userId)
-  //         : [...user?.followings, userId];
-
-  //       dispatch({
-  //         type: USER_GET_SUCCESS,
-  //         payload: {
-  //           ...user,
-  //           followings: filteredFollowings,
-  //           followingsCount: filteredFollowings.length,
-  //         },
-  //       });
-
-  //       const filteredFollowers = alreadyFollowed
-  //         ? currentProfile?.followers.filter(
-  //             (item, index) => item !== user?._id
-  //           )
-  //         : [...currentProfile?.followers, user?._id];
+  //       const { followers, followings, _id } = res?.data?.user;
 
   //       dispatch({
   //         type: CURRENT_PROFILE_SET,
-  //         payload: {
-  //           ...currentProfile,
-  //           followers: filteredFollowers,
-  //           followersCount: filteredFollowers.length,
-  //         },
+  //         payload: res?.data?.user,
   //       });
 
-  //       setAlreadyFollowed((prev) => !prev);
+  //       setAlreadyFollowed(followers?.find((item) => item === user?._id));
+
+  //       setLoading(false);
+
+  //       router.replace(
+  //         {
+  //           pathname: pathname,
+  //           query: {
+  //             userName,
+  //             postedBy: true,
+  //           },
+  //         },
+  //         undefined,
+  //         { shallow: true }
+  //       );
   //     })
   //     .catch((e) => {
-  //       console.log(e);
-  //       setFollowing(false);
-  //       toast.error(
-  //         alreadyFollowed ? unFollowErrorMessage : followErrorMessage
-  //       );
+  //       toast.error(errorMessage);
   //     });
   // };
+
+  const followUser = () => {
+    if (!user?._id) {
+      toast.info(loginMessage);
+      return;
+    }
+
+    if (following) {
+      return;
+    }
+    
+    setFollowing(true);
+    axios
+      .put(`/api/users/follow/${userId}`, {
+        user: user?._id,
+      })
+      .then((res) => {
+
+        if(!alreadyFollowed) {
+          let to = [userId, ...user?.followers]
+          to = [...new Set(to)]
+          to = to.filter((item) => item !== user?._id)
+          to = to.map((item) => ({user: item}))
+
+          const obj = {
+            type: "New Follow",
+            byUser: user?._id,
+            toUser: userId,
+            to
+          }
+
+          sendNotifications(obj, (res) => {
+            // console.log(res)
+          }, (e) => {
+            // console.log(e, "DDDDDDDDDDddddd")
+          })
+        }
+        setFollowing(false);
+        toast.success(
+          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+        );
+
+        const filteredFollowings = alreadyFollowed
+          ? user?.followings.filter((item, index) => item !== userId)
+          : [...user?.followings, userId];
+
+        dispatch({
+          type: USER_GET_SUCCESS,
+          payload: {
+            ...user,
+            followings: filteredFollowings,
+            followingsCount: filteredFollowings.length,
+          },
+        });
+
+        const filteredFollowers = alreadyFollowed
+          ? currentProfile?.followers.filter(
+              (item, index) => item !== user?._id
+            )
+          : [...currentProfile?.followers, user?._id];
+
+        dispatch({
+          type: CURRENT_PROFILE_SET,
+          payload: {
+            ...currentProfile,
+            followers: filteredFollowers,
+            followersCount: filteredFollowers.length,
+          },
+        });
+
+        setAlreadyFollowed((prev) => !prev);
+      })
+      .catch((e) => {
+        console.log(e);
+        setFollowing(false);
+        toast.error(
+          alreadyFollowed ? unFollowErrorMessage : followErrorMessage
+        );
+      });
+  };
 
   useEffect(() => {
     dispatch({

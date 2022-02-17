@@ -20,14 +20,14 @@ function MyApp({ Component, pageProps }) {
 
     useEffect(() => {
       const start = () => {
-        console.log("start");
+        // console.log("start");
         dispatch({
           type: NAVIGATING_SET,
           payload: true
         })
       };
       const end = () => {
-        console.log("findished");
+        // console.log("finished");
         dispatch({
           type: NAVIGATING_SET,
           payload: false
