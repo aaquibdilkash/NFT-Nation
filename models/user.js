@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     },
     userName: {
       type: String,
-      maxlength: [64, "userName field cannot exceeds 42 characters"],
+      maxlength: [16, "userName field cannot exceeds 42 characters"],
       required: [true, "Please enter userName"],
       unique: true,
     },
@@ -91,4 +91,4 @@ const userSchema = new mongoose.Schema(
   { _id: false }
 );
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+export default mongoose.models?.User || mongoose.model("User", userSchema);

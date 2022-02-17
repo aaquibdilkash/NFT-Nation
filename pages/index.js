@@ -1,5 +1,6 @@
 import { Feed } from "../components";
 import Head from "next/head";
+import { basePath } from "../utils/data";
 // import { basePath, getImage } from "../utils/data";
 // import { wrapper } from "../redux/store";
 // import axios from "axios";
@@ -20,10 +21,10 @@ const Home = ({data = []}) => {
         />
         <meta
           property="og:image"
-          content={`https://nft-nation.vercel.app/favicon.png`}
+          content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
-        <meta property="og:url" content={`https://nft-nation.vercel.app`} />
+        <meta property="og:url" content={`${basePath}`} />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

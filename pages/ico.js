@@ -13,7 +13,7 @@ import {
 } from "../utils/messages";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { isValidAmount, parseAmount } from "../utils/data";
+import { basePath, isValidAmount, parseAmount } from "../utils/data";
 import { nftmarketaddress } from "../config";
 import Head from "next/head";
 
@@ -81,10 +81,10 @@ const ICO = () => {
         />
         <meta
           property="og:image"
-          content={`https://nft-nation.vercel.app/favicon.png`}
+          content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
-        <meta property="og:url" content={`https://nft-nation.vercel.app/ico`} />
+        <meta property="og:url" content={`${basePath}/ico`} />
         <meta property="og:type" content="website" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

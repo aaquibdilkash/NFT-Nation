@@ -123,4 +123,4 @@ const collectionSchema = new mongoose.Schema({
   }
 });
 
-export default mongoose.models.Collection || mongoose.model("Collection", collectionSchema);
+export default mongoose.models?.Collection || mongoose.model("Collection", collectionSchema);

@@ -20,6 +20,7 @@ const Navbar = ({ connectToMetamask, loggingIn }) => {
         <IoMdSearch fontSize={25} className="ml-1 " />
         <input
           type="text"
+          maxLength={64}
           onChange={(e) => {
             router.push(
               {
@@ -104,7 +105,7 @@ const Navbar = ({ connectToMetamask, loggingIn }) => {
       <div className="flex gap-3 ">
         {!loggingIn ? (
           user?._id ? (
-            <Link href={`/user-profile/${user?._id}`}>
+            <Link href={`/users/${user?.userName}`}>
               <div className="w-12 h-12 relative transition transition duration-500 ease transform hover:-translate-y-1 inline-block hidden md:block">
                 <Image
                   src={getImage(user?.image)}

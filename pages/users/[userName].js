@@ -37,7 +37,8 @@ const UserProfilePage = ({detail, data = []}) => {
   const dispatch = useDispatch();
   const { pathname, query } = router;
   const { user, currentProfile, navigating } = useSelector((state) => state.userReducer);
-  const { userId, type } = query;
+  const { userName, type } = query;
+  const {_id: userId} = detail;
   const [editing, setEditing] = useState(false);
   const [collectionEditing, setCollectionEditing] = useState(false);
   const [activeBtn, setActiveBtn] = useState("Owned NFTs");
@@ -50,9 +51,9 @@ const UserProfilePage = ({detail, data = []}) => {
   );
 
   const fetchUserDetails = () => {
-    setLoading(true);
+    // setLoading(true);
     axios
-      .get(`/api/users/${userId}`)
+      .get(`/api/users/${userName}`)
       .then((res) => {
         const { followers, followings, _id } = res?.data?.user;
 
@@ -69,7 +70,7 @@ const UserProfilePage = ({detail, data = []}) => {
           {
             pathname: pathname,
             query: {
-              userId,
+              userName,
               postedBy: true,
             },
           },
@@ -82,85 +83,85 @@ const UserProfilePage = ({detail, data = []}) => {
       });
   };
 
-  const followUser = () => {
-    if (!user?._id) {
-      toast.info(loginMessage);
-      return;
-    }
+  // const followUser = () => {
+  //   if (!user?._id) {
+  //     toast.info(loginMessage);
+  //     return;
+  //   }
 
-    if (following) {
-      return;
-    }
+  //   if (following) {
+  //     return;
+  //   }
     
-    setFollowing(true);
-    axios
-      .put(`/api/users/follow/${userId}`, {
-        user: user?._id,
-      })
-      .then((res) => {
+  //   setFollowing(true);
+  //   axios
+  //     .put(`/api/users/follow/${userId}`, {
+  //       user: user?._id,
+  //     })
+  //     .then((res) => {
 
-        if(!alreadyFollowed) {
-          let to = [userId, ...user?.followers]
-          to = [...new Set(to)]
-          to = to.filter((item) => item !== user?._id)
-          to = to.map((item) => ({user: item}))
+  //       if(!alreadyFollowed) {
+  //         let to = [userId, ...user?.followers]
+  //         to = [...new Set(to)]
+  //         to = to.filter((item) => item !== user?._id)
+  //         to = to.map((item) => ({user: item}))
 
-          const obj = {
-            type: "New Follow",
-            byUser: user?._id,
-            toUser: userId,
-            to
-          }
+  //         const obj = {
+  //           type: "New Follow",
+  //           byUser: user?._id,
+  //           toUser: userId,
+  //           to
+  //         }
 
-          sendNotifications(obj, (res) => {
-            // console.log(res)
-          }, (e) => {
-            // console.log(e, "DDDDDDDDDDddddd")
-          })
-        }
-        setFollowing(false);
-        toast.success(
-          alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
-        );
+  //         sendNotifications(obj, (res) => {
+  //           // console.log(res)
+  //         }, (e) => {
+  //           // console.log(e, "DDDDDDDDDDddddd")
+  //         })
+  //       }
+  //       setFollowing(false);
+  //       toast.success(
+  //         alreadyFollowed ? unFollowSuccessMessage : followSuccessMessage
+  //       );
 
-        const filteredFollowings = alreadyFollowed
-          ? user?.followings.filter((item, index) => item !== userId)
-          : [...user?.followings, userId];
+  //       const filteredFollowings = alreadyFollowed
+  //         ? user?.followings.filter((item, index) => item !== userId)
+  //         : [...user?.followings, userId];
 
-        dispatch({
-          type: USER_GET_SUCCESS,
-          payload: {
-            ...user,
-            followings: filteredFollowings,
-            followingsCount: filteredFollowings.length,
-          },
-        });
+  //       dispatch({
+  //         type: USER_GET_SUCCESS,
+  //         payload: {
+  //           ...user,
+  //           followings: filteredFollowings,
+  //           followingsCount: filteredFollowings.length,
+  //         },
+  //       });
 
-        const filteredFollowers = alreadyFollowed
-          ? currentProfile?.followers.filter(
-              (item, index) => item !== user?._id
-            )
-          : [...currentProfile?.followers, user?._id];
+  //       const filteredFollowers = alreadyFollowed
+  //         ? currentProfile?.followers.filter(
+  //             (item, index) => item !== user?._id
+  //           )
+  //         : [...currentProfile?.followers, user?._id];
 
-        dispatch({
-          type: CURRENT_PROFILE_SET,
-          payload: {
-            ...currentProfile,
-            followers: filteredFollowers,
-            followersCount: filteredFollowers.length,
-          },
-        });
+  //       dispatch({
+  //         type: CURRENT_PROFILE_SET,
+  //         payload: {
+  //           ...currentProfile,
+  //           followers: filteredFollowers,
+  //           followersCount: filteredFollowers.length,
+  //         },
+  //       });
 
-        setAlreadyFollowed((prev) => !prev);
-      })
-      .catch((e) => {
-        console.log(e);
-        setFollowing(false);
-        toast.error(
-          alreadyFollowed ? unFollowErrorMessage : followErrorMessage
-        );
-      });
-  };
+  //       setAlreadyFollowed((prev) => !prev);
+  //     })
+  //     .catch((e) => {
+  //       console.log(e);
+  //       setFollowing(false);
+  //       toast.error(
+  //         alreadyFollowed ? unFollowErrorMessage : followErrorMessage
+  //       );
+  //     });
+  // };
 
   useEffect(() => {
     dispatch({
@@ -171,8 +172,21 @@ const UserProfilePage = ({detail, data = []}) => {
 
   useEffect(() => {
     setActiveBtn("Owned NFTs");
-    userId && fetchUserDetails();
-  }, [userId]);
+
+    router.replace(
+      {
+        pathname: pathname,
+        query: {
+          userName,
+          postedBy: true,
+        },
+      },
+      undefined,
+      { shallow: true }
+    );
+    
+    // userId && fetchUserDetails();
+  }, [userName]);
 
   useEffect(() => {
     user?._id &&
@@ -191,7 +205,6 @@ const UserProfilePage = ({detail, data = []}) => {
 
   const {
     _id,
-    userName,
     about,
     image,
     createdAt,
@@ -200,6 +213,9 @@ const UserProfilePage = ({detail, data = []}) => {
     followersCount,
     followingsCount,
     refferals,
+    nftMinted,
+    nftBought,
+    nftSold
   } = currentProfile;
 
   const buttonsArray = {
@@ -344,7 +360,7 @@ const UserProfilePage = ({detail, data = []}) => {
         <meta name="twitter:card" content="summary" />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/user-profile/${userId}`}
+          content={`${basePath}/users/${userName}`}
         />
         <meta
           property="og:image"
@@ -363,7 +379,7 @@ const UserProfilePage = ({detail, data = []}) => {
             )}
           </div>
           {!editing && !collectionEditing && (
-            <div className="relative flex flex-col mb-2 pb-10">
+            <div className="relative flex flex-col mb-2 pb-0">
               <div className="flex flex-col justify-center items-center z-10">
                 <Image
                   className="rounded-lg w-20 h-20 -mt-64"
@@ -382,9 +398,76 @@ const UserProfilePage = ({detail, data = []}) => {
                 <div className="container mx-auto px-4">
                   <div className="relative flex flex-col min-w-0 break-words bg-gradient-to-r from-themeColor to-secondTheme w-full mb-6 shadow-xl rounded-lg -mt-32">
                     <div className="px-6">
-                      <div className="flex flex-wrap justify-between lg:pt-10">
+                      <div className="flex flex-wrap justify-between lg:pt-2">
                         <div className="flex justify-center w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
-                          <div className="flex gap-2 py-2 px-3 mt-20 lg:mt-0">
+                          <div className="flex justify-center py-2 mt-20 lg:mt-2 lg:pt-4">
+                            <div className="mr-4 p-1 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {nftMinted}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Minted
+                              </span>
+                            </div>
+                            <div className="mr-4 p-1 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {nftBought}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Bought
+                              </span>
+                            </div>
+                            <div className="mr-4 p-1 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {nftSold}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Sold
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="w-full lg:w-4/12 px-4 lg:order-1">
+                          <div className="flex justify-center py-2 lg:mt-2 lg:pt-4">
+                            <div className="mr-4 p-1 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {currentProfile?.followersCount}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Followers
+                              </span>
+                            </div>
+                            <div className="mr-4 p-1 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {followingsCount}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Following
+                              </span>
+                            </div>
+                            <div className="mr-4 p-1 text-center">
+                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
+                                {refferals?.length ?? 0}
+                              </span>
+                              <span className="text-sm text-blueGray-400">
+                                Referrals
+                              </span>
+                            </div>
+                          </div>
+                          
+                        </div>
+                      </div>
+                      <div className="text-center mt-0">
+                        <h3 className="text-xl font-semibold leading-normal mb-2 text-blueGray-700 mb-2">
+                          {getUserName(userName)}
+                        </h3>
+                        <div className="text-sm leading-normal mt-0 mb-4 text-blueGray-400 font-bold">
+                          <i className="fas fa-map-marker-alt mr-2 text-lg text-blueGray-400"></i>
+                          {`Joined On: ${moment(createdAt).format(
+                            "MMM DD, YYYY"
+                          )}`}
+                        </div>
+                        <div className="flex gap-2 py-2 px-3 mt-0 lg:mt-0 justify-center">
                             {user?._id !== userId && (
                               <button
                                 onClick={() => {
@@ -432,48 +515,8 @@ const UserProfilePage = ({detail, data = []}) => {
                               </button>
                             )}
                           </div>
-                        </div>
-                        <div className="w-full lg:w-4/12 px-4 lg:order-1">
-                          <div className="flex justify-center py-2 lg:pt-4">
-                            <div className="mr-4 p-3 text-center">
-                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
-                                {currentProfile?.followersCount}
-                              </span>
-                              <span className="text-sm text-blueGray-400">
-                                Followers
-                              </span>
-                            </div>
-                            <div className="mr-4 p-3 text-center">
-                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
-                                {followingsCount}
-                              </span>
-                              <span className="text-sm text-blueGray-400">
-                                Following
-                              </span>
-                            </div>
-                            <div className="mr-4 p-3 text-center">
-                              <span className="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
-                                {refferals?.length ?? 0}
-                              </span>
-                              <span className="text-sm text-blueGray-400">
-                                Referrals
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-center mt-2">
-                        <h3 className="text-xl font-semibold leading-normal mb-2 text-blueGray-700 mb-2">
-                          {getUserName(userName)}
-                        </h3>
-                        <div className="text-sm leading-normal mt-0 mb-4 text-blueGray-400 font-bold">
-                          <i className="fas fa-map-marker-alt mr-2 text-lg text-blueGray-400"></i>
-                          {`Joined On: ${moment(createdAt).format(
-                            "MMM DD, YYYY"
-                          )}`}
-                        </div>
                         <div className="text-sm leading-normal mt-0 mb-4 text-blueGray-400 font-bold justify-center">
-                        <ShareButtons title={userName} shareUrl={`https://nft-nation.vercel.app/user-profile/${userId}`} image={getImage(image)}/>
+                        <ShareButtons title={userName} shareUrl={`${basePath}/users/${userId}`} image={getImage(image)}/>
                         </div>
                         {/* <div className="mb-2 text-blueGray-600 mt-10">
                         <i className="fas fa-briefcase mr-2 text-lg text-blueGray-400"></i>
@@ -626,7 +669,7 @@ const UserProfilePage = ({detail, data = []}) => {
                                           {
                                             pathname: pathname,
                                             query: {
-                                              userId,
+                                              userName,
                                               type: buttonsArray[`${item}`]
                                                 ?.type,
                                               ...ele?.query,
@@ -671,11 +714,11 @@ export default UserProfilePage;
 //   (store) =>
 //     async ({ query }) => {
   export const getServerSideProps = async ({query}) => {
-  const {userId} = query
+  const {userName} = query
 
   try {
     var {data} = await axios
-    .get(`${basePath}/api/users/${userId}`)
+    .get(`${basePath}/api/users/${userName}`)
   } catch(e) {
     console.log(e,"Error")
   }

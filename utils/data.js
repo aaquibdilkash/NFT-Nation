@@ -11,9 +11,9 @@ export const basePath =
 
 export const feedPathArray = [
   "/",
-  "/pin-detail/[pinId]",
-  "/collection-detail/[collectionId]",
-  "/user-profile/[userId]",
+  "/pins/[pinId]",
+  "/collections/[collectionId]",
+  "/users/[userName]",
 ];
 
 export const ether = (n) => {

@@ -17,6 +17,8 @@ const Feed = ({data = []}) => {
   const { user, currentProfile, hasMore, refresh, navigating } = useSelector(
     (state) => state.userReducer
   );
+
+  const {_id: userId} = currentProfile
   const CancelToken = axios.CancelToken;
   const source = CancelToken.source();
 
@@ -32,7 +34,6 @@ const Feed = ({data = []}) => {
     auctionEnded,
     feed,
     pinId,
-    userId,
     followers,
     followings,
     collection,

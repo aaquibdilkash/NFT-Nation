@@ -13,7 +13,7 @@ import {
 } from "../utils/messages";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { parseAmount, tabButtonStyles } from "../utils/data";
+import { basePath, parseAmount, tabButtonStyles } from "../utils/data";
 import { nftmarketaddress } from "../config";
 import Head from "next/head";
 import ShareButtons from "../components/ShareButtons";
@@ -73,11 +73,11 @@ const Refer = () => {
         />
         <meta
           property="og:image"
-          content={`https://nft-nation.vercel.app/favicon.png`}
+          content={`${basePath}/favicon.png`}
         />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/refer`}
+          content={`${basePath}/refer`}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
@@ -126,7 +126,7 @@ const Refer = () => {
             {loading && <Spinner title={loadingMessage} />} */}
             <ShareButtons
               title={`Refer & Earn`}
-              shareUrl={`https://nft-nation.vercel.app/?refer=${user?._id}`}
+              shareUrl={`${basePath}/?refer=${user?._id}`}
             />
 
             <button onClick={() => {

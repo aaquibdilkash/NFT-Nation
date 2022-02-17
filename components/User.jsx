@@ -33,6 +33,9 @@ const User = ({ userProfile }) => {
     followersCount,
     followingsCount,
     createdAt,
+    nftMinted,
+    nftBought,
+    nftSold
   } = userProfile;
 
   const router = useRouter();
@@ -146,7 +149,7 @@ const User = ({ userProfile }) => {
   return (
     <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl transform transition-all ease duration-500 m-4">
       <div
-        onClick={() => router.push(`/user-profile/${_id}`)}
+        onClick={() => router.push(`/users/${userName}`)}
         className="relative cursor-pointer w-25"
       >
         <Image
@@ -164,7 +167,7 @@ const User = ({ userProfile }) => {
           <div
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/user-profile/${_id}`);
+              router.push(`/users/${userName}`);
             }}
             className="flex justify-between items-center py-4 transition transition duration-500 ease transform hover:scale-1.5"
           >
@@ -215,7 +218,7 @@ const User = ({ userProfile }) => {
           <p className="text-sm text-center font-semibold">{about}</p>
         </div>
 
-        <div className="flex flex-row justify-evenly px-2 pb-1">
+        <div className="flex flex-row justify-center gap-2 px-2 pb-3">
           <span className={buttonStyle}>
             {`${currentProfile?.followersCount} Followers`}
           </span>
@@ -235,6 +238,14 @@ const User = ({ userProfile }) => {
               {giftingUser?._id === _id ? `Selected` : `Gift`}
             </span>
           )}
+        </div>
+
+        <div className="flex flex-row justify-center gap-2 px-2 pb-1">
+          <span className={buttonStyle}>
+            {`Minted: ${nftMinted}`}
+          </span>
+          <span className={buttonStyle}>{`Bought: ${nftBought}`}</span>
+          <span className={buttonStyle}>{`Sold: ${nftSold}`}</span>
         </div>
         <div className="p-6 pt-2"></div>
       </div>

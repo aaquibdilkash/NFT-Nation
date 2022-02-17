@@ -170,7 +170,7 @@ const PinDetail = ({ detail, data = [] }) => {
     createdBy,
     createdAt,
     pinCollection,
-    royalty
+    royalty,
   } = pinDetail ?? {
     _id: "",
     title: "",
@@ -195,7 +195,7 @@ const PinDetail = ({ detail, data = [] }) => {
     createdBy: {},
     createdAt: new Date(),
     pinCollection: null,
-    royalty: "0.0"
+    royalty: "0.0",
   };
 
   const executeMarketSaleCondition =
@@ -421,13 +421,17 @@ const PinDetail = ({ detail, data = [] }) => {
   }, [detail]);
 
   useEffect(() => {
-    pinId && fetchPinDetails();
+    // pinId && fetchPinDetails();
     pinId && fetchPinComments();
     pinId && fetchPinBids();
     pinId && fetchPinHistory();
     pinId && fetchPinOffers();
     pinId && fetchPinProperties();
   }, [pinId, refresh]);
+
+  useEffect(() => {
+    pinId && fetchPinDetails();
+  }, [refresh]);
 
   useEffect(() => {
     setShowCommentReplies({});
@@ -484,6 +488,19 @@ const PinDetail = ({ detail, data = [] }) => {
       })
       .catch((e) => {
         // toast.error("could not be transferred");
+      });
+  };
+
+  const increaseCount = ([user1, action1], [user2, action2]) => {
+    axios
+      .put(`/api/users/count/${user1}/${user2}`, {
+        actions: [action1, action2],
+      })
+      .then((res) => {
+        toast.success("count increased");
+      })
+      .catch((e) => {
+        toast.error("count not increased");
       });
   };
 
@@ -647,6 +664,11 @@ const PinDetail = ({ detail, data = [] }) => {
       amount: price,
     };
     transferPin(transferObj);
+
+    // increase count
+    const first = [user?._id, "nftBought"];
+    const second = [postedBy?._id, "nftSold"];
+    increaseCount(first, second);
 
     // ownership transfer notification
     try {
@@ -1011,6 +1033,13 @@ const PinDetail = ({ detail, data = [] }) => {
       transferPin(transferObj);
     }
 
+    // increase count
+    if (newOwner !== user?._id) {
+      const first = [newOwner, "nftBought"];
+      const second = [postedBy?._id, "nftSold"];
+      increaseCount(first, second);
+    }
+
     // notify auctionEnded or ownership transferred
     try {
       let to = [
@@ -1185,6 +1214,11 @@ const PinDetail = ({ detail, data = [] }) => {
     };
 
     transferPin(transferObj);
+
+    // increase count
+    const first = [newOwner, "nftBought"];
+    const second = [postedBy?._id, "nftSold"];
+    increaseCount(first, second);
 
     // notify offer Accepted
     try {
@@ -1921,7 +1955,7 @@ const PinDetail = ({ detail, data = [] }) => {
         <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/pin-detail/${pinId}`}
+          content={`${basePath}/pins/${pinId}`}
         />
         <meta
           property="og:image"
@@ -2019,9 +2053,9 @@ const PinDetail = ({ detail, data = [] }) => {
                         <div className="flex gap-2">
                           <Link
                             onClick={() =>
-                              router.push(`/user-profile/${item?.user?._id}`)
+                              router.push(`/users/${item?.user?.userName}`)
                             }
-                            href={`/user-profile/${item?.user?._id}`}
+                            href={`/users/${item?.user?.userName}`}
                           >
                             <div className="flex flex-row gap-2 items-center cursor-pointer">
                               <Image
@@ -2029,7 +2063,7 @@ const PinDetail = ({ detail, data = [] }) => {
                                 width={30}
                                 src={getImage(item?.user?.image)}
                                 className="w-12 h-12 rounded-full"
-                                alt="user-profile"
+                                alt={getUserName(item?.user?.userName)}
                               />
                               <p className="font-bold text-sm">
                                 {getUserName(item?.user?.userName)}
@@ -2062,9 +2096,9 @@ const PinDetail = ({ detail, data = [] }) => {
                         <div className="flex gap-2">
                           <Link
                             onClick={() =>
-                              router.push(`/user-profile/${item?.user?._id}`)
+                              router.push(`/users/${item?.user?.userName}`)
                             }
-                            href={`/user-profile/${item?.user?._id}`}
+                            href={`/users/${item?.user?.userName}`}
                           >
                             <div className="flex flex-row gap-2 items-center cursor-pointer">
                               <Image
@@ -2072,7 +2106,7 @@ const PinDetail = ({ detail, data = [] }) => {
                                 width={30}
                                 src={getImage(item?.user?.image)}
                                 className="w-12 h-12 rounded-full"
-                                alt="user-profile"
+                                alt={getUserName(item?.user?.userName)}
                               />
                               <p className="font-bold text-sm">
                                 {getUserName(item?.user?.userName)}
@@ -2142,9 +2176,9 @@ const PinDetail = ({ detail, data = [] }) => {
                         <div className="flex gap-2">
                           <Link
                             onClick={() =>
-                              router.push(`/user-profile/${item?.user?._id}`)
+                              router.push(`/users/${item?.user?.userName}`)
                             }
-                            href={`/user-profile/${item?.user?._id}`}
+                            href={`/users/${item?.user?.userName}`}
                           >
                             <div className="flex flex-row gap-2 items-center cursor-pointer">
                               <Image
@@ -2152,7 +2186,7 @@ const PinDetail = ({ detail, data = [] }) => {
                                 width={30}
                                 src={getImage(item?.user?.image)}
                                 className="w-12 h-12 rounded-full"
-                                alt="user-profile"
+                                alt={getUserName(item?.user?.userName)}
                               />
                               <p className="font-bold text-sm">
                                 {getUserName(item?.user?.userName)}
@@ -2181,14 +2215,14 @@ const PinDetail = ({ detail, data = [] }) => {
                 return (
                   <div key={index} className="flex flex-wrap mt-2 gap-3">
                     {user?._id && (
-                      <Link href={`/user-profile/${user?._id}`}>
+                      <Link href={`/users/${user?.userName}`}>
                         <div>
                           <Image
                             height={45}
                             width={45}
                             src={getImage(user?.image)}
                             className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                            alt="user-profile"
+                            alt={getUserName(user?.userName)}
                           />
                         </div>
                       </Link>
@@ -2262,13 +2296,13 @@ const PinDetail = ({ detail, data = [] }) => {
 
         <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
           {postedBy?._id && (
-            <Link href={`/user-profile/${postedBy?._id}`}>
+            <Link href={`/users/${postedBy?.userName}`}>
               <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
                 <p className="inline align-middle text-sm mr-2 font-bold">
                   {`Owner: `}
                 </p>
                 <Image
-                  alt={pinDetail.postedBy.userName}
+                  alt={getUserName(pinDetail.postedBy.userName)}
                   height={35}
                   width={35}
                   className="align-middle rounded-full"
@@ -2282,13 +2316,13 @@ const PinDetail = ({ detail, data = [] }) => {
             </Link>
           )}
           {createdBy?._id && (
-            <Link href={`/user-profile/${createdBy?._id}`}>
+            <Link href={`/users/${createdBy?.userName}`}>
               <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
                 <p className="inline align-middle text-sm mr-2 font-bold">
                   {`Minter: `}
                 </p>
                 <Image
-                  alt={createdBy.userName}
+                  alt={getUserName(createdBy?.userName)}
                   height={35}
                   width={35}
                   className="align-middle rounded-full"
@@ -2365,7 +2399,7 @@ const PinDetail = ({ detail, data = [] }) => {
               onClick={() => {
                 e.stopPropagation();
               }}
-              href={`${basePath}/collection-detail/${pinCollection}`}
+              href={`${basePath}/collections/${pinCollection}`}
             >
               <div className="font-bold text-sm mr-2 mb-1">
                 <span className={buttonStyle}>{`Collection`}</span>
@@ -2465,7 +2499,7 @@ const PinDetail = ({ detail, data = [] }) => {
           </button>
           <ShareButtons
             title={title}
-            shareUrl={`https://nft-nation.vercel.app/pin-detail/${pinId}`}
+            shareUrl={`${basePath}/pins/${pinId}`}
             image={getImage(image)}
           />
         </div>
@@ -2474,14 +2508,14 @@ const PinDetail = ({ detail, data = [] }) => {
             <div className="mt-4 p-2 bg-gradient-to-r from-themeColor to-secondTheme rounded-lg drop-shadow-lg flex flex-wrap text-center justify-evenly">
               <div className="flex flex-wrap m-2 gap-3">
                 {user?._id && (
-                  <Link href={`/user-profile/${user?._id}`}>
+                  <Link href={`/users/${user?.userName}`}>
                     <div>
                       <Image
                         height={45}
                         width={45}
                         src={getImage(user?.image)}
                         className="w-14 h-14 rounded-full cursor-pointer hover:shadow-lg"
-                        alt="user-profile"
+                        alt={getUserName(user?.userName)}
                       />
                     </div>
                   </Link>
@@ -2582,6 +2616,7 @@ export const getServerSideProps = async ({ query }) => {
 
   try {
     var { data } = await axios.get(`${basePath}/api/pins/${pinId}`);
+    // console.log(data, "DDDDDDDDDDDDDDDDDDDDDDD")
   } catch (e) {
     console.log(e, "Error");
   }

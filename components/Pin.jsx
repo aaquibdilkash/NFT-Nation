@@ -287,7 +287,7 @@ const Pin = ({ pin }) => {
     <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
       <div
         onClick={() =>
-          router.push(`/pin-detail/${_id}?type=pins&category=${category}`)
+          router.push(`/pins/${_id}?type=pins&category=${category}`)
         }
         className="relative cursor-pointer w-25"
       >
@@ -295,7 +295,7 @@ const Pin = ({ pin }) => {
           <div
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/user-profile/${postedBy?._id}`);
+              router.push(`/users/${postedBy?.userName}`);
             }}
             className="flex justify-between items-center py-4 transition transition duration-500 ease transform hover:scale-1.5"
           >
@@ -381,7 +381,7 @@ const Pin = ({ pin }) => {
           {pinCollection && (
             <Link onClick={() => {
               e.stopPropagation()
-            }} href={`${basePath}/collection-detail/${pinCollection}`}>
+            }} href={`${basePath}/collections/${pinCollection}`}>
               <span className={buttonStyle}>
               {`Collection`}
             </span>

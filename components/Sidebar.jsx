@@ -89,7 +89,7 @@ const Sidebar = ({
             }}
             className={
               asPath === "/" ||
-              (pathname === "/" && !query?.feed &&
+              (pathname === "/" &&
                 (query?.page && query?.type &&
                 Object.keys(query).length == 2) || ((query?.page || query?.type) &&
                 Object.keys(query).length == 1))
@@ -183,14 +183,14 @@ const Sidebar = ({
                       {
                         // pathname: pathname,
                         pathname:
-                          (pathname === "/user-profile/[userId]" &&
+                          (pathname === "/users/[userName]" &&
                             query.type === "users") ||
                           !feedPathArray.includes(pathname)
                             ? "/"
                             : pathname,
                         query: {
                           // ...query,
-                          ...(pathname === "/user-profile/[userId]" &&
+                          ...(pathname === "/users/[userName]" &&
                           query.type === "users"
                             ? {}
                             : query),
@@ -289,7 +289,7 @@ const Sidebar = ({
         </div>
       </div>
       {user?._id && (
-        <Link href={`/user-profile/${user?._id}`}>
+        <Link href={`/users/${user?.userName}`}>
           <div
             onClick={handleCloseSidebar}
             className="bg-gradient-to-r from-themeColor to-secondTheme flex my-5 mb-3 gap-2 p-2 items-center bg-secondTheme rounded-lg shadow-lg hover:drop-shadow-lg mx-3 hover:cursor-pointer justify-between"
@@ -300,7 +300,7 @@ const Sidebar = ({
               width={40}
               src={getImage(user?.image)}
               className="w-10 h-10 rounded-full"
-              alt="user-profile"
+              alt={getUserName(user?.userName)}
             />
             <p className="font-bold mr-auto">{getUserName(user?.userName)}</p>
             <IoIosArrowForward className="" fontSize={21} />

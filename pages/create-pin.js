@@ -8,6 +8,7 @@ import { ethers } from "ethers";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import {
+  basePath,
   buttonStyle,
   checkAttributes,
   formButtonStyles,
@@ -319,6 +320,9 @@ const CreatePin = () => {
       return;
     }
 
+    // increase count
+    increaseCount()
+
     savePin({
       ...eventData,
       title,
@@ -333,7 +337,7 @@ const CreatePin = () => {
           type: "Mint"
         },
       ],
-      destination: "https://nft-nation.vercel.app",
+      destination: basePath,
     });
   };
 
@@ -394,6 +398,9 @@ const CreatePin = () => {
       return;
     }
 
+    // increase count
+    increaseCount()
+
     savePin({
       ...eventData,
       title,
@@ -409,7 +416,7 @@ const CreatePin = () => {
           type: "Mint"
         },
       ],
-      destination: "https://nft-nation.vercel.app",
+      destination: basePath,
     });
   };
 
@@ -458,6 +465,9 @@ const CreatePin = () => {
       return;
     }
 
+    // increase count
+    increaseCount()
+
     savePin({
       ...eventData,
       title,
@@ -472,7 +482,7 @@ const CreatePin = () => {
           type: "Mint"
         },
       ],
-      destination: "https://nft-nation.vercel.app",
+      destination: basePath,
     });
   };
 
@@ -590,6 +600,9 @@ const CreatePin = () => {
       return;
     }
 
+    // increase count
+    increaseCount()
+
     const { name, image, description } = data;
 
     savePin({
@@ -605,7 +618,7 @@ const CreatePin = () => {
           type: "Mint"
         },
       ],
-      destination: "https://nft-nation.vercel.app",
+      destination: basePath,
     });
   };
 
@@ -647,6 +660,18 @@ const CreatePin = () => {
       });
   };
 
+  const increaseCount = () => {
+    axios.put(`/api/users/count/${user?._id}`, {
+      actions: ["nftMinted"]
+    }).then((res) => {
+      toast.success("count increased")
+      console.log(res.data)
+    }).catch((e) => {
+      toast.error("count not increased")
+      console.log(e)
+    })
+  }
+
   if (loading) {
     return <Spinner title={loadingMessage} message={waitLoadingMessage} />;
   }
@@ -666,11 +691,11 @@ const CreatePin = () => {
         />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/create-pin`}
+          content={`${basePath}/create-pin`}
         />
         <meta
           property="og:image"
-          content={`https://nft-nation.vercel.app/favicon.png`}
+          content={`${basePath}/favicon.png`}
         />
         <meta name="twitter:card" content="summary" />
         <meta property="og:type" content="website" />
@@ -765,14 +790,14 @@ const CreatePin = () => {
                 className="outline-none text-lg font-bold border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
               />
               {/* {user?._id && (
-              <Link href={`/user-profile/${user?._id}`}>
+              <Link href={`/users/${user?.userName}`}>
                 <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1">
                   <Image
                     height={40}
                     width={40}
                     src={user.image}
                     className="w-10 h-10 rounded-full drop-shadow-lg"
-                    alt="user-profile"
+                    alt={getUserName(user?.userName)}
                   />
                   <p className="font-bold">{getUserName(user?.userName)}</p>
                 </div>

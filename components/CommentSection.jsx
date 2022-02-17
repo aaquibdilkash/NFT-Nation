@@ -36,9 +36,9 @@ const CommentSection = ({
                 <div className="flex gap-2">
                   <Link
                     onClick={() =>
-                      router.push(`/user-profile/${item?.user?._id}`)
+                      router.push(`/users/${item?.user?.userName}`)
                     }
-                    href={`/user-profile/${item?.user?._id}`}
+                    href={`/users/${item?.user?.userName}`}
                   >
                     <div className="flex flex-row gap-2 items-center cursor-pointer">
                       <Image
@@ -46,7 +46,7 @@ const CommentSection = ({
                         width={30}
                         src={getImage(item?.user?.image)}
                         className="w-12 h-12 rounded-full"
-                        alt="user-profile"
+                        alt={getUserName(item?.user?.userName)}
                       />
                       <p className="font-bold text-sm">
                         {getUserName(item?.user?.userName)}
@@ -110,10 +110,10 @@ const CommentSection = ({
                 <Link
                   onClick={() =>
                     router.push(
-                      `/user-profile/${showCommentReplies?.user?._id}`
+                      `/users/${showCommentReplies?.user?.userName}`
                     )
                   }
-                  href={`/user-profile/${showCommentReplies?.user?._id}`}
+                  href={`/users/${showCommentReplies?.user?.userName}`}
                 >
                   <div className="flex flex-row gap-2 items-center cursor-pointer">
                     <Image
@@ -121,7 +121,7 @@ const CommentSection = ({
                       width={30}
                       src={getImage(showCommentReplies?.user?.image)}
                       className="w-12 h-12 rounded-full"
-                      alt="user-profile"
+                      alt={getUserName(showCommentReplies?.user?.userName)}
                     />
                     <p className="font-bold text-sm">
                       {getUserName(showCommentReplies?.user?.userName)}
@@ -206,9 +206,9 @@ const CommentSection = ({
                     <div className="flex gap-2">
                       <Link
                         onClick={() =>
-                          router.push(`/user-profile/${item?.user?._id}`)
+                          router.push(`/users/${item?.user?.userName}`)
                         }
-                        href={`/user-profile/${item?.user?._id}`}
+                        href={`/users/${item?.user?.userName}`}
                       >
                         <div className="flex flex-row gap-2 items-center cursor-pointer">
                           <Image
@@ -216,7 +216,7 @@ const CommentSection = ({
                             width={30}
                             src={getImage(item?.user?.image)}
                             className="w-12 h-12 rounded-full"
-                            alt="user-profile"
+                            alt={getUserName(item?.user?.userName)}
                           />
                           <p className="font-bold text-sm">
                             {getUserName(item?.user?.userName)}

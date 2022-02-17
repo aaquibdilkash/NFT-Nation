@@ -181,14 +181,14 @@ const Collection = ({ collection }) => {
   return (
     <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl transform transition-all ease duration-500 m-4">
       <div
-        onClick={() => router.push(`/collection-detail/${_id}`)}
+        onClick={() => router.push(`/collections/${_id}`)}
         className="relative cursor-pointer w-25"
       >
         <div className="flex items-center justify-between px-4">
           <div
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/user-profile/${createdBy?._id}`);
+              router.push(`/users/${createdBy?.userName}`);
             }}
             className="flex justify-between items-center py-4 transition transition duration-500 ease transform hover:scale-1.5"
           >

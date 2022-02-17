@@ -311,7 +311,7 @@ const HomeLayout = ({ children }) => {
             </div>
           </Link>
           {user?._id && (
-            <Link href={`/user-profile/${user?._id}`}>
+            <Link href={`/users/${user?.userName}`}>
               <div>
                 <Image
                   height={40}

@@ -266,7 +266,7 @@ const Notifications = () => {
                                 {byUser ? (
                                   <div
                                   onClick={() => {
-                                    router.push(`/user-profile/${byUser?._id}`)
+                                    router.push(`/users/${byUser?.userName}`)
                                   }}
                                    >
                                     <>
@@ -294,7 +294,7 @@ const Notifications = () => {
                                 {toUser ? (
                                   <div
                                   onClick={() => {
-                                    router.push(`/user-profile/${toUser?._id}`)
+                                    router.push(`/users/${toUser?.userName}`)
                                   }}
                                    >
                                     <div className="mr-2">
@@ -318,7 +318,7 @@ const Notifications = () => {
                                 {pin ? (
                                   <div 
                                   onClick={() => {
-                                    router.push(`/pin-detail/${pin?._id}`)
+                                    router.push(`/pins/${pin?._id}`)
                                   }}
                                   >
                                     <>
@@ -344,7 +344,7 @@ const Notifications = () => {
                                 {pinCollection ? (
                                   <div
                                     onClick={() => {
-                                      router.push(`/collection-detail/${pinCollection?._id}`)
+                                      router.push(`/collections/${pinCollection?._id}`)
                                     }}
                                   >
                                     <>

@@ -70,8 +70,8 @@ const allUsers = catchAsyncErrors(async (req, res) => {
 });
 
 const getUser = catchAsyncErrors(async (req, res) => {
-  // const user = await User.findOne({userName: req.query.id});
-  const user = await User.findById(req.query.id);
+  const user = await User.findOne({userName: req.query.id});
+  // const user = await User.findById(req.query.id);
 
   if (!user) {
     return res.status(404).json({

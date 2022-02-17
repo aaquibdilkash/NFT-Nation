@@ -4,23 +4,28 @@ import {
   FaArrowAltCircleLeft,
   FaArrowAltCircleRight,
   FaBaseballBall,
+    FaBolt,
     FaCat,
     FaChartBar,
     FaChartLine,
     FaClock,
+    FaCloud,
+    FaCloudDownloadAlt,
     FaComments,
     FaGamepad,
     FaLaugh,
+    FaMountain,
     FaMusic,
     FaPaintBrush,
     FaRegComments,
+    FaRegMoneyBillAlt,
     FaSmile,
     FaUserAstronaut,
     FaVideo,
   } from "react-icons/fa";
 import { HiOutlineEmojiHappy, HiPhotograph } from "react-icons/hi";
 import { IoIosAperture, IoMdArrowDropdownCircle, IoMdArrowDropupCircle } from "react-icons/io";
-import { MdEmojiEmotions, MdEmojiEvents } from "react-icons/md";
+import { MdEmojiEmotions, MdEmojiEvents, MdMoneyOff, MdOutlineBolt } from "react-icons/md";
   
   export const sidebarCategories = {
     "Discover Categories": [
@@ -285,6 +290,66 @@ import { MdEmojiEmotions, MdEmojiEvents } from "react-icons/md";
           },
         ],
         icon: <FaArrowAltCircleLeft className="" size={25} />,
+      },
+      {
+        name: "NFT Minted",
+        type: ["users"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-nftMinted"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "nftMinted"
+            }
+          },
+        ],
+        icon: <FaMountain className="" size={25} />,
+      },
+      {
+        name: "NFT Bought",
+        type: ["users"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-nftBought"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "nftBought"
+            }
+          },
+        ],
+        icon: <FaCloudDownloadAlt className="" size={25} />,
+      },
+      {
+        name: "NFT Sold",
+        type: ["users"],
+        link: "/",
+        array: [
+          {
+            icon: <IoMdArrowDropdownCircle className="" size={25} />,
+            query: {
+              sort: "-nftSold"
+            }
+          },
+          {
+            icon: <IoMdArrowDropupCircle className="" size={25} />,
+            query: {
+              sort: "nftSold"
+            }
+          },
+        ],
+        icon: <MdOutlineBolt className="" size={28} />,
       },
       {
         name: "NFTs",

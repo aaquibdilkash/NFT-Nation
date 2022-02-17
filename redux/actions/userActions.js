@@ -5,9 +5,9 @@ import {
   USER_GET_SUCCESS,
 } from "../constants/UserTypes";
 
-export const userGet = (userId, success = () => {}, failure = () => {}) => async (dispatch) => {
+export const userGet = (userName, success = () => {}, failure = () => {}) => async (dispatch) => {
   try {
-    axios.get(`/api/users/${userId}`).then((res) => {
+    axios.get(`/api/users/${userName}`).then((res) => {
       dispatch({
         type: USER_GET_SUCCESS,
         payload: res.data.user,

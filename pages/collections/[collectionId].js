@@ -150,40 +150,40 @@ const CollectionDetail = ({ detail, data = [] }) => {
       });
   };
 
-  const fetchCollectionDetails = () => {
-    setLoading(true);
-    axios
-      .get(`/api/collections/${collectionId}`)
-      .then((res) => {
-        dispatch({
-          type: COLLECTION_SET,
-          payload: res?.data?.collection,
-        });
-        setAlreadySaved(
-          res?.data?.collection?.saved?.find((item) => item === user?._id)
-        );
-        setSavedLenth(res?.data?.collection?.saved?.length);
+  // const fetchCollectionDetails = () => {
+  //   // setLoading(true);
+  //   axios
+  //     .get(`/api/collections/${collectionId}`)
+  //     .then((res) => {
+  //       dispatch({
+  //         type: COLLECTION_SET,
+  //         payload: res?.data?.collection,
+  //       });
+  //       setAlreadySaved(
+  //         res?.data?.collection?.saved?.find((item) => item === user?._id)
+  //       );
+  //       setSavedLenth(res?.data?.collection?.saved?.length);
 
-        setActiveBtn("Items");
-        setLoading(false);
+  //       setActiveBtn("Items");
+  //       setLoading(false);
 
-        router.replace(
-          {
-            pathname: pathname,
-            query: {
-              collectionId,
-              collection: true,
-            },
-          },
-          undefined,
-          { shallow: true }
-        );
-      })
-      .catch((e) => {
-        toast.error(errorMessage);
-        // console.log(e);
-      });
-  };
+  //       router.replace(
+  //         {
+  //           pathname: pathname,
+  //           query: {
+  //             collectionId,
+  //             collection: true,
+  //           },
+  //         },
+  //         undefined,
+  //         { shallow: true }
+  //       );
+  //     })
+  //     .catch((e) => {
+  //       toast.error(errorMessage);
+  //       // console.log(e);
+  //     });
+  // };
 
   useEffect(() => {
     dispatch({
@@ -198,7 +198,7 @@ const CollectionDetail = ({ detail, data = [] }) => {
   }, [user, collection]);
 
   useEffect(() => {
-    collectionId && fetchCollectionDetails();
+    // collectionId && fetchCollectionDetails();
     collectionId && fetchCollectionComments();
     setShowCommentReplies({});
   }, [collectionId, refresh]);
@@ -392,7 +392,7 @@ const CollectionDetail = ({ detail, data = [] }) => {
         <meta property="og:description" content={`${detail?.about}`} />
         <meta
           property="og:url"
-          content={`https://nft-nation.vercel.app/collection-detail/${collectionId}`}
+          content={`${basePath}/collections/${collectionId}`}
         />
         <meta
           property="og:image"
@@ -501,14 +501,14 @@ const CollectionDetail = ({ detail, data = [] }) => {
               {tab === "comments" && (
                 <div className="flex flex-wrap mt-2 gap-3">
                   {user?._id && (
-                    <Link href={`/user-profile/${user?._id}`}>
+                    <Link href={`/users/${user?.userName}`}>
                       <div>
                         <Image
                           height={45}
                           width={45}
                           src={getImage(user?.image)}
                           className="w-14 h-14 rounded-full cursor-pointer pt-2"
-                          alt="user-profile"
+                          alt={getUserName(user?.userName)}
                         />
                       </div>
                     </Link>
@@ -555,10 +555,10 @@ const CollectionDetail = ({ detail, data = [] }) => {
 
           <div className="block lg:flex text-left items-center mb-1 pl-5 w-full justify-evenly">
             {createdBy?._id && (
-              <Link href={`/user-profile/${createdBy?._id}`}>
+              <Link href={`/users/${createdBy?.userName}`}>
                 <div className="cursor-pointer flex items-center mb-4 lg:mb-0 w-full lg:w-auto mr-2 transition transition duration-500 ease transform hover:-translate-y-1">
                   <Image
-                    alt={collection.createdBy.userName}
+                    alt={getUserName(collection?.createdBy?.userName)}
                     height={35}
                     width={35}
                     className="align-middle rounded-full"
@@ -653,7 +653,7 @@ const CollectionDetail = ({ detail, data = [] }) => {
             </button>
             <ShareButtons
               title={title}
-              shareUrl={`https://nft-nation.vercel.app/collection-detail/${collectionId}`}
+              shareUrl={`${basePath}/collections/${collectionId}`}
               image={getImage(image)}
             />
           </div>
@@ -725,9 +725,14 @@ export default CollectionDetail;
   export const getServerSideProps = async ({query}) => {
   const { collectionId } = query;
 
-  const { data } = await axios.get(
-    `${basePath}/api/collections/${collectionId}`
-  );
+  try {
+    var { data } = await axios.get(
+      `${basePath}/api/collections/${collectionId}`
+    );
+    // console.log(data, "DDDDDDDDDDDDDDDDDDDDDDD")
+  } catch (e) {
+    console.log(e, "Error");
+  }
 
   if (!data) {
     return {

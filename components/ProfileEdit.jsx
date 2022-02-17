@@ -124,7 +124,7 @@ const ProfileEdit = ({ setEditing }) => {
 
       return;
     }
-
+    
     setSaving(true);
 
     const obj = {
@@ -273,7 +273,7 @@ const ProfileEdit = ({ setEditing }) => {
             type="text"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
-            maxLength={15}
+            maxLength={16}
             placeholder="Type your username"
             className="outline-none text-2xl sm:text-3xl font-bold border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
           />
@@ -287,14 +287,14 @@ const ProfileEdit = ({ setEditing }) => {
             className="outline-none text-base sm:text-lg border-b-2 border-gray-200 p-2 focus:drop-shadow-lg"
           />
           {user?._id && (
-            <Link href={`/user-profile/${user?._id}`}>
+            <Link href={`/users/${user?.userName}`}>
               <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1">
                 <Image
                   height={40}
                   width={40}
                   src={getImage(user.image)}
                   className="w-10 h-10 rounded-full"
-                  alt="user-profile"
+                  alt={getUserName(user?.userName)}
                 />
                 <p className="font-bold">{getUserName(user?.userName)}</p>
               </div>

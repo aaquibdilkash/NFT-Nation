@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AiOutlineCloudUpload, AiOutlineLoading3Quarters } from "react-icons/ai";
 import { MdDelete } from "react-icons/md";
 import {
+  basePath,
   formButtonStyles,
   getImage,
   getUserName,
@@ -39,7 +40,7 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
   const [imageLoading, setImageLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [destination, setDestination] = useState(
-    "https://nft-nation.vercel.app"
+    basePath
   );
   const [category, setCategory] = useState("");
   const [fields, setFields] = useState();
@@ -343,14 +344,14 @@ const CollectionEdit = ({ setCollectionEditing = () => {} }) => {
           />
 
           {user?._id && (
-            <Link href={`/user-profile/${user?._id}`}>
+            <Link href={`/users/${user?.userName}`}>
               <div className="flex gap-2 mt-2 mb-2 items-center bg-secondTheme rounded-lg cursor-pointer transition transition duration-500 ease transform hover:-translate-y-1">
                 <Image
                   height={40}
                   width={40}
                   src={getImage(user.image)}
                   className="w-10 h-10 rounded-full"
-                  alt="user-profile"
+                  alt={getUserName(user?.userName)}
                 />
                 <p className="font-bold">{getUserName(user?.userName)}</p>
               </div>

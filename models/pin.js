@@ -229,4 +229,4 @@ const pinSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Pin || mongoose.model("Pin", pinSchema);
+export default mongoose.models?.Pin || mongoose.model("Pin", pinSchema);
