@@ -285,18 +285,13 @@ const Pin = ({ pin }) => {
 
   return (
     <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl hover:subpixel-antialiased transform transition-all ease duration-500 m-4">
+      <Link href={`/pins/${_id}?type=pins&category=${category}`}>
       <div
-        onClick={() =>
-          router.push(`/pins/${_id}?type=pins&category=${category}`)
-        }
         className="relative cursor-pointer w-25"
       >
         <div className="flex items-center justify-between px-4">
+          <Link href={`/users/${postedBy?.userName}`}>
           <div
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/users/${postedBy?.userName}`);
-            }}
             className="flex justify-between items-center py-4 transition transition duration-500 ease transform hover:scale-1.5"
           >
             <Image
@@ -315,6 +310,7 @@ const Pin = ({ pin }) => {
               </p>
             </div>
           </div>
+          </Link>
 
           <div>
             {user?._id !== postedBy?._id && (
@@ -521,6 +517,7 @@ const Pin = ({ pin }) => {
           </div>
         </div>
       </div>
+      </Link>
     </div>
   );
 };

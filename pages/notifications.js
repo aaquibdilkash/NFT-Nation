@@ -22,6 +22,7 @@ import moment from "moment";
 import useSWR from "swr";
 import { toast } from "react-toastify";
 import { loginMessage } from "../utils/messages";
+import Link from "next/link";
 
 const Notifications = () => {
   const router = useRouter();
@@ -264,12 +265,10 @@ const Notifications = () => {
                             <td className="py-3 px-6 text-left">
                               <div className="flex items-center cursor-pointer">
                                 {byUser ? (
-                                  <div
-                                  onClick={() => {
-                                    router.push(`/users/${byUser?.userName}`)
-                                  }}
+                                  <Link
+                                  href={`/users/${byUser?.userName}`}
                                    >
-                                    <>
+                                    <div>
                                       <div className="mr-2">
                                         <img
                                           className="w-6 h-6 rounded-full"
@@ -279,8 +278,8 @@ const Notifications = () => {
                                       <span>
                                         {getUserName(byUser?.userName)}
                                       </span>
-                                    </>
-                                  </div>
+                                    </div>
+                                  </Link>
                                 ) : (
                                   <>
                                     <div className="mr-2"></div>
@@ -292,10 +291,10 @@ const Notifications = () => {
                             <td className="py-3 px-6 text-left">
                               <div className="flex items-center cursor-pointer">
                                 {toUser ? (
+                                  <Link
+                                  href={`/users/${toUser?.userName}`}
+                                   >
                                   <div
-                                  onClick={() => {
-                                    router.push(`/users/${toUser?.userName}`)
-                                  }}
                                    >
                                     <div className="mr-2">
                                       <img
@@ -305,6 +304,7 @@ const Notifications = () => {
                                     </div>
                                     <span>{getUserName(toUser?.userName)}</span>
                                   </div>
+                                  </Link>
                                 ) : (
                                   <>
                                     <div className="mr-2"></div>
@@ -316,12 +316,10 @@ const Notifications = () => {
                             <td className="py-3 px-6 text-left">
                               <div className="flex items-center cursor-pointer">
                                 {pin ? (
-                                  <div 
-                                  onClick={() => {
-                                    router.push(`/pins/${pin?._id}`)
-                                  }}
+                                  <Link 
+                                  href={`/pins/${pin?._id}`}
                                   >
-                                    <>
+                                    <div>
                                       <div className="mr-2">
                                         <img
                                           className="w-6 h-6 rounded-full"
@@ -329,8 +327,8 @@ const Notifications = () => {
                                         />
                                       </div>
                                       <span>{pin?.title}</span>
-                                    </>
-                                  </div>
+                                    </div>
+                                  </Link>
                                 ) : (
                                   <>
                                     <div className="mr-2"></div>
@@ -342,12 +340,10 @@ const Notifications = () => {
                             <td className="py-3 px-6 text-left">
                               <div className="flex items-center cursor-pointer">
                                 {pinCollection ? (
-                                  <div
-                                    onClick={() => {
-                                      router.push(`/collections/${pinCollection?._id}`)
-                                    }}
+                                  <Link
+                                    href={`/collections/${pinCollection?._id}`}
                                   >
-                                    <>
+                                    <div>
                                       <div className="mr-2">
                                         <img
                                           className="w-6 h-6 rounded-full"
@@ -355,8 +351,8 @@ const Notifications = () => {
                                         />
                                       </div>
                                       <span>{pinCollection?.title}</span>
-                                    </>
-                                  </div>
+                                    </div>
+                                  </Link>
                                 ) : (
                                   <>
                                     <div className="mr-2"></div>

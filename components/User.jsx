@@ -20,6 +20,7 @@ import {
 } from "../redux/constants/UserTypes";
 import { useDispatch } from "react-redux";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import Link from "next/link";
 
 const User = ({ userProfile }) => {
   const {
@@ -148,8 +149,8 @@ const User = ({ userProfile }) => {
 
   return (
     <div className="transition duration-200 ease transform hover:-translate-y-3 bg-gradient-to-r from-secondTheme to-themeColor rounded-xl shadow-xl hover:shadow-2xl transform transition-all ease duration-500 m-4">
+      <Link href={`/users/${userName}`}>
       <div
-        onClick={() => router.push(`/users/${userName}`)}
         className="relative cursor-pointer w-25"
       >
         <Image
@@ -249,6 +250,7 @@ const User = ({ userProfile }) => {
         </div>
         <div className="p-6 pt-2"></div>
       </div>
+      </Link>
     </div>
   );
 };

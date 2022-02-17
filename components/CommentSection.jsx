@@ -35,9 +35,6 @@ const CommentSection = ({
               <>
                 <div className="flex gap-2">
                   <Link
-                    onClick={() =>
-                      router.push(`/users/${item?.user?.userName}`)
-                    }
                     href={`/users/${item?.user?.userName}`}
                   >
                     <div className="flex flex-row gap-2 items-center cursor-pointer">
@@ -107,13 +104,7 @@ const CommentSection = ({
           {showCommentReplies?.user?._id && (
             <>
               <div className="flex gap-2">
-                <Link
-                  onClick={() =>
-                    router.push(
-                      `/users/${showCommentReplies?.user?.userName}`
-                    )
-                  }
-                  href={`/users/${showCommentReplies?.user?.userName}`}
+                <Link href={`/users/${showCommentReplies?.user?.userName}`}
                 >
                   <div className="flex flex-row gap-2 items-center cursor-pointer">
                     <Image
@@ -204,11 +195,7 @@ const CommentSection = ({
                 {item?.user?._id && (
                   <>
                     <div className="flex gap-2">
-                      <Link
-                        onClick={() =>
-                          router.push(`/users/${item?.user?.userName}`)
-                        }
-                        href={`/users/${item?.user?.userName}`}
+                      <Link href={`/users/${item?.user?.userName}`}
                       >
                         <div className="flex flex-row gap-2 items-center cursor-pointer">
                           <Image
