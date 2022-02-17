@@ -50,38 +50,38 @@ const UserProfilePage = ({detail, data = []}) => {
     user?.followings?.find((item) => item === userId)
   );
 
-  // const fetchUserDetails = () => {
-  //   // setLoading(true);
-  //   axios
-  //     .get(`/api/users/${userName}`)
-  //     .then((res) => {
-  //       const { followers, followings, _id } = res?.data?.user;
+  const fetchUserDetails = () => {
+    // setLoading(true);
+    axios
+      .get(`/api/users/${userName}`)
+      .then((res) => {
+        const { followers, followings, _id } = res?.data?.user;
 
-  //       dispatch({
-  //         type: CURRENT_PROFILE_SET,
-  //         payload: res?.data?.user,
-  //       });
+        dispatch({
+          type: CURRENT_PROFILE_SET,
+          payload: res?.data?.user,
+        });
 
-  //       setAlreadyFollowed(followers?.find((item) => item === user?._id));
+        setAlreadyFollowed(followers?.find((item) => item === user?._id));
 
-  //       setLoading(false);
+        setLoading(false);
 
-  //       router.replace(
-  //         {
-  //           pathname: pathname,
-  //           query: {
-  //             userName,
-  //             postedBy: true,
-  //           },
-  //         },
-  //         undefined,
-  //         { shallow: true }
-  //       );
-  //     })
-  //     .catch((e) => {
-  //       toast.error(errorMessage);
-  //     });
-  // };
+        router.replace(
+          {
+            pathname: pathname,
+            query: {
+              userName,
+              postedBy: true,
+            },
+          },
+          undefined,
+          { shallow: true }
+        );
+      })
+      .catch((e) => {
+        toast.error(errorMessage);
+      });
+  };
 
   const followUser = () => {
     if (!user?._id) {
@@ -168,9 +168,9 @@ const UserProfilePage = ({detail, data = []}) => {
       type: CURRENT_PROFILE_SET,
       payload: detail
     })
-  }, [detail])
 
-  useEffect(() => {
+    setAlreadyFollowed(detail?.followers?.find((item) => item === user?._id));
+
     setActiveBtn("Owned NFTs");
 
     router.replace(
@@ -184,9 +184,12 @@ const UserProfilePage = ({detail, data = []}) => {
       undefined,
       { shallow: true }
     );
-    
-    // userId && fetchUserDetails();
-  }, [userName]);
+
+  }, [detail])
+
+  // useEffect(() => {
+  //   userId && fetchUserDetails();
+  // }, [userName]);
 
   useEffect(() => {
     user?._id &&

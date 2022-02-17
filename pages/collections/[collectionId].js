@@ -164,8 +164,8 @@ const CollectionDetail = ({ detail, data = [] }) => {
   //       );
   //       setSavedLenth(res?.data?.collection?.saved?.length);
 
-  //       setActiveBtn("Items");
   //       setLoading(false);
+  //       setActiveBtn("Items");
 
   //       router.replace(
   //         {
@@ -190,6 +190,28 @@ const CollectionDetail = ({ detail, data = [] }) => {
       type: COLLECTION_SET,
       payload: detail,
     });
+
+    setAlreadySaved(
+      detail?.saved?.find((item) => item === user?._id)
+    );
+    setSavedLenth(saved?.length);
+
+    setLoading(false);
+    setActiveBtn("Items");
+
+    router.replace(
+      {
+        pathname: pathname,
+        query: {
+          collectionId,
+          type: "pins",
+          collection: true,
+        },
+      },
+      undefined,
+      { shallow: true }
+    );
+
   }, [detail]);
 
   useEffect(() => {
@@ -592,7 +614,7 @@ const CollectionDetail = ({ detail, data = [] }) => {
                 text: `Owners: ${ownersCount}`,
               },
               {
-                text: `on Auction: ${onAuctionCount}`,
+                text: `On Auction: ${onAuctionCount}`,
               },
               {
                 text: `On Sale: ${onSaleCount}`,
