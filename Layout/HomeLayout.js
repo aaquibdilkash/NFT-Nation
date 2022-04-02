@@ -51,7 +51,7 @@ const HomeLayout = ({ children }) => {
   let web3;
   let accounts;
   let chainId;
-  const chain = chainData.ropsten;
+  const chain = chainData.kovan;
   // const chain = chainData.localhost;
 
   const connectToMetamask = async () => {
@@ -78,7 +78,7 @@ const HomeLayout = ({ children }) => {
     };
 
     web3Modal = new Web3Modal({
-      network: "maticmum", // optional
+      network: "kovan", // optional
       cacheProvider: true, // optional
       providerOptions, // required
     });
@@ -122,7 +122,7 @@ const HomeLayout = ({ children }) => {
       try {
         await ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: chain.hexChainId }],
+          params: [{ chainId: toHex(chain.chainId) }],
         });
       } catch (switchError) {
         // This error code indicates that the chain has not been added to MetaMask.
@@ -182,6 +182,7 @@ const HomeLayout = ({ children }) => {
   };
 
   const login = (address) => {
+    console.log(address.length, "DDDDDDDDDDDDDDDDD")
     setLoggingIn(true);
     const obj = {
       _id: address,

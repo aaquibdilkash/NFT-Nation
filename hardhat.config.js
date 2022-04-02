@@ -21,7 +21,11 @@ module.exports = {
     ropsten: {
       url: `https://eth-ropsten.alchemyapi.io/v2/${PROJECT_ID}`,
       accounts: [PRIVATE_KEY]
-    }
+    },
+    kovan: {
+      url: `https://eth-kovan.alchemyapi.io/v2/${PROJECT_ID}`,
+      accounts: [PRIVATE_KEY]
+    },
     
   },
   // solidity: "0.8.4",

@@ -142,7 +142,7 @@ const Sidebar = ({
               </div>
             </Link>
           )}
-          {/* {user?._id && (
+          {user?._id && (
             <Link href={`/refer`}>
               <div
                 onClick={() => {
@@ -156,7 +156,7 @@ const Sidebar = ({
                 {`Refer & Earn`}
               </div>
             </Link>
-          )} */}
+          )}
           <Link href={`/ico`}>
             <div
               onClick={() => {
