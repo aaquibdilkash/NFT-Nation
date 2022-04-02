@@ -664,10 +664,10 @@ const CreatePin = () => {
     axios.put(`/api/users/count/${user?._id}`, {
       actions: ["nftMinted"]
     }).then((res) => {
-      toast.success("count increased")
+      // toast.success("count increased")
       console.log(res.data)
     }).catch((e) => {
-      toast.error("count not increased")
+      // toast.error("count not increased")
       console.log(e)
     })
   }

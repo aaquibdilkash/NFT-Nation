@@ -124,6 +124,7 @@ const HomeLayout = ({ children }) => {
           method: "wallet_switchEthereumChain",
           params: [{ chainId: toHex(chain.chainId) }],
         });
+        // login(accounts[0])
       } catch (switchError) {
         // This error code indicates that the chain has not been added to MetaMask.
         if (switchError.code === 4902) {

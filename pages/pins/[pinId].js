@@ -497,10 +497,10 @@ const PinDetail = ({ detail, data = [] }) => {
         actions: [action1, action2],
       })
       .then((res) => {
-        toast.success("count increased");
+        // toast.success("count increased");
       })
       .catch((e) => {
-        toast.error("count not increased");
+        // toast.error("count not increased");
       });
   };
 
